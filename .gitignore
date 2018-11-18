@@ -1,0 +1,6 @@
+*.py[co]
+*.so
+date_ext/_cython/*.c
+__pycache__/*
+build/*
+.*
