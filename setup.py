@@ -1,7 +1,12 @@
+# -*- coding: utf-8 -*-
 from distutils.core import setup, Extension
-from Cython.Build import cythonize
 
-DateExt = [Extension("date_ext", ["date_ext/_lib/date_ext.c"])]
-CythonDateExt = cythonize("date_ext/_cython/date_ext.pyx")
+DateExt = [
+    Extension("ctools", ["ctoolsmodule.c"]),
+]
 
-setup(name="date_ext", version="1.0", ext_modules=DateExt)
+setup(
+    name="ctools",
+    version="0.0.1",
+    ext_modules=DateExt
+)
