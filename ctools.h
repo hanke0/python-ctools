@@ -27,7 +27,7 @@ Ctools__strhash(PyObject* self, PyObject* args)
     uint64_t hash = 5381;
     int c;
 
-    while (c = *str++)
+    while (c = *s++)
         hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
     return Py_BuildValue("i", hash);
 }

@@ -8,6 +8,8 @@ extensions = [
 setup(
     name="ctools",
     version="0.0.1",
+    author="hanke",
+    author_email="hanke0@outlook.com",
     ext_modules=extensions,
     description="A toolbox for python implement in python.",
     url="https://github.com/ko-han/python-ctools",
