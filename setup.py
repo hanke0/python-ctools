@@ -18,6 +18,7 @@ setup(
     url="https://github.com/ko-han/python-ctools",
     license='MIT',
     long_description=readme,
+    long_description_content_type='text/x-rst',
     python_requires=">=3",
     include_package_data=True,
     zip_safe=False,

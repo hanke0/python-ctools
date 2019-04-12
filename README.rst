@@ -4,7 +4,7 @@ A collection of useful functions for python implement in C.
 Installation
 ============
 
-Install and update using `pip`_:
+Install and update using `pip`_ (python3 only):
 
 .. code-block:: text
 
@@ -61,6 +61,31 @@ API
         :return: parsed datetime
         :rtype: datetime.datetime
         """
+
+
+Benchmark
+=========
+.. code-block:: text
+
+    $ make install && make benchmark
+    int8_to_datetime(20170101),         62.393 ns ± 2.328 ns each (10 runs, 1,000,000 loops)
+    jump_consistent_hash(65535, 1024),  151.440 ns ± 8.359 ns each (10 runs, 1,000,000 loops)
+    strhash('zxgfhyxjhjtepqoikns'),     120.241 ns ± 6.072 ns each (10 runs, 1,000,000 loops)
+
+
+How To Test
+===========
+.. code-block:: text
+
+    $ make install && make test
+
+
+More
+====
+.. code-block:: text
+
+    $ make help
+
 
 .. _pip: https://pip.pypa.io/en/stable/quickstart/
 .. _jump_consistent_hash: https://arxiv.org/abs/1406.2294
