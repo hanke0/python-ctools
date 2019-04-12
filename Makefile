@@ -1,10 +1,10 @@
 .PHONY: format
-format:  ## inplace format all c code
+format:  ## Inplace format all c code
 	@clang-format -style=WebKit -i *.h
 	@clang-format -style=WebKit -i *.c
 
 .PHONY:
-clean:  ## delete templory and build files
+clean:  ## Delete templory and build files
 	@rm -rf dist build
 	@find . -name *.egg-info -exec rm -rf {} +
 	@find . -name '*.pyc' -exec rm -f {} +
@@ -12,24 +12,40 @@ clean:  ## delete templory and build files
 	@find . -name '*~' -exec rm -f {} +
 
 .PHONY:
-build:  ## build sdist and bdist package
+build:  ## Build sdist and bdist package
 	@python setup.py sdist
 	@python setup.py bdist_wheel
 
 .PHONY:
-release-test: clean build test-upload  ## clean build and upload to test pypi
+check:  ## Check distribution files
+	@twine check dist/*
 
 .PHONY:
-test-upload:  ## upload to test pypi
+test-upload:  ## Upload to test pypi
 	@twine upload --skip-existing --repository-url https://test.pypi.org/legacy/ dist/*
 
 .PHONY:
-upload:  ## upload to pypi
+test-release: clean build check test-upload  ## Clean build and upload to test pypi
+
+.PHONY:
+upload:  ## Upload to pypi
 	@twine upload --skip-existing dist/*
 
 .PHONY:
-release: clean build upload ## clean build and upload to pypi
+release: clean build check upload ## Clean build and upload to pypi
 
+.PHONY:
+test:  ## Run test.py
+	@python tests.py
+
+.PHONY:
+benchmark:  ## Run benchmark.py
+	@python benchmark.py
+
+
+.PHONY:
+install:  ## Install use pip
+	@pip install .
 
 # Absolutely awesome: http://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 .PHONY: help
