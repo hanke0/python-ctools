@@ -11,14 +11,14 @@ with io.open('README.rst', 'rt', encoding='utf8') as f:
 
 setup(
     name="ctools",
-    version="0.0.1",
+    version="0.0.1.dev1",
     author="hanke",
     author_email="hanke0@outlook.com",
     description="A collection of useful functions for python implement in C.",
     url="https://github.com/ko-han/python-ctools",
     license='MIT',
     long_description=readme,
-    python_requires=">=3.5",
+    python_requires=">=3",
     include_package_data=True,
     zip_safe=False,
     ext_modules=extensions,
