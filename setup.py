@@ -11,7 +11,7 @@ with io.open('README.rst', 'rt', encoding='utf8') as f:
 
 setup(
     name="ctools",
-    version="0.0.1.dev1",
+    version="0.0.2",
     author="hanke",
     author_email="hanke0@outlook.com",
     description="A collection of useful functions for python implement in C.",

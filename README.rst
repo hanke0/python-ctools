@@ -1,5 +1,5 @@
 A collection of useful functions for python implement in C.
-============================
+===========================================================
 
 Installation
 ============
