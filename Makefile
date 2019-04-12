@@ -3,6 +3,26 @@ format:  ## inplace format all c code
 	@clang-format -style=WebKit -i *.h
 	@clang-format -style=WebKit -i *.c
 
+.PHONY:
+clean:  ## delete templory and build files
+	@rm -rf dist build
+	@find . -name *.egg-info -exec rm -rf {} +
+	@find . -name '*.pyc' -exec rm -f {} +
+	@find . -name '*.pyo' -exec rm -f {} +
+	@find . -name '*~' -exec rm -f {} +
+
+.PHONY:
+build:
+	@python setup.py sdist
+	@python setup.py bdist_wheel
+
+.PHONY:
+release-test: clean build test-upload
+
+.PHONY:
+test-upload:
+	@twine upload --repository-url https://test.pypi.org/legacy/ dist/* --verbose
+
 # Absolutely awesome: http://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 .PHONY: help
 help:

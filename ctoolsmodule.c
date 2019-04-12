@@ -1,5 +1,4 @@
 #include <Python.h>
-#include <datetime.h>
 
 #include "ctools.h"
 #include "ctoolsdoc.h"

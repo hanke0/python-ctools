@@ -1,3 +1,4 @@
 include *.h
 include *.c
 include LICENSE
+include README.rst

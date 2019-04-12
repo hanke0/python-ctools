@@ -1,18 +1,27 @@
 # -*- coding: utf-8 -*-
-from distutils.core import setup, Extension
+import io
+from setuptools import setup, Extension
 
 extensions = [
     Extension("ctools", ["ctoolsmodule.c"]),
 ]
+
+with io.open('README.rst', 'rt', encoding='utf8') as f:
+    readme = f.read()
 
 setup(
     name="ctools",
     version="0.0.1",
     author="hanke",
     author_email="hanke0@outlook.com",
-    ext_modules=extensions,
-    description="A toolbox for python implement in python.",
+    description="A collection of useful functions for python implement in C.",
     url="https://github.com/ko-han/python-ctools",
+    license='MIT',
+    long_description=readme,
+    python_requires=">=3.5",
+    include_package_data=True,
+    zip_safe=False,
+    ext_modules=extensions,
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
