@@ -21,7 +21,15 @@ release-test: clean build test-upload
 
 .PHONY:
 test-upload:
-	@twine upload --repository-url https://test.pypi.org/legacy/ dist/* --verbose
+	@twine upload --skip-existing --repository-url https://test.pypi.org/legacy/ dist/*
+
+.PHONY:
+upload:
+	@twine upload --skip-existing dist/*
+
+.PHONY:
+release: clean build upload
+
 
 # Absolutely awesome: http://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 .PHONY: help
