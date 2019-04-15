@@ -1,6 +1,7 @@
 import unittest
 import random
 import string
+import os
 from datetime import datetime, timedelta
 
 import ctools
@@ -45,6 +46,24 @@ class T(unittest.TestCase):
         a = ctools.strhash(s)
         for i in range(1024):
             self.assertEqual(ctools.strhash(s), a)
+
+    def test_lfu(self):
+        d = ctools.LFU(2)
+        d['a'] = 1
+        d['c'] = 2
+        d['e'] = 3
+        self.assertEqual(len(d), 2)
+
+        with open(os.devnull, "w") as null:
+            for i in range(1024):
+                self.assertEqual(d['c'], 2)
+
+        self.assertEqual(d.should_removed(), "e")
+
+        for i in range(0xffffff00, 0xffffffff):
+            d[i] = random.random()
+
+        self.assertEqual(len(d), 2)
 
 
 if __name__ == '__main__':
