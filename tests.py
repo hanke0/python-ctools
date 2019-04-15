@@ -1,7 +1,6 @@
 import unittest
 import random
 import string
-import os
 from datetime import datetime, timedelta
 
 import ctools
@@ -54,9 +53,8 @@ class T(unittest.TestCase):
         d['e'] = 3
         self.assertEqual(len(d), 2)
 
-        with open(os.devnull, "w") as null:
-            for i in range(1024):
-                self.assertEqual(d['c'], 2)
+        for i in range(1024):
+            self.assertEqual(d['c'], 2)
 
         self.assertEqual(d.should_removed(), "e")
 
