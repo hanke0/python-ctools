@@ -161,6 +161,18 @@ LFU_mp_subscript(LFU *self, PyObject *key) {
 }
 
 #define LFU_JUMP 5
+/* return a random number between 0 and limit inclusive.
+ */
+int rand_lim(int limit) {
+    int divisor = RAND_MAX / (limit + 1);
+    int retval;
+
+    do { 
+        retval = rand() / divisor;
+    } while (retval > limit);
+
+    return retval;
+}
 
 static PyObject *
 LFU_should_removed(LFU *self) {
