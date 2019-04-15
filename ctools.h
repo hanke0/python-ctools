@@ -1,3 +1,5 @@
+#ifndef _CTOOLS_H
+#define _CTOOLS_H
 #include <Python.h>
 #include <datetime.h>
 
@@ -28,7 +30,7 @@ Ctools__strhash(PyObject* self, PyObject* args)
     uint64_t hash = 5381;
     int c;
 
-    while (c = *s++)
+    while ((c = *s++))
         hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
     return Py_BuildValue("i", hash);
 }
@@ -46,3 +48,4 @@ Ctools__int8_to_datetime(PyObject* self, PyObject* date_integer)
     }
     return PyDateTime_FromDate(date / 10000, date % 10000 / 100, date % 100);
 }
+#endif // _CTOOLS_H

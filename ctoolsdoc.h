@@ -1,3 +1,6 @@
+#ifndef _CTOOLS_DOC_H
+#define _CTOOLS_DOC_H
+
 #include <Python.h>
 
 PyDoc_STRVAR(ctools__doc__, "Python C extension tools");
@@ -36,3 +39,4 @@ PyDoc_STRVAR(int8_to_datetime__doc__, "int8_to_datetime(date_integer) -> datetim
     :type date_integer: int\n\
     :return: parsed datetime\n\
     :rtype: datetime.datetime\n");
+#endif // _CTOOLS_DOC_H
