@@ -1,7 +1,6 @@
 #include <Python.h>
 
 #include "ctools.h"
-#include "ctoolsdoc.h"
 #include "lfu.h"
 
 static PyMethodDef CtoolsMethods[] = {
@@ -11,6 +10,7 @@ static PyMethodDef CtoolsMethods[] = {
     { NULL, NULL, 0, NULL },
 };
 
+PyDoc_STRVAR(ctools__doc__, "A collection of useful functions for python implement in C.");
 static struct PyModuleDef ctools_module = {
     PyModuleDef_HEAD_INIT,
     "ctools", /* m_name */

@@ -7,7 +7,6 @@ include_directories(.)
 
 add_executable(ctools
         ctools.h
-        ctoolsdoc.h
         ctoolsmodule.c
         lfu.h)
 

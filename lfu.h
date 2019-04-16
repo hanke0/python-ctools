@@ -12,14 +12,14 @@ typedef struct _LFUValue {
 } LFUValue;
 
 static void
-LFUValue_dealloc(LFUValue *self)
+LFUValue_dealloc(LFUValue* self)
 {
     Py_DECREF(self->value);
     PyObject_Del((PyObject*)self);
 }
 
 static PyObject*
-LFUValue_repr(LFUValue *self)
+LFUValue_repr(LFUValue* self)
 {
     return PyObject_Repr(self->value);
 }
@@ -87,15 +87,17 @@ lfu_log_incr(uint32_t counter)
         return 255;
     double r = (double)rand() / RAND_MAX;
     double baseval = counter - LFU_INIT_VAL;
-    if (baseval < 0) baseval = 0;
+    if (baseval < 0)
+        baseval = 0;
     double p = 1.0 / (baseval * LFU_LOG_FACTOR + 1);
-    if (r < p) counter++;
+    if (r < p)
+        counter++;
     return counter;
 }
 
 #define TimeInMinutes() ((time(NULL) / 60) & 0xffffff)
 
-#define LFUValue_UPDATE(self)                                                  \
+#define LFUValue_UPDATE(self)                                             \
     do {                                                                  \
         uint32_t last_visit = (self)->lfu >> 8;                           \
         uint32_t counter = (self)->lfu & 255;                             \
