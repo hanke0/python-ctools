@@ -427,7 +427,7 @@ PyDoc_STRVAR(LFUCache__doc__, "LFUCache()");
 
 static PyTypeObject LFUCacheType = {
     PyVarObject_HEAD_INIT(NULL, 0) "ctools.LFU", /* tp_name */
-    sizeof(LFU), /* tp_basicsize */
+    sizeof(LFUCache), /* tp_basicsize */
     0, /* tp_itemsize */
     (destructor)LFUCache_dealloc, /* tp_dealloc */
     0, /* tp_print */
