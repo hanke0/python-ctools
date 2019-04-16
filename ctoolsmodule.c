@@ -36,12 +36,12 @@ PyInit_ctools(void)
     if (PyType_Ready(&LFUValueType) < 0)
         return NULL;
 
-    LFUType.tp_new = PyType_GenericNew;
-    if (PyType_Ready(&LFUType) < 0)
+    LFUCacheType.tp_new = PyType_GenericNew;
+    if (PyType_Ready(&LFUCacheType) < 0)
         return NULL;
 
     Py_INCREF(&LFUValueType);
-    Py_INCREF(&LFUType);
-    PyModule_AddObject(m, "LFU", (PyObject*)&LFUType);
+    Py_INCREF(&LFUCacheType);
+    PyModule_AddObject(m, "LFUCache", (PyObject*)&LFUCacheType);
     return m;
 }
