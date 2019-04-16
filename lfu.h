@@ -424,7 +424,8 @@ static PyMethodDef LFUCache_methods[] = {
     { NULL, NULL } /* sentinel */
 };
 
-PyDoc_STRVAR(LFUCache__doc__, "LFUCache()");
+PyDoc_STRVAR(LFUCache__doc__,
+    "A fast LFUCache behaving much like dict.");
 
 static PyTypeObject LFUCacheType = {
     PyVarObject_HEAD_INIT(NULL, 0) "ctools.LFU", /* tp_name */
