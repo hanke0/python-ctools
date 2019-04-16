@@ -58,10 +58,11 @@ class T(unittest.TestCase):
 
         self.assertEqual(d.lfu(), "e")
 
-        for i in range(0xffffff00, 0xffffffff):
-            d[i] = random.random()
+        d.set_capacity(1024)
+        for i in range(2048):
+            d[random.random()] = random.random()
 
-        self.assertEqual(len(d), 2)
+        self.assertEqual(len(d), 1024)
 
 
 if __name__ == '__main__':
