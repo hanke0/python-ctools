@@ -2,6 +2,9 @@
 A collection of useful functions for python implement in C.
 ===========================================================
 
+:Python:python3 only
+:Version: 0.0.3
+
 Installation
 ============
 
@@ -87,6 +90,8 @@ More
 
     $ make help
 
+
+What's important is free.
 
 .. _pip: https://pip.pypa.io/en/stable/quickstart/
 .. _jump_consistent_hash: https://arxiv.org/abs/1406.2294
