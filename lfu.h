@@ -223,7 +223,7 @@ LFUCache_evict(LFUCache* self)
     if (PyDict_DelItem(self->dict, k) != 0) {
         return PyErr_Format(PyExc_KeyError, "Delete Not Exist Key %U", k);
     }
-    return 0;
+    Py_RETURN_NONE;
 }
 
 /* mp_ass_subscript: __setitem__() and __delitem__() */
