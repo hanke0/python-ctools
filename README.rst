@@ -2,7 +2,7 @@
 A collection of useful functions for python implement in C.
 ===========================================================
 
-:Python:python3 only
+:Python: python3 only
 :Version: 0.0.3
 
 Installation
