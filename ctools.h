@@ -47,12 +47,14 @@ Ctools__strhash(PyObject* self, PyObject* args)
     const char* s;
     if (!PyArg_ParseTuple(args, "s", &s))
         return NULL;
-    uint64_t hash = 5381;
-    int c;
-
-    while ((c = *s++))
-        hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
-    return Py_BuildValue("i", hash);
+    unsigned int hash = 2166136261U;
+    unsigned char c;
+    while ((c = *s++)) {
+        hash = hash ^ c;
+        /* hash * (1 << 24 + 1 << 8 + 0x93) */
+        hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
+    }
+    return Py_BuildValue("I", hash);
 }
 
 #define PyDateTime_FromDate(year, month, day) \

@@ -199,7 +199,8 @@ static PyObject* LFUCache_lfu(LFUCache* self)
     } else {
         PyObject* keys = PyDict_Keys(self->dict);
         Py_ssize_t b_size = dict_len / LFU_BUCKET;
-        if ((dict_len % LFU_BUCKET)) b_size++;
+        if ((dict_len % LFU_BUCKET))
+            b_size++;
         for (int i = 1; i < LFU_BUCKET; i++) {
             pos = (i - 1) * b_size + rand_limit(b_size);
             value = PyDict_GetItem(self->dict, PyList_GetItem(keys, pos));
@@ -210,8 +211,8 @@ static PyObject* LFUCache_lfu(LFUCache* self)
             if (min == 0 || num < min) {
                 min = num;
                 rv = key;
-            }else {
-              Py_DECREF(key);
+            } else {
+                Py_DECREF(key);
             }
             Py_DECREF(value);
         }
@@ -223,9 +224,9 @@ static PyObject* LFUCache_lfu(LFUCache* self)
         num = (now - (current->lfu >> 8)) / LFU_DECAY_FACTOR;
         num = num > counter ? 0 : counter - num;
         if (min == 0 || num < min) {
-          rv = key;
+            rv = key;
         } else {
-          Py_DECREF(key);
+            Py_DECREF(key);
         }
         Py_DECREF(value);
         Py_DECREF(keys);
