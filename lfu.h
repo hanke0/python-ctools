@@ -219,6 +219,7 @@ LFUCache_evict(LFUCache* self)
     PyObject* k = LFUCache_lfu(self);
     if (k == NULL) {
         PyErr_Clear();
+        Py_RETURN_NONE;
     }
     if (PyDict_DelItem(self->dict, k) != 0) {
         return PyErr_Format(PyExc_KeyError, "Delete Not Exist Key %U", k);
