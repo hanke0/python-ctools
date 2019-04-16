@@ -47,7 +47,7 @@ class T(unittest.TestCase):
             self.assertEqual(ctools.strhash(s), a)
 
     def test_lfu(self):
-        d = ctools.LFU(2)
+        d = ctools.LFUCache(2)
         d['a'] = 1
         d['c'] = 2
         d['e'] = 3
