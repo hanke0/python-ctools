@@ -56,7 +56,7 @@ class T(unittest.TestCase):
         for i in range(1024):
             self.assertEqual(d['c'], 2)
 
-        self.assertEqual(d.should_removed(), "e")
+        self.assertEqual(d.lfu(), "e")
 
         for i in range(0xffffff00, 0xffffffff):
             d[i] = random.random()
