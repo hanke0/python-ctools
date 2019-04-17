@@ -2,8 +2,10 @@
 import io
 from setuptools import setup, Extension
 
+extra_compile_args = ["-std=c99", "-Wall", "-Wextra"]
+
 extensions = [
-    Extension("ctools", ["ctoolsmodule.c"]),
+    Extension("ctools", ["ctoolsmodule.c"], extra_compile_args=extra_compile_args),
 ]
 
 with io.open('README.rst', 'rt', encoding='utf8') as f:
