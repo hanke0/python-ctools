@@ -16,6 +16,18 @@ build: clean ## Build sdist and bdist package
 	@python setup.py sdist
 	@python setup.py bdist_wheel
 
+
+PYTHON_HOME=$(shell which python | sed "s/\/bin\/python//")
+PYTHON_VERSION=$(shell which python | sed "s/\/bin\/python/\/include/" | xargs ls | grep python | grep python)
+
+.PHONE:
+compile:
+	gcc -DNDEBUG -g -fwrapv -O3 -Wall -Wextra -std=c99 -arch x86_64 \
+	-I$(PYTHON_HOME)/include \
+	-I$(PYTHON_HOME)/include/$(PYTHON_HEADER) \
+	-c ctoolsmodule.c
+
+
 .PHONY:
 check:  ## Check distribution files
 	@twine check dist/*
@@ -45,7 +57,25 @@ benchmark:  ## Run benchmark.py
 
 .PHONY:
 install:  ## Install use pip
-	@pip install .
+	@pip install -v .
+
+.PHONY:
+docker-build:
+	@docker build -t ctools .
+
+.PHONE:
+docker-run:
+	@docker run -it --rm -v $(pwd):/tmp --network=host ctools bash
+
+
+BDIST_ARGS := setup.py bdist_wheel
+
+.PHONE:
+bdist:
+	@python3.4 $(BDIST_ARGS)
+	@python3.5 $(BDIST_ARGS)
+	@python3.6 $(BDIST_ARGS)
+	@python3.7 $(BDIST_ARGS)
 
 # Absolutely awesome: http://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 .PHONY: help
