@@ -26,7 +26,7 @@ LFUValue_repr(LFUValue* self)
     return PyObject_Repr(self->value);
 }
 
-static PyObject*
+static int
 LFUValue_tp_clear(LFUValue* self)
 {
     Py_CLEAR(self->value);
@@ -380,7 +380,7 @@ LFUCache_setdefault(LFUCache* self, PyObject* args)
 PyObject*
 LFUCache_update(LFUCache* self, PyObject* args, PyObject* kwargs)
 {
-    PyObject *key, *value, *rv;
+    PyObject *key, *value;
     PyObject* arg = NULL;
     Py_ssize_t pos = 0;
 
