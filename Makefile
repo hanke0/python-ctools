@@ -24,7 +24,7 @@ PYTHON_VERSION=$(shell which python | sed "s/\/bin\/python/\/include/" | xargs l
 compile:
 	gcc -DNDEBUG -g -fwrapv -O3 -Wall -Wextra -std=c99 -arch x86_64 \
 	-I$(PYTHON_HOME)/include \
-	-I$(PYTHON_HOME)/include/$(PYTHON_HEADER) \
+	-I$(PYTHON_HOME)/include/$(PYTHON_VERSION) \
 	-c ctoolsmodule.c
 
 
