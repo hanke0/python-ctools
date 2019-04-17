@@ -435,22 +435,22 @@ LFUCache_set_capacity(LFUCache* self, PyObject* capacity)
 
 /* tp_methods */
 static PyMethodDef LFUCache_methods[] = {
-    { "evict", (PyNoArgsFunction)LFUCache_evict, METH_NOARGS, NULL },
+    { "evict", (PyCFunction)LFUCache_evict, METH_NOARGS, NULL },
     { "set_capacity", (PyCFunction)LFUCache_set_capacity, METH_O, NULL },
-    { "hints", (PyNoArgsFunction)LFUCache_hints, METH_NOARGS, NULL },
-    { "lfu", (PyNoArgsFunction)LFUCache_lfu, METH_NOARGS, NULL },
+    { "hints", (PyCFunction)LFUCache_hints, METH_NOARGS, NULL },
+    { "lfu", (PyCFunction)LFUCache_lfu, METH_NOARGS, NULL },
     { "lfu_of", (PyCFunction)LFUCache_lfu_of, METH_O, NULL },
     { "get", (PyCFunction)LFUCache_get, METH_VARARGS | METH_KEYWORDS, NULL },
     { "setdefault", (PyCFunction)LFUCache_setdefault,
         METH_VARARGS | METH_KEYWORDS, NULL },
     { "pop", (PyCFunction)LFUCache_pop, METH_VARARGS | METH_KEYWORDS, NULL },
-    { "keys", (PyNoArgsFunction)LFUCache_keys, METH_NOARGS, NULL },
-    { "values", (PyNoArgsFunction)LFUCache_values, METH_NOARGS, NULL },
-    { "items", (PyNoArgsFunction)LFUCache_items, METH_NOARGS, NULL },
-    { "update", (PyCFunctionWithKeywords)LFUCache_update,
+    { "keys", (PyCFunction)LFUCache_keys, METH_NOARGS, NULL },
+    { "values", (PyCFunction)LFUCache_values, METH_NOARGS, NULL },
+    { "items", (PyCFunction)LFUCache_items, METH_NOARGS, NULL },
+    { "update", (PyCFunction)LFUCache_update,
         METH_VARARGS | METH_KEYWORDS, NULL },
-    { "clear", (PyNoArgsFunction)LFUCache_clear, METH_NOARGS, NULL },
-    { NULL, NULL } /* sentinel */
+    { "clear", (PyCFunction)LFUCache_clear, METH_NOARGS, NULL },
+    { NULL, NULL, 0, NULL } /* Sentinel */
 };
 
 static int
