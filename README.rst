@@ -72,9 +72,10 @@ Benchmark
 .. code-block:: text
 
     $ make install && make benchmark
-    int8_to_datetime(20170101),         62.393 ns ± 2.328 ns each (10 runs, 1,000,000 loops)
-    jump_consistent_hash(65535, 1024),  151.440 ns ± 8.359 ns each (10 runs, 1,000,000 loops)
-    strhash('zxgfhyxjhjtepqoikns'),     120.241 ns ± 6.072 ns each (10 runs, 1,000,000 loops)
+      int8_to_datetime,       63.481 ns ± 4.179 nseach (10 runs, 1,000,000 loops)
+      jump_consistent_hash,   156.082 ns ± 6.489 nseach (10 runs, 1,000,000 loops)
+      strhash,                139.542 ns ± 4.268 nseach (10 runs, 1,000,000 loops)
+
 
 
 How To Test
