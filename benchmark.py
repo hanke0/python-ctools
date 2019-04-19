@@ -2,6 +2,8 @@
 import timeit
 import sys
 import io
+import uuid
+import random
 
 from ctools import *
 
@@ -27,17 +29,26 @@ def mean_std(seq):
 buffer = io.StringIO()
 
 
-def run_str(s, loop=1000000, repeat=10):
-    t_arr = timeit.repeat(s, globals=globals(), number=loop, repeat=repeat)
+def run_str(run, title, loop=1000000, repeat=10, **kwargs):
+    t_arr = timeit.repeat(run, globals=globals(), number=loop, repeat=repeat, **kwargs)
     t_arr = [t / loop for t in t_arr]
     mean, std = mean_std(t_arr)
     print(
-        s, ",\t", humanize(mean), " ± ", humanize(std),
+        title, ",\t", humanize(mean), " ± ", humanize(std),
         "each ({:,} runs, {:,} loops)".format(repeat, loop),
         sep="", flush=True, file=sys.stderr
     )
 
 
-run_str("int8_to_datetime(20170101)")
-run_str("jump_consistent_hash(65535, 1024)")
-run_str("strhash('zxgfhyxjhjtepqoikns')")
+run_str("int8_to_datetime(20170101)", 'int8_to_datetime')
+
+rad = random.randint(0, 0xffffffff)
+
+run_str(
+    "jump_consistent_hash(65535, 1024)",
+    "jump_consistent_hash",
+    setup="rad = random.randint(0, 0xffffffff)"
+)
+
+string = str(uuid.uuid1())
+run_str("strhash(string)", "strhash", setup="string = str(uuid.uuid1())")
