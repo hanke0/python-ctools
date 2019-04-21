@@ -15,11 +15,6 @@ clean:  ## Delete templory and build files
 build: clean ## Build sdist package
 	@python setup.py sdist
 
-.PHONY:
-bdist: ## Build bdist package
-	@python setup.py bdist_wheel
-
-
 PYTHON_HOME=$(shell which python | sed "s/\/bin\/python//")
 PYTHON_VERSION=$(shell which python | sed "s/\/bin\/python/\/include/" | xargs ls | grep python | grep python)
 
@@ -74,7 +69,7 @@ docker-run:
 BDIST_ARGS := setup.py bdist_wheel
 
 .PHONE:
-bdist:
+bdist:  # build multi versions bdist packages
 	@python3.4 $(BDIST_ARGS)
 	@python3.5 $(BDIST_ARGS)
 	@python3.6 $(BDIST_ARGS)
