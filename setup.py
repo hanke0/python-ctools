@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 import io
+import sys
 from setuptools import setup, Extension
 
-extra_compile_args = ["-std=c99", "-Wall", "-Wextra"]
+if sys.platform.startswith('win'):
+    extra_compile_args = []
+else:
+    extra_compile_args = ["-std=c99", "-Wall", "-Wextra"]
 
 extensions = [
     Extension("ctools", ["ctoolsmodule.c"], extra_compile_args=extra_compile_args),
