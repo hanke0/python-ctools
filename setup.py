@@ -16,7 +16,7 @@ setup(
     version="0.0.4",
     author="hanke",
     author_email="hanke0@outlook.com",
-    description="A collection of useful functions for python implement in C.",
+    description="A collection of useful extensions for python implement in C.",
     url="https://github.com/ko-han/python-ctools",
     license='MIT',
     long_description=readme,
