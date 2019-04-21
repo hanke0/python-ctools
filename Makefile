@@ -12,8 +12,11 @@ clean:  ## Delete templory and build files
 	@find . -name '*~' -exec rm -f {} +
 
 .PHONY:
-build: clean ## Build sdist and bdist package
+build: clean ## Build sdist package
 	@python setup.py sdist
+
+.PHONY:
+bdist: ## Build bdist package
 	@python setup.py bdist_wheel
 
 
