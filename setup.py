@@ -13,7 +13,7 @@ with io.open('README.rst', 'rt', encoding='utf8') as f:
 
 setup(
     name="ctools",
-    version="0.0.3",
+    version="0.0.4",
     author="hanke",
     author_email="hanke0@outlook.com",
     description="A collection of useful functions for python implement in C.",
