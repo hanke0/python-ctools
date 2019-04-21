@@ -3,7 +3,7 @@ A collection of useful extensions for python implement in C.
 ============================================================
 
 :Python: >= 3.4
-:Version: 0.0.3
+:Version: 0.0.4
 
 Installation
 ============
