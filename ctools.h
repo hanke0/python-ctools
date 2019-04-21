@@ -15,7 +15,7 @@ PyDoc_STRVAR(jump_consistent_hash__doc__,
     :rtype: int\n");
 
 static PyObject*
-Ctools__jump_hash(PyObject* self, PyObject* args)
+Ctools__jump_hash(PyObject *Py_UNUSED(ignored), PyObject* args)
 {
     uint64_t key;
     int32_t num_buckets;
@@ -42,7 +42,7 @@ PyDoc_STRVAR(strhash__doc__,
     :rtype: int\n");
 
 static PyObject*
-Ctools__strhash(PyObject* self, PyObject* args)
+Ctools__strhash(PyObject *Py_UNUSED(ignored), PyObject* args)
 {
     const char* s;
     if (!PyArg_ParseTuple(args, "s", &s))
@@ -70,7 +70,7 @@ PyDoc_STRVAR(int8_to_datetime__doc__,
     :rtype: datetime.datetime\n");
 
 static PyObject*
-Ctools__int8_to_datetime(PyObject* self, PyObject* date_integer)
+Ctools__int8_to_datetime(PyObject *Py_UNUSED(ignored), PyObject* date_integer)
 {
     register long date = PyLong_AsLong(date_integer);
     if (date > 99990101 || date < 101) {

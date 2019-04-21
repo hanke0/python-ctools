@@ -27,21 +27,19 @@ PyMODINIT_FUNC
 PyInit_ctools(void)
 {
     PyDateTime_IMPORT;
+    if (PyType_Ready(&LFUCacheType) < 0)
+        return NULL;
+
+    if (PyType_Ready(&LFUWrapperType) < 0)
+        return NULL;
 
     PyObject* m = PyModule_Create(&ctools_module);
     if (m == NULL)
         return NULL;
 
-    LFUValueType.tp_new = PyType_GenericNew;
-    if (PyType_Ready(&LFUValueType) < 0)
-        return NULL;
-
-    LFUCacheType.tp_new = PyType_GenericNew;
-    if (PyType_Ready(&LFUCacheType) < 0)
-        return NULL;
-
-    Py_INCREF(&LFUValueType);
+    Py_INCREF(&LFUWrapperType);
     Py_INCREF(&LFUCacheType);
     PyModule_AddObject(m, "LFUCache", (PyObject*)&LFUCacheType);
+    PyModule_AddObject(m, "LFUWrapper", (PyObject*)&LFUWrapperType);
     return m;
 }

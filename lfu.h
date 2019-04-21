@@ -3,6 +3,7 @@
 
 #include <Python.h>
 #include <stdlib.h>
+#include <structmember.h>
 #include <time.h>
 
 #define LFU_INIT_VAL 5U
@@ -12,104 +13,8 @@
 #define LFU_BUCKET 8
 #define LFU_BUCKET_SIZE 256
 
-typedef struct _LFUValue {
-    PyObject_HEAD PyObject* value;
-    uint32_t lfu; /* last_visit in minutes & counter, 24 bit + 8 bit */
-} LFUValue;
-
-#define LFUValue_LastVisit(self) ((self)->lfu >> 8U)
-#define LFUValue_Counter(self) ((self)->lfu & 255U)
-
-#define Py_XDECREF_LFUValue(op)               \
-    do {                                      \
-        Py_XDECREF(((LFUValue*)(op))->value); \
-        Py_XDECREF(op);                       \
-    } while (0)
-
-#define Py_DECREF_LFUValue(op)               \
-    do {                                     \
-        Py_DECREF(((LFUValue*)(op))->value); \
-        Py_DECREF(op);                       \
-    } while (0)
-
-#define Py_XINCREF_LFUValue(op)               \
-    do {                                      \
-        Py_XINCREF(((LFUValue*)(op))->value); \
-        Py_XINCREF(op);                       \
-    } while (0)
-
-#define Py_INCREF_LFUValue(op)               \
-    do {                                     \
-        Py_INCREF(((LFUValue*)(op))->value); \
-        Py_INCREF(op);                       \
-    } while (0)
-
-static void
-LFUValue_dealloc(LFUValue* self)
-{
-    Py_DECREF(self->value);
-    PyObject_Del((PyObject*)self);
-}
-
-static PyObject*
-LFUValue_repr(LFUValue* self)
-{
-    return PyObject_Repr(self->value);
-}
-
-static int
-LFUValue_tp_clear(LFUValue* self)
-{
-    Py_CLEAR(self->value);
-    return 0;
-}
-
-static PyTypeObject LFUValueType = {
-    PyVarObject_HEAD_INIT(NULL, 0) "cools.LFUValue", /* tp_name */
-    sizeof(LFUValue), /* tp_basicsize */
-    0, /* tp_itemsize */
-    (destructor)LFUValue_dealloc, /* tp_dealloc */
-    0, /* tp_print */
-    0, /* tp_getattr */
-    0, /* tp_setattr */
-    0, /* tp_compare */
-    (reprfunc)LFUValue_repr, /* tp_repr */
-    0, /* tp_as_number */
-    0, /* tp_as_sequence */
-    0, /* tp_as_mapping */
-    0, /* tp_hash */
-    0, /* tp_call */
-    0, /* tp_str */
-    0, /* tp_getattro */
-    0, /* tp_setattro */
-    0, /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT, /* tp_flags */
-    "LFU value store", /* tp_doc */
-    0, /* tp_traverse */
-    (inquiry)LFUValue_tp_clear, /* tp_clear */
-    0, /* tp_richcompare */
-    0, /* tp_weaklistoffset */
-    0, /* tp_iter */
-    0, /* tp_iternext */
-    0, /* tp_methods */
-    0, /* tp_members */
-    0, /* tp_getset */
-    0, /* tp_base */
-    0, /* tp_dict */
-    0, /* tp_descr_get */
-    0, /* tp_descr_set */
-    0, /* tp_dictoffset */
-    0, /* tp_init */
-    0, /* tp_alloc */
-    0, /* tp_new */
-};
-
-typedef struct {
-    PyObject_HEAD PyObject* dict;
-    Py_ssize_t capacity;
-    Py_ssize_t hits;
-    Py_ssize_t misses;
-} LFUCache;
+#define LFUWrapper_LastVisit(self) ((self)->lfu >> 8U)
+#define LFUWrapper_Counter(self) ((self)->lfu & 255U)
 
 /*
  * COPY FROM redis
@@ -136,39 +41,158 @@ time_in_minutes(void)
     return (uint32_t)(((uint64_t)time(NULL) / 60) & 16777215UL);
 }
 
-static void
-LFUCache_dealloc(LFUCache* self)
+typedef struct _LFUValue {
+    PyObject_HEAD
+        PyObject* wrapped;
+    uint32_t lfu; /* last_visit in minutes & counter, 24 bit + 8 bit */
+} LFUWrapper;
+
+static PyObject*
+LFUWrapper_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
 {
-    Py_XDECREF(self->dict);
-    PyObject_Del((PyObject*)self);
+    LFUWrapper* self;
+    PyObject* wrapped;
+    static char* kwlist[] = { "obj", NULL };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &wrapped))
+        return NULL;
+    assert(wrapped);
+    self = (LFUWrapper*)PyObject_GC_New(LFUWrapper, type);
+    if (!self)
+        return NULL;
+    PyObject_GC_Track(self);
+    self->wrapped = wrapped;
+    Py_INCREF(wrapped);
+    return (PyObject*)self;
 }
 
 static int
-LFUCache_init(LFUCache* self, PyObject* args, PyObject* kwds)
+LFUWrapper_init(LFUWrapper* self, PyObject* args, PyObject* kwds)
 {
-    static char* kwlist[] = { "capacity", NULL };
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "n", kwlist, &self->capacity)) {
-        return -1;
-    }
-    if (self->capacity <= 0) {
-        PyErr_SetString(PyExc_ValueError, "Capacity should be a positive number");
-        return -1;
-    }
-    if (!(self->dict = PyDict_New()))
-        return -1;
-    self->hits = 0;
-    self->misses = 0;
+    self->lfu = ((uint32_t)((time_in_minutes() & 16777215UL) << 8U)) | LFU_INIT_VAL;
     return 0;
 }
 
-static PyObject*
-LFUCache_repr(LFUCache* self)
+static int
+LFUWrapper_tp_traverse(LFUWrapper* self, visitproc visit, void* arg)
 {
-    return PyObject_Repr(self->dict);
+    Py_VISIT(self->wrapped);
+    return 0;
 }
 
-static Py_ssize_t
-LFUCache_length(LFUCache* self)
+static int
+LFUWrapper_tp_clear(LFUWrapper* self)
+{
+    Py_CLEAR(self->wrapped);
+    return 0;
+}
+
+static void
+LFUWrapper_tp_dealloc(LFUWrapper* self)
+{
+    PyObject_GC_UnTrack(self);
+    LFUWrapper_tp_clear(self);
+    PyObject_GC_Del(self);
+}
+
+static PyObject*
+LFUWrapper_cast_info(LFUWrapper* self)
+{
+    return Py_BuildValue("ii", LFUWrapper_LastVisit(self), LFUWrapper_LastVisit(self));
+}
+
+static PyObject*
+LFUWrapper_wrapped(LFUWrapper* self)
+{
+    uint32_t last_visit = LFUWrapper_LastVisit(self);
+    uint32_t counter = LFUWrapper_Counter(self);
+    uint32_t t = time_in_minutes();
+    uint32_t num = (t - last_visit) / LFU_DECAY_FACTOR;
+    counter = lfu_log_incr(num > counter ? 0 : counter - num);
+    self->lfu = (t << 8U) | counter;
+    PyObject* wrapped = self->wrapped;
+    Py_INCREF(wrapped);
+    return wrapped;
+}
+
+static inline uint32_t
+LFUWrapper_WEIGHT(LFUWrapper* self, uint32_t now)
+{
+    register int32_t num, counter;
+    counter = LFUWrapper_Counter(self);
+    num = (now - LFUWrapper_LastVisit(self)) / LFU_DECAY_FACTOR;
+    return num > counter ? 0 : counter - num;
+}
+
+static PyObject*
+LFUWrapper_weight(LFUWrapper* self)
+{
+    return Py_BuildValue("I", LFUWrapper_WEIGHT(self, time_in_minutes()));
+}
+
+static PyMethodDef LFUWrapper_methods[] = {
+    { "cash_info", (PyCFunction)LFUWrapper_cast_info, METH_NOARGS, NULL },
+    { "wrapped", (PyCFunction)LFUWrapper_wrapped, METH_NOARGS, NULL },
+    { "weight", (PyCFunction)LFUWrapper_weight, METH_NOARGS, NULL },
+    { NULL, NULL, 0, NULL } /* Sentinel */
+};
+
+static PyObject*
+LFUWrapper_repr(LFUWrapper* self)
+{
+    return PyObject_Repr(self->wrapped);
+}
+
+PyTypeObject LFUWrapperType = {
+    PyVarObject_HEAD_INIT(NULL, 0) "cools.LFUWrapper", /* tp_name */
+    sizeof(LFUWrapper), /* tp_basicsize */
+    0, /* tp_itemsize */
+    (destructor)LFUWrapper_tp_dealloc, /* tp_dealloc */
+    0, /* tp_print */
+    0, /* tp_getattr */
+    0, /* tp_setattr */
+    0, /* tp_compare */
+    (reprfunc)LFUWrapper_repr, /* tp_repr */
+    0, /* tp_as_number */
+    0, /* tp_as_sequence */
+    0, /* tp_as_mapping */
+    0, /* tp_hash */
+    0, /* tp_call */
+    0, /* tp_str */
+    0, /* tp_getattro */
+    0, /* tp_setattro */
+    0, /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC, /* tp_flags */
+    "LFU value store", /* tp_doc */
+    (traverseproc)LFUWrapper_tp_traverse, /* tp_traverse */
+    (inquiry)LFUWrapper_tp_clear, /* tp_clear */
+    0, /* tp_richcompare */
+    0, /* tp_weaklistoffset */
+    0, /* tp_iter */
+    0, /* tp_iternext */
+    LFUWrapper_methods, /* tp_methods */
+    0, /* tp_members */
+    0, /* tp_getset */
+    0, /* tp_base */
+    0, /* tp_dict */
+    0, /* tp_descr_get */
+    0, /* tp_descr_set */
+    0, /* tp_dictoffset */
+    (initproc)LFUWrapper_init, /* tp_init */
+    0, /* tp_alloc */
+    (newfunc)LFUWrapper_new, /* tp_new */
+};
+/* LFUWrapper Type Define */
+
+typedef struct {
+    PyObject_HEAD
+        PyObject* dict;
+    Py_ssize_t capacity;
+    Py_ssize_t hits;
+    Py_ssize_t misses;
+} LFUCache;
+
+Py_ssize_t
+PyLFUCache_Size(LFUCache* self)
 {
     return PyDict_Size(self->dict);
 }
@@ -186,28 +210,46 @@ int rand_limit(int limit)
     return rv;
 }
 
+static int
+LFUCache_Contains(PyObject* self, PyObject* key)
+{
+    return PyDict_Contains(((LFUCache*)self)->dict, key);
+}
+
+/* Hack to implement "key in dict" */
+static PySequenceMethods LFUCache_as_sequence = {
+    0, /* sq_length */
+    0, /* sq_concat */
+    0, /* sq_repeat */
+    0, /* sq_item */
+    0, /* sq_slice */
+    0, /* sq_ass_item */
+    0, /* sq_ass_slice */
+    LFUCache_Contains, /* sq_contains */
+    0, /* sq_inplace_concat */
+    0, /* sq_inplace_repeat */
+};
+
+#define PyLFUCache_GetItem(self, key) (LFUWrapper*)PyDict_GetItem(((LFUCache*)self)->dict, key)
+
 static PyObject*
 LFUCache_lfu(LFUCache* self)
 {
-    PyObject *key = NULL, *lfu_value = NULL;
+    PyObject *key = NULL, *wrapper = NULL;
     Py_ssize_t pos = 0;
-    uint32_t min = 0;
-    LFUValue* current = NULL;
+    uint32_t min = 0, weight;
     PyObject* rv = NULL;
-    uint32_t now = time_in_minutes(), num, counter;
-    Py_ssize_t dict_len = LFUCache_length(self);
+    uint32_t now = time_in_minutes();
+    Py_ssize_t dict_len = PyLFUCache_Size(self);
 
     if (dict_len == 0) {
         PyErr_SetString(PyExc_KeyError, "No key in dict");
         return NULL;
     } else if (dict_len < LFU_BUCKET_SIZE) {
-        while (PyDict_Next(self->dict, &pos, &key, &lfu_value)) {
-            current = (LFUValue*)lfu_value;
-            counter = LFUValue_Counter(current);
-            num = (now - LFUValue_LastVisit(current)) / LFU_DECAY_FACTOR;
-            num = num > counter ? 0 : counter - num;
-            if (min == 0 || num < min) {
-                min = num;
+        while (PyDict_Next(self->dict, &pos, &key, &wrapper)) {
+            weight = LFUWrapper_WEIGHT((LFUWrapper*)wrapper, now);
+            if (min == 0 || weight < min) {
+                min = weight;
                 rv = key;
             }
         }
@@ -217,24 +259,18 @@ LFUCache_lfu(LFUCache* self)
         for (int i = 0; i < LFU_BUCKET - 1; i++) {
             pos = i * b_size + rand_limit(b_size);
             key = PyList_GET_ITEM(keylist, pos);
-            lfu_value = PyDict_GetItem(self->dict, key);
-            current = (LFUValue*)lfu_value;
-            counter = LFUValue_Counter(current);
-            num = (now - LFUValue_LastVisit(current)) / LFU_DECAY_FACTOR;
-            num = num > counter ? 0 : counter - num;
-            if (min == 0 || num < min) {
-                min = num;
+            wrapper = PyDict_GetItem(self->dict, key);
+            weight = LFUWrapper_WEIGHT((LFUWrapper*)wrapper, now);
+            if (min == 0 || weight < min) {
+                min = weight;
                 rv = key;
             }
         }
         if ((dict_len % LFU_BUCKET)) {
             pos = LFU_BUCKET * b_size + (dict_len - LFU_BUCKET * b_size) / 2;
-            lfu_value = PyDict_GetItem(self->dict, PyList_GetItem(keylist, pos));
-            current = (LFUValue*)lfu_value;
-            counter = LFUValue_Counter(current);
-            num = (now - LFUValue_LastVisit(current)) / LFU_DECAY_FACTOR;
-            num = num > counter ? 0 : counter - num;
-            if (min == 0 || num < min) {
+            wrapper = PyDict_GetItem(self->dict, PyList_GetItem(keylist, pos));
+            weight = LFUWrapper_WEIGHT((LFUWrapper*)wrapper, now);
+            if (min == 0 || weight < min) {
                 rv = key;
             }
         }
@@ -254,41 +290,135 @@ LFUCache_evict(LFUCache* self)
         Py_RETURN_NONE;
     }
     if (PyDict_DelItem(self->dict, k)) {
-        return PyErr_Format(PyExc_KeyError, "Delete Not Exist Key %S", k);
+        return PyErr_Format(PyExc_KeyError, "Fail to delete Key %S", k);
     }
     Py_DECREF(k);
     Py_RETURN_NONE;
 }
 
-static int
-PyLFUCache_DelItem(LFUCache* self, PyObject* key)
+int PyLFUCache_DelItem(LFUCache* self, PyObject* key)
 {
-    return PyDict_DelItem(self->dict, key);
+    LFUWrapper* wrapper = PyLFUCache_GetItem(self, key);
+    if (!wrapper) {
+        PyErr_Format(PyExc_TypeError, "%S", key);
+        return -1;
+    }
+    if (PyDict_DelItem(self->dict, key)) {
+        Py_XINCREF(wrapper->wrapped);
+        return -1;
+    }
+    return 0;
 }
 
-static int
-PyLFUCache_SetItem(LFUCache* self, PyObject* key, PyObject* value)
+int PyLFUCache_SetItem(LFUCache* self, PyObject* key, PyObject* value)
 {
-    LFUValue* lfu_val = (LFUValue*)PyDict_GetItem(self->dict, key);
-    if (lfu_val) {
-        Py_DECREF(lfu_val->value);
-        lfu_val->value = value;
-        Py_INCREF(lfu_val->value);
+    LFUWrapper* wrapper = (LFUWrapper*)PyDict_GetItem(self->dict, key);
+    if (wrapper) {
+        Py_DECREF(wrapper->wrapped);
+        wrapper->wrapped = value;
+        Py_INCREF(wrapper->wrapped);
         return 0;
     }
-    PyErr_Clear();
-    if (LFUCache_length(self) + 1 > self->capacity) {
+    if (PyLFUCache_Size(self) + 1 > self->capacity) {
         if (!LFUCache_evict(self)) {
             return -1;
         }
     }
-    LFUValue* LFUCache_value = PyObject_NEW(LFUValue, &LFUValueType);
-    if (!LFUCache_value)
+    PyObject* args = Py_BuildValue("(O)", value);
+    if (!args)
         return -1;
-    LFUCache_value->lfu = ((uint32_t)((time_in_minutes() & 16777215UL) << 8U)) | LFU_INIT_VAL;
-    LFUCache_value->value = value;
-    Py_INCREF(value);
-    return PyDict_SetItem(self->dict, key, (PyObject*)LFUCache_value);
+
+    wrapper = (LFUWrapper*)PyObject_CallObject((PyObject*)&LFUWrapperType, args);
+    if (!wrapper) {
+        Py_DECREF(args);
+        return -1;
+    }
+    if (PyDict_SetItem(self->dict, key, (PyObject*)wrapper)) {
+        Py_DECREF(args);
+        Py_DECREF(wrapper);
+        return -1;
+    }
+    Py_DECREF(args);
+    Py_DECREF(wrapper);
+    return 0;
+}
+
+void PyLFUCache_Clear(LFUCache* self)
+{
+    PyDict_Clear(self->dict);
+    self->misses = 0;
+    self->hits = 0;
+}
+
+static PyObject* LFUCache_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
+{
+    LFUCache* self;
+    self = (LFUCache*)PyObject_GC_New(LFUCache, type);
+    if (!self)
+        return NULL;
+    PyObject_GC_Track(self);
+    if (!(self->dict = PyDict_New())) {
+        Py_DECREF(self);
+        return NULL;
+    }
+    return (PyObject*)self;
+}
+
+static int
+LFUCache_init(LFUCache* self, PyObject* args, PyObject* kwds)
+{
+    static char* kwlist[] = { "capacity", NULL };
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "n", kwlist, &self->capacity)) {
+        return -1;
+    }
+    if (self->capacity <= 0) {
+        PyErr_SetString(PyExc_ValueError, "Capacity should be a positive number");
+        return -1;
+    }
+    self->hits = 0;
+    self->misses = 0;
+    return 0;
+}
+
+static int
+LFUCache_tp_traverse(LFUCache* self, visitproc visit, void* arg)
+{
+    Py_VISIT(self->dict);
+    return 0;
+}
+
+static int
+LFUCache_tp_clear(LFUCache* self)
+{
+    Py_CLEAR(self->dict);
+    return 0;
+}
+
+static void
+LFUCache_tp_dealloc(LFUCache* self)
+{
+    PyObject_GC_UnTrack(self);
+    LFUCache_tp_clear(self);
+    PyObject_GC_Del(self);
+}
+
+static PyObject*
+LFUCache_repr(LFUCache* self)
+{
+    return PyObject_Repr(self->dict);
+}
+
+/* mp_subscript: __getitem__() */
+static PyObject*
+LFUCache_mp_subscript(LFUCache* self, PyObject* key)
+{
+    LFUWrapper* wrapper = PyLFUCache_GetItem(self, key);
+    if (!wrapper) {
+        self->misses++;
+        return PyErr_Format(PyExc_KeyError, "%S", key);
+    }
+    self->hits++;
+    return LFUWrapper_wrapped(wrapper);
 }
 
 /* mp_ass_subscript: __setitem__() and __delitem__() */
@@ -302,67 +432,66 @@ LFUCache_mp_ass_sub(LFUCache* self, PyObject* key, PyObject* value)
     }
 }
 
-static LFUValue*
-PyLFUCache_GetItem(LFUCache* self, PyObject* key)
-{
-    LFUValue* value = (LFUValue*)PyDict_GetItem(self->dict, key);
-    if (!value) {
-        return value;
-    }
-    uint32_t last_visit = LFUValue_LastVisit(value);
-    uint32_t counter = LFUValue_Counter(value);
-    uint32_t t = time_in_minutes();
-    uint32_t num = (t - last_visit) / LFU_DECAY_FACTOR;
-    counter = lfu_log_incr(num > counter ? 0 : counter - num);
-    value->lfu = (t << 8U) | counter;
-    return value;
-}
-
-/* mp_subscript: __getitem__() */
-static PyObject*
-LFUCache_mp_subscript(LFUCache* self, PyObject* key)
-{
-    LFUValue* lfu_value = PyLFUCache_GetItem(self, key);
-    if (!lfu_value) {
-        self->misses++;
-        return PyErr_Format(PyExc_KeyError, "%S", key);
-    }
-    self->hits++;
-    Py_INCREF_LFUValue(lfu_value);
-    return lfu_value->value;
-}
-
 static PyMappingMethods LFUCache_as_mapping = {
-    (lenfunc)LFUCache_length, /*mp_length*/
+    (lenfunc)PyLFUCache_Size, /*mp_length*/
     (binaryfunc)LFUCache_mp_subscript, /*mp_subscript*/
     (objobjargproc)LFUCache_mp_ass_sub, /*mp_ass_subscript*/
 };
 
-PyObject*
-LFUCache_lfu_of(LFUCache* self, PyObject* key)
-{
-    LFUValue* rv = (LFUValue*)PyDict_GetItem(self->dict, key);
-    return Py_BuildValue("k", rv->lfu);
-}
-
-PyObject*
+static PyObject*
 LFUCache_hints(LFUCache* self)
 {
     return Py_BuildValue("iii", self->capacity, self->hits, self->misses);
 }
 
-PyObject* LFUCache_keys(LFUCache* self) { return PyDict_Keys(self->dict); }
+static PyObject* LFUCache_keys(LFUCache* self) { return PyDict_Keys(self->dict); }
 
-PyObject* LFUCache_values(LFUCache* self) { return PyDict_Values(self->dict); }
+static PyObject*
+LFUCache_values(LFUCache* self)
+{
+    LFUWrapper* wrapper;
+    PyObject* values = PyDict_Values(self->dict);
+    if (!values)
+        return NULL;
+    if (PyList_GET_SIZE(values) == 0)
+        return values;
 
-PyObject* LFUCache_items(LFUCache* self) { return PyDict_Items(self->dict); }
+    for (Py_ssize_t i = 0; i < PyList_GET_SIZE(values); i++) {
+        wrapper = (LFUWrapper*)PyList_GET_ITEM(values, i);
+        Py_INCREF(wrapper);
+        PyList_SET_ITEM(values, i, LFUWrapper_wrapped(wrapper));
+        Py_DECREF(wrapper);
+    }
+    return values;
+}
 
-PyObject*
+static PyObject* LFUCache_items(LFUCache* self)
+{
+    LFUWrapper* wrapper;
+    PyObject* items = PyDict_Items(self->dict);
+    PyObject* kv;
+    if (!items) {
+        return NULL;
+    }
+    if (PyList_GET_SIZE(items) == 0)
+        return items;
+
+    for (Py_ssize_t i = 0; i < PyList_GET_SIZE(items); i++) {
+        kv = PyList_GET_ITEM(items, i);
+        wrapper = (LFUWrapper*)PyTuple_GET_ITEM(kv, 1);
+        Py_INCREF(wrapper);
+        PyTuple_SET_ITEM(kv, 1, LFUWrapper_wrapped(wrapper));
+        Py_DECREF(wrapper);
+    }
+    return items;
+}
+
+static PyObject*
 LFUCache_get(LFUCache* self, PyObject* args, PyObject* kw)
 {
     PyObject* key;
     PyObject* _default = NULL;
-    LFUValue* result;
+    LFUWrapper* result;
 
     static char* kwlist[] = { "key", "default", NULL };
     if (!PyArg_ParseTupleAndKeywords(args, kw, "O|O", kwlist, &key, &_default))
@@ -374,17 +503,16 @@ LFUCache_get(LFUCache* self, PyObject* args, PyObject* kw)
         Py_INCREF(_default);
         return _default;
     }
-    Py_INCREF_LFUValue(result);
-    return result->value;
-
+    Py_INCREF(result->wrapped);
+    return result->wrapped;
 }
 
-PyObject*
+static PyObject*
 LFUCache_pop(LFUCache* self, PyObject* args, PyObject* kw)
 {
     PyObject* key;
     PyObject* _default = NULL;
-    LFUValue* result;
+    LFUWrapper* result;
 
     static char* kwlist[] = { "key", "default", NULL };
     if (!PyArg_ParseTupleAndKeywords(args, kw, "O|O", kwlist, &key, &_default))
@@ -396,20 +524,20 @@ LFUCache_pop(LFUCache* self, PyObject* args, PyObject* kw)
         Py_INCREF(_default);
         return _default;
     }
-    Py_INCREF_LFUValue(result);
+    Py_INCREF(result->wrapped);
     if (!PyLFUCache_DelItem(self, key)) {
-        Py_XDECREF_LFUValue(result);
+        Py_XDECREF(result->wrapped);
         return NULL;
     }
-    return result->value;
+    return result->wrapped;
 }
 
-PyObject*
+static PyObject*
 LFUCache_setdefault(LFUCache* self, PyObject* args, PyObject* kw)
 {
     PyObject* key;
     PyObject* _default = NULL;
-    LFUValue* result;
+    LFUWrapper* result;
 
     static char* kwlist[] = { "key", "default", NULL };
     if (!PyArg_ParseTupleAndKeywords(args, kw, "O|O", kwlist, &key, &_default))
@@ -417,18 +545,49 @@ LFUCache_setdefault(LFUCache* self, PyObject* args, PyObject* kw)
     result = PyLFUCache_GetItem(self, key);
     if (!result) {
         if (!_default)
-            Py_RETURN_NONE;
+            _default = Py_None;
         Py_INCREF(_default);
+        if (PyLFUCache_SetItem(self, key, _default)) {
+            Py_DECREF(_default);
+            return NULL;
+        }
         return _default;
     }
-    if (PyLFUCache_SetItem(self, key, _default)) {
-        return NULL;
-    }
-    Py_INCREF(_default);
-    return _default;
+
+    return LFUWrapper_wrapped(result);
 }
 
-PyObject*
+static PyObject*
+LFUCache_setnx(LFUCache* self, PyObject* args, PyObject* kw)
+{
+    PyObject* key;
+    PyObject *_default = NULL, *callback = NULL;
+    LFUWrapper* result;
+
+    static char* kwlist[] = { "key", "callback", NULL };
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "OO", kwlist, &key, &callback))
+        return NULL;
+
+    if (callback == NULL || !PyCallable_Check(callback)) {
+        PyErr_SetString(PyExc_TypeError, "callback should be callable.");
+        return NULL;
+    }
+
+    result = PyLFUCache_GetItem(self, key);
+    if (!result) {
+        _default = PyObject_CallFunction(callback, NULL);
+        Py_INCREF(_default);
+        if (PyLFUCache_SetItem(self, key, _default)) {
+            Py_DECREF(_default);
+            return NULL;
+        }
+        return _default;
+    }
+
+    return LFUWrapper_wrapped(result);
+}
+
+static PyObject*
 LFUCache_update(LFUCache* self, PyObject* args, PyObject* kwargs)
 {
     PyObject *key, *value;
@@ -443,7 +602,7 @@ LFUCache_update(LFUCache* self, PyObject* args, PyObject* kwargs)
         }
     }
 
-    if (kwargs != NULL && PyDict_Check(kwargs)) {
+    if (kwargs != NULL && PyArg_ValidateKeywordArguments(kwargs)) {
         while (PyDict_Next(kwargs, &pos, &key, &value))
             if (PyLFUCache_SetItem(self, key, value))
                 return NULL;
@@ -452,16 +611,7 @@ LFUCache_update(LFUCache* self, PyObject* args, PyObject* kwargs)
     Py_RETURN_NONE;
 }
 
-PyObject*
-LFUCache_clear(LFUCache* self)
-{
-    PyDict_Clear(self->dict);
-    self->misses = 0;
-    self->hits = 0;
-    Py_RETURN_NONE;
-}
-
-PyObject*
+static PyObject*
 LFUCache_set_capacity(LFUCache* self, PyObject* capacity)
 {
     long long cap = PyLong_AsLongLong(capacity);
@@ -473,8 +623,8 @@ LFUCache_set_capacity(LFUCache* self, PyObject* capacity)
         }
         return NULL;
     }
-    if (cap < self->capacity && LFUCache_length(self) > cap) {
-        int r = LFUCache_length(self) - cap;
+    if (cap < self->capacity && PyLFUCache_Size(self) > cap) {
+        int r = PyLFUCache_Size(self) - cap;
         for (int i = 0; i < r; ++i) {
             if (LFUCache_evict(self) == NULL)
                 return NULL;
@@ -484,13 +634,27 @@ LFUCache_set_capacity(LFUCache* self, PyObject* capacity)
     Py_RETURN_NONE;
 }
 
+static PyObject*
+LFUCache__store(LFUCache* self)
+{
+    PyObject* dict = self->dict;
+    Py_INCREF(dict);
+    return dict;
+}
+
+static PyObject*
+LFUCache_clear(LFUCache* self)
+{
+    PyLFUCache_Clear(self);
+    Py_RETURN_NONE;
+}
+
 /* tp_methods */
 static PyMethodDef LFUCache_methods[] = {
     { "evict", (PyCFunction)LFUCache_evict, METH_NOARGS, NULL },
     { "set_capacity", (PyCFunction)LFUCache_set_capacity, METH_O, NULL },
     { "hints", (PyCFunction)LFUCache_hints, METH_NOARGS, NULL },
     { "lfu", (PyCFunction)LFUCache_lfu, METH_NOARGS, NULL },
-    { "lfu_of", (PyCFunction)LFUCache_lfu_of, METH_O, NULL },
     { "get", (PyCFunction)LFUCache_get, METH_VARARGS | METH_KEYWORDS, NULL },
     { "setdefault", (PyCFunction)LFUCache_setdefault,
         METH_VARARGS | METH_KEYWORDS, NULL },
@@ -501,30 +665,37 @@ static PyMethodDef LFUCache_methods[] = {
     { "update", (PyCFunction)LFUCache_update,
         METH_VARARGS | METH_KEYWORDS, NULL },
     { "clear", (PyCFunction)LFUCache_clear, METH_NOARGS, NULL },
+    { "setnx", (PyCFunction)LFUCache_setnx, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "_store", (PyCFunction)LFUCache__store, METH_NOARGS, NULL },
     { NULL, NULL, 0, NULL } /* Sentinel */
 };
 
-static int
-LFUCache_tp_clear(LFUCache* self)
+static PyObject*
+LFUCache_tp_iter(LFUCache* self)
 {
-    Py_CLEAR(self->dict);
-    return 0;
+    PyObject *keys, *it;
+    keys = LFUCache_keys(self);
+    if (!keys)
+        return NULL;
+    it = PySeqIter_New(keys);
+    Py_DECREF(keys);
+    return it;
 }
 
 PyDoc_STRVAR(LFUCache__doc__, "A fast LFUCache behaving much like dict.");
 
-static PyTypeObject LFUCacheType = {
+PyTypeObject LFUCacheType = {
     PyVarObject_HEAD_INIT(NULL, 0) "ctools.LFUCache", /* tp_name */
-    sizeof(LFUCache), /* tp_basicsize */
+    .tp_basicsize=sizeof(LFUCache), /* tp_basicsize */
     0, /* tp_itemsize */
-    (destructor)LFUCache_dealloc, /* tp_dealloc */
+    .tp_dealloc=(destructor)LFUCache_tp_dealloc, /* tp_dealloc */
     0, /* tp_print */
     0, /* tp_getattr */
     0, /* tp_setattr */
     0, /* tp_compare */
-    (reprfunc)LFUCache_repr, /* tp_repr */
+    .tp_repr=(reprfunc)LFUCache_repr, /* tp_repr */
     0, /* tp_as_number */
-    0, /* tp_as_sequence */
+    &LFUCache_as_sequence, /* tp_as_sequence */
     &LFUCache_as_mapping, /* tp_as_mapping */
     0, /* tp_hash */
     0, /* tp_call */
@@ -532,13 +703,13 @@ static PyTypeObject LFUCacheType = {
     0, /* tp_getattro */
     0, /* tp_setattro */
     0, /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT, /* tp_flags */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC, /* tp_flags */
     LFUCache__doc__, /* tp_doc */
-    0, /* tp_traverse */
+    (traverseproc)LFUCache_tp_traverse, /* tp_traverse */
     (inquiry)LFUCache_tp_clear, /* tp_clear */
     0, /* tp_richcompare */
     0, /* tp_weaklistoffset */
-    0, /* tp_iter */
+    (getiterfunc)LFUCache_tp_iter, /* tp_iter */
     0, /* tp_iternext */
     LFUCache_methods, /* tp_methods */
     0, /* tp_members */
@@ -550,7 +721,7 @@ static PyTypeObject LFUCacheType = {
     0, /* tp_dictoffset */
     (initproc)LFUCache_init, /* tp_init */
     0, /* tp_alloc */
-    0, /* tp_new */
+    (newfunc)LFUCache_new, /* tp_new */
 };
 
 #endif // _CTOOLS_LFU_H

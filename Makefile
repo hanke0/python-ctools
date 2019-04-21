@@ -22,7 +22,7 @@ PYTHON_VERSION=$(shell which python | sed "s/\/bin\/python/\/include/" | xargs l
 
 .PHONE:
 compile:
-	gcc -DNDEBUG -g -fwrapv -O3 -Wall -Wextra -std=c99 -arch x86_64 \
+	gcc -DNDEBUG -g -fwrapv -O3 -Wall -Wextra -std=c99 \
 	-I$(PYTHON_HOME)/include \
 	-I$(PYTHON_HOME)/include/$(PYTHON_VERSION) \
 	-c ctoolsmodule.c -o build/ctools.o
