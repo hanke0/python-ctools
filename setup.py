@@ -1,15 +1,10 @@
 # -*- coding: utf-8 -*-
 import io
-import sys
 from setuptools import setup, Extension
 
-if sys.platform.startswith('win'):
-    extra_compile_args = []
-else:
-    extra_compile_args = ["-std=c99", "-Wall", "-Wextra"]
 
 extensions = [
-    Extension("ctools", ["ctoolsmodule.c"], extra_compile_args=extra_compile_args),
+    Extension("ctools", ["ctoolsmodule.c"], ),
 ]
 
 with io.open('README.rst', 'rt', encoding='utf8') as f:
@@ -17,7 +12,7 @@ with io.open('README.rst', 'rt', encoding='utf8') as f:
 
 setup(
     name="ctools",
-    version="0.0.4",
+    version="0.0.5.dev1",
     author="hanke",
     author_email="hanke0@outlook.com",
     description="A collection of useful extensions for python implement in C.",
@@ -30,8 +25,11 @@ setup(
     zip_safe=False,
     ext_modules=extensions,
     classifiers=[
-        "Programming Language :: Python :: 3",
+        "Programming Language :: C",
+        "Programming Language :: Python :: 3 :: Only",
+        "Programming Language :: Python :: Implementation :: CPython"
         "License :: OSI Approved :: MIT License",
+        "Topic :: Utilities",
         "Operating System :: OS Independent",
     ],
 )
