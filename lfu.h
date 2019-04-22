@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <structmember.h>
 #include <time.h>
+#include "wincomp.h"
 
 #define LFU_INIT_VAL 5U
 #define LFU_LOG_FACTOR 10U

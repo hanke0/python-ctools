@@ -2,6 +2,7 @@
 #define _CTOOLS_H
 #include <Python.h>
 #include <datetime.h>
+#include "wincomp.h"
 
 PyDoc_STRVAR(jump_consistent_hash__doc__,
     "jump_consistent_hash(key: int, num_buckets: int) -> int:\n\n\
