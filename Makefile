@@ -63,7 +63,7 @@ docker-build:
 
 .PHONE:
 docker-run:
-	@docker run -it --rm -v $(pwd):/tmp --network=host ctools bash
+	@docker run -it --rm -v $(CURDIR):/tmp/pwd --network=host ctools bash
 
 
 BDIST_ARGS := setup.py bdist_wheel
