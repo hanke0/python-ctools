@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <structmember.h>
 #include <time.h>
-#include "wincomp.h"
+#include "compt.h"
 
 #define LFU_INIT_VAL 5U
 #define LFU_LOG_FACTOR 10U
@@ -652,22 +652,22 @@ LFUCache_clear(LFUCache* self)
 
 /* tp_methods */
 static PyMethodDef LFUCache_methods[] = {
-    { "evict", (PyCFunction)LFUCache_evict, METH_NOARGS, NULL },
+    { "evict", (PyCFunction)(void(*)(void))LFUCache_evict, METH_NOARGS, NULL },
     { "set_capacity", (PyCFunction)LFUCache_set_capacity, METH_O, NULL },
-    { "hints", (PyCFunction)LFUCache_hints, METH_NOARGS, NULL },
-    { "lfu", (PyCFunction)LFUCache_lfu, METH_NOARGS, NULL },
+    { "hints", (PyCFunction)(void(*)(void))LFUCache_hints, METH_NOARGS, NULL },
+    { "lfu", (PyCFunction)(void(*)(void))LFUCache_lfu, METH_NOARGS, NULL },
     { "get", (PyCFunction)LFUCache_get, METH_VARARGS | METH_KEYWORDS, NULL },
-    { "setdefault", (PyCFunction)LFUCache_setdefault,
+    { "setdefault", (PyCFunction)(void(*)(void))LFUCache_setdefault,
         METH_VARARGS | METH_KEYWORDS, NULL },
-    { "pop", (PyCFunction)LFUCache_pop, METH_VARARGS | METH_KEYWORDS, NULL },
-    { "keys", (PyCFunction)LFUCache_keys, METH_NOARGS, NULL },
-    { "values", (PyCFunction)LFUCache_values, METH_NOARGS, NULL },
-    { "items", (PyCFunction)LFUCache_items, METH_NOARGS, NULL },
-    { "update", (PyCFunction)LFUCache_update,
+    { "pop", (PyCFunction)(void(*)(void))LFUCache_pop, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "keys", (PyCFunction)(void(*)(void))LFUCache_keys, METH_NOARGS, NULL },
+    { "values", (PyCFunction)(void(*)(void))LFUCache_values, METH_NOARGS, NULL },
+    { "items", (PyCFunction)(void(*)(void))LFUCache_items, METH_NOARGS, NULL },
+    { "update", (PyCFunction)(void(*)(void))LFUCache_update,
         METH_VARARGS | METH_KEYWORDS, NULL },
-    { "clear", (PyCFunction)LFUCache_clear, METH_NOARGS, NULL },
-    { "setnx", (PyCFunction)LFUCache_setnx, METH_VARARGS | METH_KEYWORDS, NULL },
-    { "_store", (PyCFunction)LFUCache__store, METH_NOARGS, NULL },
+    { "clear", (PyCFunction)(void(*)(void))LFUCache_clear, METH_NOARGS, NULL },
+    { "setnx", (PyCFunction)(void(*)(void))LFUCache_setnx, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "_store", (PyCFunction)(void(*)(void))LFUCache__store, METH_NOARGS, NULL },
     { NULL, NULL, 0, NULL } /* Sentinel */
 };
 
