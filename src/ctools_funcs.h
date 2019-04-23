@@ -1,5 +1,5 @@
-#ifndef _CTOOLS_H
-#define _CTOOLS_H
+#ifndef _CTOOLS_FUNCS_H
+#define _CTOOLS_FUNCS_H
 #include "ctools.h"
 #include <Python.h>
 #include <datetime.h>
@@ -18,7 +18,6 @@ PyDoc_STRVAR(jump_consistent_hash__doc__,
 static PyObject*
 Ctools__jump_hash(PyObject* m, PyObject* args)
 {
-    CTX_UNUSED(m);
     uint64_t key;
     int32_t num_buckets;
 
@@ -46,7 +45,6 @@ PyDoc_STRVAR(strhash__doc__,
 static PyObject*
 Ctools__strhash(PyObject* m, PyObject* args)
 {
-    CTX_UNUSED(m);
     const char* s;
     if (!PyArg_ParseTuple(args, "s", &s))
         return NULL;
@@ -75,7 +73,6 @@ PyDoc_STRVAR(int8_to_datetime__doc__,
 static PyObject*
 Ctools__int8_to_datetime(PyObject* m, PyObject* date_integer)
 {
-    CTX_UNUSED(m);
     register long date = PyLong_AsLong(date_integer);
     if (date > 99990101 || date < 101) {
         PyErr_SetString(PyExc_ValueError, "date integer should between 00000101 and 99991231");
@@ -83,4 +80,4 @@ Ctools__int8_to_datetime(PyObject* m, PyObject* date_integer)
     }
     return PyDateTime_FromDate(date / 10000, date % 10000 / 100, date % 100);
 }
-#endif // _CTOOLS_H
+#endif // _CTOOLS_FUNCS_H

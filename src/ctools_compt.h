@@ -1,5 +1,5 @@
-#ifndef _CTOOLS_WINCOMP_H
-#define _CTOOLS_WINCOMP_H
+#ifndef _CTOOLS_COMPT_H
+#define _CTOOLS_COMPT_H
 
 #ifdef _MSC_VER
 typedef signed __int8 int8_t;
@@ -11,4 +11,4 @@ typedef unsigned __int32 uint32_t;
 typedef signed __int64 int64_t;
 typedef unsigned __int64 uint64_t;
 #endif // _MSC_VER
-#endif /* _CTOOLS_WINCOMP_H */
+#endif /* _CTOOLS_COMPT_H */

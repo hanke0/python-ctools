@@ -686,9 +686,9 @@ PyDoc_STRVAR(LFUCache__doc__, "A fast LFUCache behaving much like dict.");
 
 PyTypeObject LFUCacheType = {
     PyVarObject_HEAD_INIT(NULL, 0) "ctools.LFUCache", /* tp_name */
-    .tp_basicsize = sizeof(LFUCache), /* tp_basicsize */
+    sizeof(LFUCache), /* tp_basicsize */
     0, /* tp_itemsize */
-    .tp_dealloc = (destructor)LFUCache_tp_dealloc, /* tp_dealloc */
+    (destructor)LFUCache_tp_dealloc, /* tp_dealloc */
     0, /* tp_print */
     0, /* tp_getattr */
     0, /* tp_setattr */
