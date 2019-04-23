@@ -249,3 +249,4 @@ _deps
 cmake-build-debug
 ignoreme*
 Makefile
+.vs
