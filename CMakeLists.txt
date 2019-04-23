@@ -6,10 +6,10 @@ set(CMAKE_C_STANDARD 99)
 include_directories(.)
 
 add_executable(ctools
-        src/ctools.h
+        src/ctools_funcs.h
         src/ctoolsmodule.c
-        src/lfu.h
-        src/wincomp.h)
+        src/ctools_lfu.h
+        src/ctools_compt.h src/ctools.h)
 
 find_package(PythonLibs REQUIRED)
 include_directories(${PYTHON_INCLUDE_DIRS})

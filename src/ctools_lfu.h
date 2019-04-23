@@ -1,11 +1,11 @@
 #ifndef _CTOOLS_LFU_H
 #define _CTOOLS_LFU_H
 
+#include "ctools_compt.h"
 #include <Python.h>
 #include <stdlib.h>
 #include <structmember.h>
 #include <time.h>
-#include "compt.h"
 
 #define LFU_INIT_VAL 5U
 #define LFU_LOG_FACTOR 10U
@@ -192,8 +192,7 @@ typedef struct {
     Py_ssize_t misses;
 } LFUCache;
 
-Py_ssize_t
-PyLFUCache_Size(LFUCache* self)
+Py_ssize_t PyLFUCache_Size(LFUCache* self)
 {
     return PyDict_Size(self->dict);
 }
@@ -652,22 +651,22 @@ LFUCache_clear(LFUCache* self)
 
 /* tp_methods */
 static PyMethodDef LFUCache_methods[] = {
-    { "evict", (PyCFunction)(void(*)(void))LFUCache_evict, METH_NOARGS, NULL },
+    { "evict", (PyCFunction)(void (*)(void))LFUCache_evict, METH_NOARGS, NULL },
     { "set_capacity", (PyCFunction)LFUCache_set_capacity, METH_O, NULL },
-    { "hints", (PyCFunction)(void(*)(void))LFUCache_hints, METH_NOARGS, NULL },
-    { "lfu", (PyCFunction)(void(*)(void))LFUCache_lfu, METH_NOARGS, NULL },
+    { "hints", (PyCFunction)(void (*)(void))LFUCache_hints, METH_NOARGS, NULL },
+    { "lfu", (PyCFunction)(void (*)(void))LFUCache_lfu, METH_NOARGS, NULL },
     { "get", (PyCFunction)LFUCache_get, METH_VARARGS | METH_KEYWORDS, NULL },
-    { "setdefault", (PyCFunction)(void(*)(void))LFUCache_setdefault,
+    { "setdefault", (PyCFunction)(void (*)(void))LFUCache_setdefault,
         METH_VARARGS | METH_KEYWORDS, NULL },
-    { "pop", (PyCFunction)(void(*)(void))LFUCache_pop, METH_VARARGS | METH_KEYWORDS, NULL },
-    { "keys", (PyCFunction)(void(*)(void))LFUCache_keys, METH_NOARGS, NULL },
-    { "values", (PyCFunction)(void(*)(void))LFUCache_values, METH_NOARGS, NULL },
-    { "items", (PyCFunction)(void(*)(void))LFUCache_items, METH_NOARGS, NULL },
-    { "update", (PyCFunction)(void(*)(void))LFUCache_update,
+    { "pop", (PyCFunction)(void (*)(void))LFUCache_pop, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "keys", (PyCFunction)(void (*)(void))LFUCache_keys, METH_NOARGS, NULL },
+    { "values", (PyCFunction)(void (*)(void))LFUCache_values, METH_NOARGS, NULL },
+    { "items", (PyCFunction)(void (*)(void))LFUCache_items, METH_NOARGS, NULL },
+    { "update", (PyCFunction)(void (*)(void))LFUCache_update,
         METH_VARARGS | METH_KEYWORDS, NULL },
-    { "clear", (PyCFunction)(void(*)(void))LFUCache_clear, METH_NOARGS, NULL },
-    { "setnx", (PyCFunction)(void(*)(void))LFUCache_setnx, METH_VARARGS | METH_KEYWORDS, NULL },
-    { "_store", (PyCFunction)(void(*)(void))LFUCache__store, METH_NOARGS, NULL },
+    { "clear", (PyCFunction)(void (*)(void))LFUCache_clear, METH_NOARGS, NULL },
+    { "setnx", (PyCFunction)(void (*)(void))LFUCache_setnx, METH_VARARGS | METH_KEYWORDS, NULL },
+    { "_store", (PyCFunction)(void (*)(void))LFUCache__store, METH_NOARGS, NULL },
     { NULL, NULL, 0, NULL } /* Sentinel */
 };
 
@@ -687,14 +686,14 @@ PyDoc_STRVAR(LFUCache__doc__, "A fast LFUCache behaving much like dict.");
 
 PyTypeObject LFUCacheType = {
     PyVarObject_HEAD_INIT(NULL, 0) "ctools.LFUCache", /* tp_name */
-    .tp_basicsize=sizeof(LFUCache), /* tp_basicsize */
+    .tp_basicsize = sizeof(LFUCache), /* tp_basicsize */
     0, /* tp_itemsize */
-    .tp_dealloc=(destructor)LFUCache_tp_dealloc, /* tp_dealloc */
+    .tp_dealloc = (destructor)LFUCache_tp_dealloc, /* tp_dealloc */
     0, /* tp_print */
     0, /* tp_getattr */
     0, /* tp_setattr */
     0, /* tp_compare */
-    .tp_repr=(reprfunc)LFUCache_repr, /* tp_repr */
+    .tp_repr = (reprfunc)LFUCache_repr, /* tp_repr */
     0, /* tp_as_number */
     &LFUCache_as_sequence, /* tp_as_sequence */
     &LFUCache_as_mapping, /* tp_as_mapping */

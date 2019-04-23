@@ -1,7 +1,7 @@
 #include <Python.h>
 
-#include "ctools.h"
-#include "lfu.h"
+#include "ctools_funcs.h"
+#include "ctools_lfu.h"
 
 static PyMethodDef CtoolsMethods[] = {
     { "jump_consistent_hash", (PyCFunction)Ctools__jump_hash, METH_VARARGS, jump_consistent_hash__doc__ },

@@ -1,8 +1,8 @@
-//
-// Created by han on 19-4-24.
-//
+#ifndef CTX_CTOOLS_H
+#define CTX_CTOOLS_H
 
-#ifndef CTOOLS_CTOOLS_H
-#define CTOOLS_CTOOLS_H
+#include "ctools_compt.h"
 
-#endif //CTOOLS_CTOOLS_H
+#define CTX_UNUSED(x) (void)(x)
+
+#endif //CTX_CTOOLS_H

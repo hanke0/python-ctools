@@ -1,7 +1,7 @@
 #ifndef _CTOOLS_WINCOMP_H
 #define _CTOOLS_WINCOMP_H
 
-#ifdef _MSC_VER 
+#ifdef _MSC_VER
 typedef signed __int8 int8_t;
 typedef signed __int16 int16_t;
 typedef signed __int32 int32_t;
