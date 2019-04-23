@@ -1,5 +1,5 @@
-include *.h
-include *.c
+include src/*.h
+include src/*.c
 include LICENSE
 include README.rst
 include ctools.pyi

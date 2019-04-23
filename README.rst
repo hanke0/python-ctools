@@ -71,27 +71,21 @@ Benchmark
 =========
 .. code-block:: text
 
-    $ make install && make benchmark
+    $ ./run.sh benchmark
       int8_to_datetime,       63.481 ns ± 4.179 nseach (10 runs, 1,000,000 loops)
       jump_consistent_hash,   156.082 ns ± 6.489 nseach (10 runs, 1,000,000 loops)
       strhash,                139.542 ns ± 4.268 nseach (10 runs, 1,000,000 loops)
-
 
 
 How To Test
 ===========
 .. code-block:: text
 
-    $ make install && make test
+    $ ./run.sh tests
 
 
 More
 ====
-.. code-block:: text
-
-    $ make help
-
-
 What's important is free.
 
 .. _pip: https://pip.pypa.io/en/stable/quickstart/

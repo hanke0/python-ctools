@@ -4,7 +4,7 @@ from setuptools import setup, Extension
 
 
 extensions = [
-    Extension("ctools", ["ctoolsmodule.c"], ),
+    Extension("ctools", ["src/ctoolsmodule.c"]),
 ]
 
 with io.open('README.rst', 'rt', encoding='utf8') as f:
