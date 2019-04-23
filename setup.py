@@ -27,7 +27,7 @@ setup(
     classifiers=[
         "Programming Language :: C",
         "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: Implementation :: CPython"
+        "Programming Language :: Python :: Implementation :: CPython",
         "License :: OSI Approved :: MIT License",
         "Topic :: Utilities",
         "Operating System :: OS Independent",
