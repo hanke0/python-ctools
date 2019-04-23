@@ -13,7 +13,7 @@ clean() {
 compile() {
 	PYTHON_HOME=$(which python | sed "s/\/bin\/python//")
 	PYTHON_VERSION=$(which python | sed "s/\/bin\/python/\/include/" | xargs ls | grep python | grep python)
-	gcc -DNDEBUG -O3 -Wall -Wextra -std=c99 \
+	gcc -DNDEBUG -O3 -Wall -std=c99 \
 		-I${PYTHON_HOME}/include \
 		-I${PYTHON_HOME}/include/${PYTHON_VERSION} \
 		-c src/ctoolsmodule.c -o build/ctools.o
