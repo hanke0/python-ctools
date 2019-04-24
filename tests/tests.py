@@ -44,13 +44,16 @@ class T(unittest.TestCase):
 
     def test_strhash(self):
         s = "".join(random.choice(string.printable) for _ in range(1024))
+        us = "文字テキスト텍스트كتابة"
         a = strhash(s)
         for i in range(1024):
             self.assertEqual(strhash(s), a)
 
         for meth in ("fnv1a", "fnv1", "djb2", "murmur"):
             a = strhash(s, meth)
+            b = strhash(us, meth)
             self.assertEqual(a, strhash(s, meth))
+            self.assertEqual(b, strhash(us, meth))
 
 
 def set_random(mp):
