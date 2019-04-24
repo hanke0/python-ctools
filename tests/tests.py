@@ -48,6 +48,10 @@ class T(unittest.TestCase):
         for i in range(1024):
             self.assertEqual(strhash(s), a)
 
+        for meth in ("fnv1a", "fnv1", "djb2", "murmur"):
+            a = strhash(s, meth)
+            self.assertEqual(a, strhash(s, meth))
+
 
 def set_random(mp):
     key = str(uuid.uuid1())
