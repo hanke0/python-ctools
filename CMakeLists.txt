@@ -9,7 +9,7 @@ add_executable(ctools
         src/ctools_funcs.h
         src/ctoolsmodule.c
         src/ctools_lfu.h
-        src/ctools_compt.h src/ctools.h)
+        src/ctools_compt.h src/ctools.h src/ctools_strhash.h)
 
 find_package(PythonLibs REQUIRED)
 include_directories(${PYTHON_INCLUDE_DIRS})

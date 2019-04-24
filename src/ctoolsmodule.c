@@ -2,11 +2,13 @@
 
 #include "ctools_funcs.h"
 #include "ctools_lfu.h"
+#include "ctools_strhash.h"
 
 static PyMethodDef CtoolsMethods[] = {
     {"jump_consistent_hash", (PyCFunction)Ctools__jump_hash, METH_VARARGS,
      jump_consistent_hash__doc__},
-    {"strhash", (PyCFunction)Ctools__strhash, METH_VARARGS, strhash__doc__},
+    {"strhash", (PyCFunction)Ctools__strhash, METH_VARARGS | METH_KEYWORDS,
+     strhash__doc__},
     {"int8_to_datetime", (PyCFunction)Ctools__int8_to_datetime, METH_O,
      int8_to_datetime__doc__},
     {NULL, NULL, 0, NULL},

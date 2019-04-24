@@ -30,29 +30,6 @@ static PyObject *Ctools__jump_hash(PyObject *m, PyObject *args) {
   return Py_BuildValue("i", b);
 }
 
-PyDoc_STRVAR(strhash__doc__,
-             "strhash(s) -> int:\n\n\
-    hash str with consistent value.\n\n\
-    This function uses C bindings for speed.\n\n\
-    :param s: The string to hash.\n\
-    :type s: string\n\
-    :return: hash number\n\
-    :rtype: int\n");
-
-static PyObject *Ctools__strhash(PyObject *m, PyObject *args) {
-  const char *s;
-  if (!PyArg_ParseTuple(args, "s", &s)) return NULL;
-  unsigned int hash = 2166136261U;
-  unsigned char c;
-  while ((c = *s++)) {
-    hash = hash ^ c;
-    /* hash * (1 << 24 + 1 << 8 + 0x93) */
-    hash +=
-        (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
-  }
-  return Py_BuildValue("I", hash);
-}
-
 #define PyDateTime_FromDate(year, month, day) \
   PyDateTime_FromDateAndTime(year, month, day, 0, 0, 0, 0)
 
