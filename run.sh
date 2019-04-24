@@ -50,7 +50,7 @@ install() {
 }
 
 tests() {
-	python tests/test.py
+	python tests/tests.py
 }
 
 benchmark() {
