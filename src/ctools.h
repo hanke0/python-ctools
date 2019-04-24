@@ -3,4 +3,4 @@
 
 #include "ctools_compt.h"
 
-#endif // _CTOOLS_H
+#endif  // _CTOOLS_H

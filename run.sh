@@ -79,8 +79,8 @@ linux-bdist() {
 
 case $1 in
 format)
-	clang-format -style=WebKit -i src/*.h
-	clang-format -style=WebKit -i src/*.c
+	clang-format -style=google -i src/*.h
+	clang-format -style=google -i src/*.c
 	;;
 clean)
 	clean
