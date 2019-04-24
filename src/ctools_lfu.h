@@ -121,7 +121,7 @@ static PyObject *LFUWrapper_repr(LFUWrapper *self) {
   return PyObject_Repr(self->wrapped);
 }
 
-PyTypeObject LFUWrapperType = {
+static PyTypeObject LFUWrapperType = {
     PyVarObject_HEAD_INIT(NULL, 0) "cools.LFUWrapper", /* tp_name */
     sizeof(LFUWrapper),                                /* tp_basicsize */
     0,                                                 /* tp_itemsize */
@@ -610,7 +610,7 @@ static PyObject *LFUCache_tp_iter(LFUCache *self) {
 
 PyDoc_STRVAR(LFUCache__doc__, "A fast LFUCache behaving much like dict.");
 
-PyTypeObject LFUCacheType = {
+static PyTypeObject LFUCacheType = {
     PyVarObject_HEAD_INIT(NULL, 0) "ctools.LFUCache", /* tp_name */
     sizeof(LFUCache),                                 /* tp_basicsize */
     0,                                                /* tp_itemsize */

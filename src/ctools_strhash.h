@@ -85,7 +85,7 @@ PyDoc_STRVAR(strhash__doc__,
     :return: hash number\n\
     :rtype: int\n");
 
-PyObject *Ctools__strhash(PyObject *m, PyObject *args) {
+static PyObject *Ctools__strhash(PyObject *m, PyObject *args) {
   const char *s, *method = NULL;
   Py_ssize_t len = 0;
   if (!PyArg_ParseTuple(args, "s#|s", &s, &len, &method)) return NULL;
