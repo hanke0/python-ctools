@@ -609,7 +609,7 @@ static PyTypeObject LFUCacheType = {
     0,                                                /* tp_getattr */
     0,                                                /* tp_setattr */
     0,                                                /* tp_compare */
-    .tp_repr = (reprfunc)LFUCache_repr,               /* tp_repr */
+    (reprfunc)LFUCache_repr,                          /* tp_repr */
     0,                                                /* tp_as_number */
     &LFUCache_as_sequence,                            /* tp_as_sequence */
     &LFUCache_as_mapping,                             /* tp_as_mapping */
