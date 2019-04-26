@@ -114,7 +114,7 @@ static PyObject *Ctools__strhash(PyObject *m, PyObject *args) {
     case 'd':
       return Py_BuildValue("I", djb2(s, len));
     case 'm':
-      return Py_BuildValue("I", len);
+      return Py_BuildValue("I", murmur_hash2(s, len));
     default: {
       PyErr_SetString(PyExc_ValueError, "invalid method");
       return NULL;
