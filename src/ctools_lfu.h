@@ -7,39 +7,21 @@
 #include <time.h>
 #include "ctools_compt.h"
 
-#define LFU_INIT_VAL 5U
-#define LFU_LOG_FACTOR 10U
-#define LFU_DECAY_FACTOR 3U  // minutes
+#define LFU_INIT_VAL 255U
 
 #define LFU_BUCKET 8
 #define LFU_BUCKET_SIZE 256
 
-#define LFUWrapper_LastVisit(self) ((self)->lfu >> 8U)
-#define LFUWrapper_Counter(self) ((self)->lfu & 255U)
-
-/*
- * COPY FROM redis
- * 概率计算公式 1 / ((counter - LFU_INIT_VAL) * LFU_LOG_FACTOR + 1)
- */
-uint32_t lfu_log_incr(uint32_t counter) {
-  if (counter == 255) return 255;
-  double r = (double)rand() / RAND_MAX;
-  double baseval = counter - LFU_INIT_VAL;
-  if (baseval < 0) baseval = 0;
-  double p = 1.0 / (baseval * LFU_LOG_FACTOR + 1);
-  if (r < p) counter++;
-  return counter;
-}
-
-static inline uint32_t time_in_minutes(void) {
-  return (uint32_t)(((uint64_t)time(NULL) / 60) & 16777215UL);
+static inline unsigned int time_in_minutes(void) {
+  return (unsigned int)(((uint64_t)time(NULL) / 60) & UINTMAX_MAX);
 }
 
 // clang-format off
 typedef struct _LFUValue {
   PyObject_HEAD
   PyObject *wrapped;
-  uint32_t lfu; /* last_visit in minutes & counter, 24 bit + 8 bit */
+  unsigned int last_visit;
+  unsigned int visit_count;
 } LFUWrapper;
 // clang-format on
 
@@ -60,8 +42,8 @@ static PyObject *LFUWrapper_new(PyTypeObject *type, PyObject *args,
 }
 
 static int LFUWrapper_init(LFUWrapper *self, PyObject *args, PyObject *kwds) {
-  self->lfu =
-      ((uint32_t)((time_in_minutes() & 16777215UL) << 8U)) | LFU_INIT_VAL;
+  self->last_visit = time_in_minutes();
+  self->visit_count = LFU_INIT_VAL;
   return 0;
 }
 
@@ -82,27 +64,24 @@ static void LFUWrapper_tp_dealloc(LFUWrapper *self) {
   PyObject_GC_Del(self);
 }
 
-static PyObject *LFUWrapper_cast_info(LFUWrapper *self) {
-  return Py_BuildValue("ii", LFUWrapper_LastVisit(self),
-                       LFUWrapper_LastVisit(self));
-}
+#define LFUWrapper_UPDATE_WEIGHT(self)    \
+  do {                                    \
+    self->visit_count++;                  \
+    self->last_visit = time_in_minutes(); \
+  } while (0)
 
 static PyObject *LFUWrapper_wrapped(LFUWrapper *self) {
-  uint32_t last_visit = LFUWrapper_LastVisit(self);
-  uint32_t counter = LFUWrapper_Counter(self);
-  uint32_t t = time_in_minutes();
-  uint32_t num = (t - last_visit) / LFU_DECAY_FACTOR;
-  counter = lfu_log_incr(num > counter ? 0 : counter - num);
-  self->lfu = (t << 8U) | counter;
+  LFUWrapper_UPDATE_WEIGHT(self);
   PyObject *wrapped = self->wrapped;
   Py_INCREF(wrapped);
   return wrapped;
 }
 
-static inline uint32_t LFUWrapper_WEIGHT(LFUWrapper *self, uint32_t now) {
-  register int32_t num, counter;
-  counter = LFUWrapper_Counter(self);
-  num = (now - LFUWrapper_LastVisit(self)) / LFU_DECAY_FACTOR;
+static inline unsigned int LFUWrapper_WEIGHT(LFUWrapper *self,
+                                             unsigned int now) {
+  register unsigned int num, counter;
+  counter = self->visit_count;
+  num = now - self->last_visit;
   return num > counter ? 0 : counter - num;
 }
 
@@ -111,7 +90,6 @@ static PyObject *LFUWrapper_weight(LFUWrapper *self) {
 }
 
 static PyMethodDef LFUWrapper_methods[] = {
-    {"cash_info", (PyCFunction)LFUWrapper_cast_info, METH_NOARGS, NULL},
     {"wrapped", (PyCFunction)LFUWrapper_wrapped, METH_NOARGS, NULL},
     {"weight", (PyCFunction)LFUWrapper_weight, METH_NOARGS, NULL},
     {NULL, NULL, 0, NULL} /* Sentinel */
