@@ -25,7 +25,7 @@ limitations under the License.
 #define LFU_BUCKET_SIZE 256
 
 static inline unsigned int time_in_minutes(void) {
-  return (unsigned int)(((uint64_t)time(NULL) / 60) & UINTMAX_MAX);
+  return (unsigned int)(((uint64_t)time(NULL) / 60) & UINT32_MAX);
 }
 
 // clang-format off
