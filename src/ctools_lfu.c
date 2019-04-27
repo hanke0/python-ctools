@@ -12,9 +12,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#ifndef _CTOOLS_LFU_H
-#define _CTOOLS_LFU_H
-
 #include <Python.h>
 #include <time.h>
 #include "ctools_config.h"
@@ -112,43 +109,43 @@ static PyObject *LFUWrapper_repr(LFUWrapper *self) {
 }
 
 static PyTypeObject LFUWrapperType = {
-    PyVarObject_HEAD_INIT(NULL, 0) "cools.LFUWrapper", /* tp_name */
-    sizeof(LFUWrapper),                                /* tp_basicsize */
-    0,                                                 /* tp_itemsize */
-    (destructor)LFUWrapper_tp_dealloc,                 /* tp_dealloc */
-    0,                                                 /* tp_print */
-    0,                                                 /* tp_getattr */
-    0,                                                 /* tp_setattr */
-    0,                                                 /* tp_compare */
-    (reprfunc)LFUWrapper_repr,                         /* tp_repr */
-    0,                                                 /* tp_as_number */
-    0,                                                 /* tp_as_sequence */
-    0,                                                 /* tp_as_mapping */
-    0,                                                 /* tp_hash */
-    0,                                                 /* tp_call */
-    0,                                                 /* tp_str */
-    0,                                                 /* tp_getattro */
-    0,                                                 /* tp_setattro */
-    0,                                                 /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,           /* tp_flags */
-    "LFU value store",                                 /* tp_doc */
-    (traverseproc)LFUWrapper_tp_traverse,              /* tp_traverse */
-    (inquiry)LFUWrapper_tp_clear,                      /* tp_clear */
-    0,                                                 /* tp_richcompare */
-    0,                                                 /* tp_weaklistoffset */
-    0,                                                 /* tp_iter */
-    0,                                                 /* tp_iternext */
-    LFUWrapper_methods,                                /* tp_methods */
-    0,                                                 /* tp_members */
-    0,                                                 /* tp_getset */
-    0,                                                 /* tp_base */
-    0,                                                 /* tp_dict */
-    0,                                                 /* tp_descr_get */
-    0,                                                 /* tp_descr_set */
-    0,                                                 /* tp_dictoffset */
-    (initproc)LFUWrapper_init,                         /* tp_init */
-    0,                                                 /* tp_alloc */
-    (newfunc)LFUWrapper_new,                           /* tp_new */
+    PyVarObject_HEAD_INIT(NULL, 0) "LFUWrapper", /* tp_name */
+    sizeof(LFUWrapper),                          /* tp_basicsize */
+    0,                                           /* tp_itemsize */
+    (destructor)LFUWrapper_tp_dealloc,           /* tp_dealloc */
+    0,                                           /* tp_print */
+    0,                                           /* tp_getattr */
+    0,                                           /* tp_setattr */
+    0,                                           /* tp_compare */
+    (reprfunc)LFUWrapper_repr,                   /* tp_repr */
+    0,                                           /* tp_as_number */
+    0,                                           /* tp_as_sequence */
+    0,                                           /* tp_as_mapping */
+    0,                                           /* tp_hash */
+    0,                                           /* tp_call */
+    0,                                           /* tp_str */
+    0,                                           /* tp_getattro */
+    0,                                           /* tp_setattro */
+    0,                                           /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,     /* tp_flags */
+    "LFU value store",                           /* tp_doc */
+    (traverseproc)LFUWrapper_tp_traverse,        /* tp_traverse */
+    (inquiry)LFUWrapper_tp_clear,                /* tp_clear */
+    0,                                           /* tp_richcompare */
+    0,                                           /* tp_weaklistoffset */
+    0,                                           /* tp_iter */
+    0,                                           /* tp_iternext */
+    LFUWrapper_methods,                          /* tp_methods */
+    0,                                           /* tp_members */
+    0,                                           /* tp_getset */
+    0,                                           /* tp_base */
+    0,                                           /* tp_dict */
+    0,                                           /* tp_descr_get */
+    0,                                           /* tp_descr_set */
+    0,                                           /* tp_dictoffset */
+    (initproc)LFUWrapper_init,                   /* tp_init */
+    0,                                           /* tp_alloc */
+    (newfunc)LFUWrapper_new,                     /* tp_new */
 };
 /* LFUWrapper Type Define */
 
@@ -601,43 +598,70 @@ static PyObject *LFUCache_tp_iter(LFUCache *self) {
 PyDoc_STRVAR(LFUCache__doc__, "A fast LFUCache behaving much like dict.");
 
 static PyTypeObject LFUCacheType = {
-    PyVarObject_HEAD_INIT(NULL, 0) "ctools.LFUCache", /* tp_name */
-    sizeof(LFUCache),                                 /* tp_basicsize */
-    0,                                                /* tp_itemsize */
-    (destructor)LFUCache_tp_dealloc,                  /* tp_dealloc */
-    0,                                                /* tp_print */
-    0,                                                /* tp_getattr */
-    0,                                                /* tp_setattr */
-    0,                                                /* tp_compare */
-    (reprfunc)LFUCache_repr,                          /* tp_repr */
-    0,                                                /* tp_as_number */
-    &LFUCache_as_sequence,                            /* tp_as_sequence */
-    &LFUCache_as_mapping,                             /* tp_as_mapping */
-    0,                                                /* tp_hash */
-    0,                                                /* tp_call */
-    0,                                                /* tp_str */
-    0,                                                /* tp_getattro */
-    0,                                                /* tp_setattro */
-    0,                                                /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,          /* tp_flags */
-    LFUCache__doc__,                                  /* tp_doc */
-    (traverseproc)LFUCache_tp_traverse,               /* tp_traverse */
-    (inquiry)LFUCache_tp_clear,                       /* tp_clear */
-    0,                                                /* tp_richcompare */
-    0,                                                /* tp_weaklistoffset */
-    (getiterfunc)LFUCache_tp_iter,                    /* tp_iter */
-    0,                                                /* tp_iternext */
-    LFUCache_methods,                                 /* tp_methods */
-    0,                                                /* tp_members */
-    0,                                                /* tp_getset */
-    0,                                                /* tp_base */
-    0,                                                /* tp_dict */
-    0,                                                /* tp_descr_get */
-    0,                                                /* tp_descr_set */
-    0,                                                /* tp_dictoffset */
-    (initproc)LFUCache_init,                          /* tp_init */
-    0,                                                /* tp_alloc */
-    (newfunc)LFUCache_new,                            /* tp_new */
+    PyVarObject_HEAD_INIT(NULL, 0) "LFUCache", /* tp_name */
+    sizeof(LFUCache),                          /* tp_basicsize */
+    0,                                         /* tp_itemsize */
+    (destructor)LFUCache_tp_dealloc,           /* tp_dealloc */
+    0,                                         /* tp_print */
+    0,                                         /* tp_getattr */
+    0,                                         /* tp_setattr */
+    0,                                         /* tp_compare */
+    (reprfunc)LFUCache_repr,                   /* tp_repr */
+    0,                                         /* tp_as_number */
+    &LFUCache_as_sequence,                     /* tp_as_sequence */
+    &LFUCache_as_mapping,                      /* tp_as_mapping */
+    0,                                         /* tp_hash */
+    0,                                         /* tp_call */
+    0,                                         /* tp_str */
+    0,                                         /* tp_getattro */
+    0,                                         /* tp_setattro */
+    0,                                         /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,   /* tp_flags */
+    LFUCache__doc__,                           /* tp_doc */
+    (traverseproc)LFUCache_tp_traverse,        /* tp_traverse */
+    (inquiry)LFUCache_tp_clear,                /* tp_clear */
+    0,                                         /* tp_richcompare */
+    0,                                         /* tp_weaklistoffset */
+    (getiterfunc)LFUCache_tp_iter,             /* tp_iter */
+    0,                                         /* tp_iternext */
+    LFUCache_methods,                          /* tp_methods */
+    0,                                         /* tp_members */
+    0,                                         /* tp_getset */
+    0,                                         /* tp_base */
+    0,                                         /* tp_dict */
+    0,                                         /* tp_descr_get */
+    0,                                         /* tp_descr_set */
+    0,                                         /* tp_dictoffset */
+    (initproc)LFUCache_init,                   /* tp_init */
+    0,                                         /* tp_alloc */
+    (newfunc)LFUCache_new,                     /* tp_new */
 };
 
-#endif  // _CTOOLS_LFU_H
+static struct PyModuleDef _ctools_lfu_module = {
+    PyModuleDef_HEAD_INIT,
+    "_ctools_lfu", /* m_name */
+    NULL,          /* m_doc */
+    -1,            /* m_size */
+    NULL,          /* m_methods */
+    NULL,          /* m_reload */
+    NULL,          /* m_traverse */
+    NULL,          /* m_clear */
+    NULL,          /* m_free */
+};
+
+PyMODINIT_FUNC PyInit__ctools_lfu(void) {
+  if (PyType_Ready(&LFUCacheType) < 0) return NULL;
+
+  if (PyType_Ready(&LFUWrapperType) < 0) return NULL;
+
+  PyObject *m = PyModule_Create(&_ctools_lfu_module);
+  if (m == NULL) return NULL;
+
+  Py_INCREF(&LFUWrapperType);
+  Py_INCREF(&LFUCacheType);
+
+  PyModule_AddObject(m, "LFUCache", (PyObject *)&LFUCacheType);
+  PyModule_AddObject(m, "LFUWrapper", (PyObject *)&LFUWrapperType);
+
+  return m;
+}

@@ -21,7 +21,8 @@ from setuptools import setup, Extension
 
 
 extensions = [
-    Extension("ctools", glob("src/*.c")),
+    Extension("_ctools_utils", glob("src/ctools_utils.c")),
+    Extension("_ctools_lfu", glob("src/ctools_lfu.c")),
 ]
 
 with io.open('README.rst', 'rt', encoding='utf8') as f:
@@ -41,6 +42,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     ext_modules=extensions,
+    packages=['ctools'],
     classifiers=[
         "Programming Language :: C",
         "Programming Language :: Python :: 3 :: Only",
