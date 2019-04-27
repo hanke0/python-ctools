@@ -51,6 +51,7 @@ run_str(
 )
 
 string = str(uuid.uuid1())
+run_str("strhash(string)", "strhash default", setup="string = str(uuid.uuid1())")
 run_str("strhash(string, 'fnv1a')", "strhash fnv1a", setup="string = str(uuid.uuid1())")
 run_str("strhash(string, 'fnv1')", "strhash fnv1", setup="string = str(uuid.uuid1())")
 run_str("strhash(string, 'djb2')", "strhash djb2", setup="string = str(uuid.uuid1())")
