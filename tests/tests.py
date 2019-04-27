@@ -55,6 +55,15 @@ class T(unittest.TestCase):
             self.assertEqual(a, strhash(s, meth))
             self.assertEqual(b, strhash(us, meth))
 
+        self.assertEqual(strhash(s), strhash(s, "fnv1a"))
+        self.assertEqual(strhash(us), strhash(us, 'fnv1a'))
+
+        self.assertNotEqual(strhash(s), strhash(s, "fnv1"))
+        self.assertNotEqual(strhash(s), strhash(s, "fnv1"))
+
+        with self.assertRaises(TypeError):
+            strhash(s, method='fnv1a')
+
 
 def set_random(mp):
     key = str(uuid.uuid1())
