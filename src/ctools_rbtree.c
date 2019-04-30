@@ -81,5 +81,14 @@ static void right_rotate(PyObject** root, CTools_rbtree_node* node,
   if (tmp->right != sentinel)
     RBTREE_NODE_CVT(tmp->right)->parent = PYOBJECT_CVT(node);
 
-  if (tmp->right == sentinel) *root = PYOBJECT_CVT(tmp);
+  tmp->parent = node->parent;
+  if (tmp->right == sentinel)
+    *root = PYOBJECT_CVT(tmp);
+  else if (PYOBJECT_CVT(node) == RBTREE_NODE_CVT(node->parent)->left)
+    RBTREE_NODE_CVT(node->parent)->left = PYOBJECT_CVT(tmp);
+  else
+    RBTREE_NODE_CVT(node->parent)->right = PYOBJECT_CVT(tmp);
+
+  tmp->right = PYOBJECT_CVT(node);
+  node->parent = PYOBJECT_CVT(tmp);
 }
