@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
+from __future__ import print_function
 import io
 import os
 from setuptools import setup, Extension
@@ -28,12 +28,12 @@ def source(*args):
 
 
 if os.getenv('CTOOLS_DEBUG', '').upper() == "ON":
-    print('CTOOLS DEBUG ON', file=sys.stderr, flush=True)
+    print('CTOOLS DEBUG ON')
     extra_extension_args = dict(
         define_macros=[('NDEBUG', '1')]
     )
 else:
-    print('CTOOLS DEBUG OFF', file=sys.stderr, flush=True)
+    print('CTOOLS DEBUG OFF')
     extra_extension_args = dict(
         undef_macros=["NDEBUG"]
     )
@@ -49,7 +49,7 @@ with io.open('README.rst', 'rt', encoding='utf8') as f:
 
 setup(
     name="ctools",
-    version="0.0.5.dev1",
+    version="0.0.5.beta1",
     author="hanke",
     author_email="hanke0@outlook.com",
     description="A collection of useful extensions for python implement in C.",
