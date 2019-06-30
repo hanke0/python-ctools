@@ -15,4 +15,4 @@
 # limitations under the License.
 
 from _ctools_utils import *
-from _ctools_lfu import *
+from _ctools_cachemap import *

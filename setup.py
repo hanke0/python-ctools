@@ -14,15 +14,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+import sys
 import io
-from glob import glob
+import os
 from setuptools import setup, Extension
 
 
+here = os.path.abspath(os.path.dirname(__file__))
+
+
+def source(*args):
+    return [os.path.join("src", *args)]
+
+
+if os.getenv('CTOOLS_DEBUG', '').upper() == "ON":
+    print('CTOOLS DEBUG ON', file=sys.stderr, flush=True)
+    extra_extension_args = dict(
+        define_macros=[('NDEBUG', '1')]
+    )
+else:
+    print('CTOOLS DEBUG OFF', file=sys.stderr, flush=True)
+    extra_extension_args = dict(
+        undef_macros=["NDEBUG"]
+    )
+
+
 extensions = [
-    Extension("_ctools_utils", glob("src/ctools_utils.c")),
-    Extension("_ctools_lfu", glob("src/ctools_lfu.c")),
+    Extension("_ctools_utils", source("ctools_utils.c"), **extra_extension_args),
+    Extension("_ctools_cachemap", source("ctools_cachemap.c"), **extra_extension_args),
 ]
 
 with io.open('README.rst', 'rt', encoding='utf8') as f:

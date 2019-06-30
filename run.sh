@@ -50,7 +50,7 @@ install() {
 }
 
 tests() {
-	python tests/tests.py
+	python tests/tests.py -v
 }
 
 benchmark() {
@@ -79,8 +79,8 @@ linux-bdist() {
 
 case $1 in
 format)
-	clang-format -style=google -i src/*.h
-	clang-format -style=google -i src/*.c
+	clang-format -style=Mozilla -i src/*.h
+	clang-format -style=Mozilla -i src/*.c
 	;;
 clean)
 	clean

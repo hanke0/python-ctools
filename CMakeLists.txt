@@ -7,7 +7,7 @@ include_directories(.)
 
 add_executable(ctools
         src/ctools_utils.c
-        src/ctools_lfu.c
+        src/ctools_cachemap.c
         src/ctools_config.h src/ctools_rbtree.c)
 
 find_package(PythonLibs REQUIRED)

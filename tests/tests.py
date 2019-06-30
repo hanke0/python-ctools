@@ -5,33 +5,33 @@ import uuid
 import sys
 from datetime import datetime, timedelta
 
-from ctools import *
+import ctools
 
 
-class T(unittest.TestCase):
+class FunctionTest(unittest.TestCase):
 
     def test_int8_to_datetime(self):
         start = datetime(2000, 1, 1)
         for i in range(1024):
             date = start + timedelta(days=i)
             d_int = date.year * 10000 + date.month * 100 + date.day
-            self.assertEqual(date, int8_to_datetime(d_int))
+            self.assertEqual(date, ctools.int8_to_datetime(d_int))
 
         with self.assertRaises(ValueError):
-            int8_to_datetime(1)
+            ctools.int8_to_datetime(1)
 
     def test_jump_consistent_hash(self):
         count = 1024
         bucket = 100
         m = {
-            i: jump_consistent_hash(i, bucket)
+            i: ctools.jump_consistent_hash(i, bucket)
             for i in range(count)
         }
         for i in range(count):
-            b = jump_consistent_hash(i, bucket)
+            b = ctools.jump_consistent_hash(i, bucket)
             self.assertEqual(m[i], b)
         n = {
-            i: jump_consistent_hash(i, bucket + 1)
+            i: ctools.jump_consistent_hash(i, bucket + 1)
             for i in range(count)
         }
         equal_count = 0
@@ -45,24 +45,50 @@ class T(unittest.TestCase):
     def test_strhash(self):
         s = "".join(random.choice(string.printable) for _ in range(1024))
         us = "文字テキスト텍스트كتابة"
-        a = strhash(s)
+        a = ctools.strhash(s)
         for i in range(1024):
-            self.assertEqual(strhash(s), a)
+            self.assertEqual(ctools.strhash(s), a)
 
         for meth in ("fnv1a", "fnv1", "djb2", "murmur"):
-            a = strhash(s, meth)
-            b = strhash(us, meth)
-            self.assertEqual(a, strhash(s, meth))
-            self.assertEqual(b, strhash(us, meth))
+            a = ctools.strhash(s, meth)
+            b = ctools.strhash(us, meth)
+            self.assertEqual(a, ctools.strhash(s, meth))
+            self.assertEqual(b, ctools.strhash(us, meth))
 
-        self.assertEqual(strhash(s), strhash(s, "fnv1a"))
-        self.assertEqual(strhash(us), strhash(us, 'fnv1a'))
+        self.assertEqual(ctools.strhash(s), ctools.strhash(s, "fnv1a"))
+        self.assertEqual(ctools.strhash(us), ctools.strhash(us, 'fnv1a'))
 
-        self.assertNotEqual(strhash(s), strhash(s, "fnv1"))
-        self.assertNotEqual(strhash(s), strhash(s, "fnv1"))
+        self.assertNotEqual(ctools.strhash(s), ctools.strhash(s, "fnv1"))
+        self.assertNotEqual(ctools.strhash(s), ctools.strhash(s, "fnv1"))
 
         with self.assertRaises(TypeError):
-            strhash(s, method='fnv1a')
+            ctools.strhash(s, method='fnv1a')
+
+
+class TestCacheEntry(unittest.TestCase):
+
+    def assertRefEqual(self, a, b):
+        self.assertEqual(sys.getrefcount(a), sys.getrefcount(b))
+
+    def test_ref(self):
+        class A:
+            def __init__(self, a):
+                self.a = a
+
+            def get_value(self):
+                return self.a
+
+        entry = ctools.CacheEntry(uuid.uuid1())
+        a = A(uuid.uuid1())
+        self.assertRefEqual(entry, a)
+
+        v1 = entry.get_value()
+        v2 = entry.get_value()
+        self.assertRefEqual(v1, v2)
+
+        del entry
+        del a
+        self.assertRefEqual(v1, v2)
 
 
 def set_random(mp):
@@ -72,28 +98,28 @@ def set_random(mp):
     return key
 
 
-class LFUMemoryLeakTest(unittest.TestCase):
+class CacheMapMemoryLeakTest(unittest.TestCase):
 
     def assertRefEqual(self, v1, v2, msg=None):
         self.assertEqual(sys.getrefcount(v1), sys.getrefcount(v2), msg)
 
-    def assert_ref_equal(self, lfu_cache, lkey, d, dkey):
-        lval = lfu_cache[lkey]
-        dval = d[dkey]
-        lval = lfu_cache[lkey]
+    def assert_ref_equal(self, cache, lkey, d, dkey):
+        lval1 = cache[lkey]
+        dval1 = d[dkey]
+        lval = cache[lkey]
         dval = d[dkey]
         self.assertEqual(sys.getrefcount(lval), sys.getrefcount(dval))
 
-        del lfu_cache[lkey]
+        del cache[lkey]
         del d[dkey]
         self.assertEqual(sys.getrefcount(lval), sys.getrefcount(dval))
 
         del d
-        del lfu_cache
+        del cache
         self.assertEqual(sys.getrefcount(lval), sys.getrefcount(dval))
 
     def test_one_ref_eq(self):
-        cache = LFUCache(10)
+        cache = ctools.CacheMap(10)
         mp = {}
 
         lkey = set_random(cache)
@@ -112,7 +138,7 @@ class LFUMemoryLeakTest(unittest.TestCase):
         self.assertRefEqual(lval, dval)
 
     def test_replace_ref_eq(self):
-        cache = LFUCache(10)
+        cache = ctools.CacheMap(10)
         mp = {}
 
         lkey = set_random(cache)
@@ -133,7 +159,7 @@ class LFUMemoryLeakTest(unittest.TestCase):
 
     def test_many_ref_eq(self):
 
-        lfu_cache = LFUCache(257)
+        lfu_cache = ctools.CacheMap(257)
         d = {}
         for i in range(1024):
             set_random(lfu_cache)
@@ -148,8 +174,8 @@ class LFUMemoryLeakTest(unittest.TestCase):
             self.assert_ref_equal(lfu_cache, lkey, d, dkey)
 
     def test_raw_ref_eq(self):
-        cache = LFUCache(10)
-        store = cache._store()
+        cache = ctools.CacheMap(10)
+        store = cache._storage()
         d = {}
 
         lkey = set_random(cache)
@@ -171,9 +197,10 @@ class LFUMemoryLeakTest(unittest.TestCase):
         self.assertRefEqual(lval, dval)
 
 
-class LFUTest(unittest.TestCase):
+class CacheMapTest(unittest.TestCase):
+
     def test_get_set(self):
-        d = LFUCache(2)
+        d = ctools.CacheMap(2)
         d['a'] = 1
         d['c'] = 2
         d['e'] = 3
@@ -184,14 +211,16 @@ class LFUTest(unittest.TestCase):
 
     def test_len(self):
         for m in range(254, 1024):
-            d = LFUCache(m)
+            d = ctools.CacheMap(m)
             for i in range(m + 1):
                 d[str(i)] = str(i)
+                if i < m and len(d) != i + 1:
+                    self.assertEqual(len(d), i)
 
             self.assertEqual(len(d), m)
 
     def test_keys(self):
-        cache = LFUCache(257)
+        cache = ctools.CacheMap(257)
         keys = []
         for m in range(1024):
             keys.append(set_random(cache))
@@ -200,7 +229,7 @@ class LFUTest(unittest.TestCase):
             self.assertIn(k, keys)
 
     def test_values(self):
-        cache = LFUCache(257)
+        cache = ctools.CacheMap(257)
         values = []
         for m in range(1024):
             values.append(cache[set_random(cache)])
@@ -209,7 +238,7 @@ class LFUTest(unittest.TestCase):
             self.assertIn(v, values)
 
     def test_items(self):
-        cache = LFUCache(257)
+        cache = ctools.CacheMap(257)
         values = []
         keys = []
         for m in range(1024):
@@ -222,7 +251,7 @@ class LFUTest(unittest.TestCase):
             self.assertIn(v, values)
 
     def test_contains(self):
-        cache = LFUCache(2)
+        cache = ctools.CacheMap(2)
         keys = []
         for m in range(2):
             keys.append(set_random(cache))
@@ -231,7 +260,7 @@ class LFUTest(unittest.TestCase):
             self.assertIn(k, cache)
 
     def test_setdefault(self):
-        cache = LFUCache(2)
+        cache = ctools.CacheMap(2)
         for m in range(2):
             set_random(cache)
         k = str(uuid.uuid1())
@@ -242,7 +271,7 @@ class LFUTest(unittest.TestCase):
         self.assertEqual(cache[k], v)
 
     def test_get(self):
-        cache = LFUCache(2)
+        cache = ctools.CacheMap(2)
         for m in range(2):
             set_random(cache)
         k = str(uuid.uuid1())
@@ -254,21 +283,21 @@ class LFUTest(unittest.TestCase):
 
     def test_update(self):
         d = {'1': '1'}
-        cache = LFUCache(len(d))
+        cache = ctools.CacheMap(len(d))
         cache.update(d)
         for k in d:
             self.assertIn(k, cache)
         self.assertEqual(len(cache), len(d))
 
         d = {'abc': '1'}
-        cache = LFUCache(len(d))
+        cache = ctools.CacheMap(len(d))
         cache.update(**d)
         for k in d:
             self.assertIn(k, cache)
         self.assertEqual(len(cache), len(d))
 
     def test_setnx(self):
-        cache = LFUCache(10)
+        cache = ctools.CacheMap(10)
         key = str(uuid.uuid1())
         val = str(uuid.uuid1())
 
@@ -282,13 +311,13 @@ class LFUTest(unittest.TestCase):
         self.assertEqual(v, val)
 
     def test_iter(self):
-        cache = LFUCache(257)
+        cache = ctools.CacheMap(257)
         keys = []
         for m in range(1024):
             k = set_random(cache)
             keys.append(k)
 
-        for k in cache:
+        for i, k in enumerate(cache):
             self.assertIn(k, keys)
 
 

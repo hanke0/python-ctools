@@ -14,9 +14,9 @@ limitations under the License.
 */
 #ifndef _CTOOLS_FUNCS_H
 #define _CTOOLS_FUNCS_H
+#include "ctools_config.h"
 #include <Python.h>
 #include <datetime.h>
-#include "ctools_config.h"
 
 PyDoc_STRVAR(jump_consistent_hash__doc__,
              "jump_consistent_hash(key: int, num_buckets: int) -> int:\n\n\
@@ -29,11 +29,14 @@ PyDoc_STRVAR(jump_consistent_hash__doc__,
     :return: hash number\n\
     :rtype: int\n");
 
-static PyObject *Ctools__jump_hash(PyObject *m, PyObject *args) {
+static PyObject*
+Ctools__jump_hash(PyObject* m, PyObject* args)
+{
   uint64_t key;
   int32_t num_buckets;
 
-  if (!PyArg_ParseTuple(args, "Ki", &key, &num_buckets)) return NULL;
+  if (!PyArg_ParseTuple(args, "Ki", &key, &num_buckets))
+    return NULL;
 
   int64_t b = -1, j = 0;
   while (j < num_buckets) {
@@ -44,7 +47,7 @@ static PyObject *Ctools__jump_hash(PyObject *m, PyObject *args) {
   return Py_BuildValue("i", b);
 }
 
-#define PyDateTime_FromDate(year, month, day) \
+#define PyDateTime_FromDate(year, month, day)                                  \
   PyDateTime_FromDateAndTime(year, month, day, 0, 0, 0, 0)
 
 PyDoc_STRVAR(int8_to_datetime__doc__,
@@ -56,7 +59,9 @@ PyDoc_STRVAR(int8_to_datetime__doc__,
     :return: parsed datetime\n\
     :rtype: datetime.datetime\n");
 
-static PyObject *Ctools__int8_to_datetime(PyObject *m, PyObject *date_integer) {
+static PyObject*
+Ctools__int8_to_datetime(PyObject* m, PyObject* date_integer)
+{
   register long date = PyLong_AsLong(date_integer);
   if (date > 99990101 || date < 101) {
     PyErr_SetString(PyExc_ValueError,
@@ -65,29 +70,35 @@ static PyObject *Ctools__int8_to_datetime(PyObject *m, PyObject *date_integer) {
   }
   return PyDateTime_FromDate(date / 10000, date % 10000 / 100, date % 100);
 }
-static unsigned int fnv1a(const char *s, unsigned long len) {
+static unsigned int
+fnv1a(const char* s, unsigned long len)
+{
   unsigned int hash = 2166136261U;
   for (unsigned long i = 0; i < len; i++) {
     hash = hash ^ s[i];
     /* hash * (1 << 24 + 1 << 8 + 0x93) */
     hash +=
-        (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
+      (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
   }
   return hash;
 }
 
-static unsigned int fnv1(const char *s, unsigned long len) {
+static unsigned int
+fnv1(const char* s, unsigned long len)
+{
   unsigned int hash = 2166136261U;
   for (unsigned long i = 0; i < len; i++) {
     /* hash * (1 << 24 + 1 << 8 + 0x93) */
     hash +=
-        (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
+      (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
     hash = hash ^ s[i];
   }
   return hash;
 }
 
-static unsigned int murmur_hash2(const char *str, unsigned long len) {
+static unsigned int
+murmur_hash2(const char* str, unsigned long len)
+{
   unsigned int hash, key;
 
   hash = 0 ^ len;
@@ -128,7 +139,9 @@ static unsigned int murmur_hash2(const char *str, unsigned long len) {
   return hash;
 }
 
-static unsigned int djb2(const char *str, unsigned long len) {
+static unsigned int
+djb2(const char* str, unsigned long len)
+{
   unsigned int hash = 5381;
   for (unsigned long i = 0; i < len; i++) {
     hash = ((hash << 5) + hash) + str[i];
@@ -137,8 +150,7 @@ static unsigned int djb2(const char *str, unsigned long len) {
   return hash;
 }
 
-PyDoc_STRVAR(strhash__doc__,
-             "strhash(s, method='fnv1a') -> int:\n\n\
+PyDoc_STRVAR(strhash__doc__, "strhash(s, method='fnv1a') -> int:\n\n\
     hash str with consistent value.\n\n\
     This function uses C bindings for speed.\n\n\
     :param s: The string to hash.\n\
@@ -147,11 +159,15 @@ PyDoc_STRVAR(strhash__doc__,
     :return: hash number\n\
     :rtype: int\n");
 
-static PyObject *Ctools__strhash(PyObject *m, PyObject *args) {
+static PyObject*
+Ctools__strhash(PyObject* m, PyObject* args)
+{
   const char *s, *method = NULL;
   Py_ssize_t len = 0, m_len = 0;
-  if (!PyArg_ParseTuple(args, "s#|s#", &s, &len, &method, &m_len)) return NULL;
-  if (method == NULL) return Py_BuildValue("I", fnv1a(s, len));
+  if (!PyArg_ParseTuple(args, "s#|s#", &s, &len, &method, &m_len))
+    return NULL;
+  if (method == NULL)
+    return Py_BuildValue("I", fnv1a(s, len));
   switch (method[0]) {
     case 'f': {
       if (m_len == 5)
@@ -171,30 +187,36 @@ static PyObject *Ctools__strhash(PyObject *m, PyObject *args) {
 }
 
 static PyMethodDef ctools_utils_methods[] = {
-    {"jump_consistent_hash", Ctools__jump_hash, METH_VARARGS,
-     jump_consistent_hash__doc__},
-    {"strhash", Ctools__strhash, METH_VARARGS, strhash__doc__},
-    {"int8_to_datetime", Ctools__int8_to_datetime, METH_O,
-     int8_to_datetime__doc__},
-    {NULL, NULL, 0, NULL},
+  { "jump_consistent_hash",
+    Ctools__jump_hash,
+    METH_VARARGS,
+    jump_consistent_hash__doc__ },
+  { "strhash", Ctools__strhash, METH_VARARGS, strhash__doc__ },
+  { "int8_to_datetime",
+    Ctools__int8_to_datetime,
+    METH_O,
+    int8_to_datetime__doc__ },
+  { NULL, NULL, 0, NULL },
 };
 
 static struct PyModuleDef _ctools_utils_module = {
-    PyModuleDef_HEAD_INIT,
-    "_ctools_utils",      /* m_name */
-    NULL,                 /* m_doc */
-    -1,                   /* m_size */
-    ctools_utils_methods, /* m_methods */
-    NULL,                 /* m_reload */
-    NULL,                 /* m_traverse */
-    NULL,                 /* m_clear */
-    NULL,                 /* m_free */
+  PyModuleDef_HEAD_INIT,
+  "_ctools_utils",      /* m_name */
+  NULL,                 /* m_doc */
+  -1,                   /* m_size */
+  ctools_utils_methods, /* m_methods */
+  NULL,                 /* m_reload */
+  NULL,                 /* m_traverse */
+  NULL,                 /* m_clear */
+  NULL,                 /* m_free */
 };
 
-PyMODINIT_FUNC PyInit__ctools_utils(void) {
+PyMODINIT_FUNC
+PyInit__ctools_utils(void)
+{
   PyDateTime_IMPORT;
 
   return PyModule_Create(&_ctools_utils_module);
 }
 
-#endif  // _CTOOLS_FUNCS_H
+#endif // _CTOOLS_FUNCS_H

@@ -13,10 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <Python.h>
 #include "ctools_config.h"
+#include <Python.h>
 
-typedef struct rbtree_node {
+typedef struct rbtree_node
+{
   PyObject_HEAD PyObject* key;
   PyObject* value;
   PyObject* left;
@@ -25,7 +26,8 @@ typedef struct rbtree_node {
   unsigned char color;
 } CTools_rbtree_node;
 
-typedef struct rbtree {
+typedef struct rbtree
+{
   PyObject* root;
   PyObject* sentinel;
 } CTools_rbtree;
@@ -50,8 +52,9 @@ typedef struct rbtree {
  *
  *  Note: [a, b, c d] means any sub tree.
  */
-static void left_rotate(PyObject** root, CTools_rbtree_node* node,
-                        PyObject* sentinel) {
+static void
+left_rotate(PyObject** root, CTools_rbtree_node* node, PyObject* sentinel)
+{
   CTools_rbtree_node* tmp = RBTREE_NODE_CVT(node->right);
 
   /* First step */
@@ -73,8 +76,9 @@ static void left_rotate(PyObject** root, CTools_rbtree_node* node,
   node->parent = PYOBJECT_CVT(tmp);
 }
 
-static void right_rotate(PyObject** root, CTools_rbtree_node* node,
-                         PyObject* sentinel) {
+static void
+right_rotate(PyObject** root, CTools_rbtree_node* node, PyObject* sentinel)
+{
   CTools_rbtree_node* tmp = RBTREE_NODE_CVT(node->left);
 
   node->left = tmp->right;
