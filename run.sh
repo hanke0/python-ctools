@@ -75,9 +75,10 @@ wheel() {
 }
 
 linux-bdist() {
-	docker run --rm -e PLAT=manylinux1_x86_64 -v $(pwd):/io quay.io/pypa/manylinux1_x86_64 /io/run.sh wheel
-	docker run --rm -e PLAT=manylinux1_i686 -v $(pwd):/io quay.io/pypa/manylinux1_i686 linux32 /io/run.sh wheel
-	docker run --rm -e PLAT=manylinux2010_x86_64 -v $(pwd):/io quay.io/pypa/manylinux2010_x86_64 /io/run.sh wheel
+	sudo docker run --rm -e PLAT=manylinux1_x86_64 -v $(pwd):/io quay.io/pypa/manylinux1_x86_64 /io/run.sh wheel
+	sudo docker run --rm -e PLAT=manylinux1_i686 -v $(pwd):/io quay.io/pypa/manylinux1_i686 linux32 /io/run.sh wheel
+	sudo docker run --rm -e PLAT=manylinux2010_x86_64 -v $(pwd):/io quay.io/pypa/manylinux2010_x86_64 /io/run.sh wheel
+	sudo chown -R $USER:$USER $(pwd)
 }
 
 case $1 in
