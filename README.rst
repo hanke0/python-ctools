@@ -2,8 +2,9 @@
 A collection of useful extensions for python implement in C.
 ============================================================
 
-:Python: >= 3.4
-:Version: 0.0.4
+:Python: >= 3.5
+:Version: 0.0.5
+:Python Implementation: CPython only
 
 Installation
 ============
