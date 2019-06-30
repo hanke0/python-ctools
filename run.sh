@@ -1,13 +1,16 @@
 #!/usr/bin/env bash
-set -e -x
+set -e
 
-clean() {
-	rm -rf dist build
-	rm -f cmake_install.cmake CMakeCache.txt Makefile
+clean-cache() {
 	find . -name *.egg-info -exec rm -rf {} +
 	find . -name '*.pyc' -exec rm -f {} +
 	find . -name '*.pyo' -exec rm -f {} +
 	find . -name '*~' -exec rm -f {} +
+}
+
+clean() {
+	clean-cache
+	rm -rf dist build
 }
 
 compile() {
@@ -73,7 +76,7 @@ wheel() {
 
 linux-bdist() {
 	docker run --rm -e PLAT=manylinux1_x86_64 -v $(pwd):/io quay.io/pypa/manylinux1_x86_64 /io/run.sh wheel
-	docker run --rm -e PLAT=manylinux1_i686 -v $(pwd):/io quay.io/pypa/manylinux1_x86_64 linux32 /io/run.sh wheel
+	docker run --rm -e PLAT=manylinux1_i686 -v $(pwd):/io quay.io/pypa/manylinux1_i686 linux32 /io/run.sh wheel
 	docker run --rm -e PLAT=manylinux2010_x86_64 -v $(pwd):/io quay.io/pypa/manylinux2010_x86_64 /io/run.sh wheel
 }
 
@@ -119,6 +122,12 @@ linux-bdist)
     clean
 	linux-bdist
 	;;
+dist)
+    clean
+    sdist
+    linux-bdist
+    clean-cache
+    ;;
 *)
 	echo >&2 Error command
 	exit 1
