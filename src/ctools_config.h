@@ -36,7 +36,7 @@ typedef unsigned __int64 uint64_t;
 #define UINT16_MAX _UI16_MAX
 #define UINT32_MAX _UI32_MAX
 #define UINT64_MAX _UI64_MAX
-#endif // _MSC_VER
+#endif /* _MSC_VER */
 
 #define PYOBJECT_CVT(x) ((PyObject*)(x))
 

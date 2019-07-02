@@ -219,4 +219,4 @@ PyInit__ctools_utils(void)
   return PyModule_Create(&_ctools_utils_module);
 }
 
-#endif // _CTOOLS_FUNCS_H
+#endif /* _CTOOLS_FUNCS_H */

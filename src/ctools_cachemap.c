@@ -32,10 +32,10 @@ time_in_minutes(void)
 
 typedef struct _cacheentry
 {
-  // clang-format off
+  /* clang-format off */
   PyObject_HEAD
-    // clang-format on
-    PyObject* ma_value;
+  PyObject* ma_value;
+  /* clang-format on */
   uint32_t last_visit;
   uint32_t visits;
 } CacheEntry;
@@ -150,9 +150,9 @@ CacheEntry_repr(CacheEntry* self)
 }
 
 static PyTypeObject CacheEntry_Type = {
-  // clang-format off
+  /* clang-format off */
   PyVarObject_HEAD_INIT(NULL, 0)
-  // clang-format on
+  /* clang-format on */
   "CacheEntry",                            /* tp_name */
   sizeof(CacheEntry),                      /* tp_basicsize */
   0,                                       /* tp_itemsize */
@@ -193,15 +193,16 @@ static PyTypeObject CacheEntry_Type = {
 };
 /* CacheEntry Type Define */
 
-// clang-format off
-typedef struct {
+typedef struct
+{
+  /* clang-format off */
   PyObject_HEAD
-  PyObject *dict;
+  PyObject* dict;
+  /* clang-format on */
   Py_ssize_t capacity;
   Py_ssize_t hits;
   Py_ssize_t misses;
 } CacheMap;
-// clang-format on
 
 #define CacheMap_Size(self) (PyDict_Size(((CacheMap*)(self))->dict))
 
@@ -275,7 +276,7 @@ CacheMap_NextEvictKey(CacheMap* self)
     Py_ssize_t b_size = dict_len / CacheMap_BUCKET_NUM;
     for (int i = 0; i < CacheMap_BUCKET_NUM - 1; i++) {
       pos = i * b_size + rand_integer(b_size);
-      // fast get list item, borrowed reference
+      /* fast get list item, borrowed reference */
       key = PyList_GET_ITEM(keylist, pos);
       wrapper = PyDict_GetItem(self->dict, key);
       weight = CacheEntry_GetWeight((CacheEntry*)wrapper, now);
@@ -730,9 +731,9 @@ CacheMap_tp_iter(CacheMap* self)
 PyDoc_STRVAR(CacheMap__doc__, "A fast CacheMap behaving much like dict.");
 
 static PyTypeObject CacheMap_Type = {
-  // clang-format off
+  /* clang-format off */
   PyVarObject_HEAD_INIT(NULL, 0)
-  // clang-format on
+  /* clang-format on */
   "CacheMap",                              /* tp_name */
   sizeof(CacheMap),                        /* tp_basicsize */
   0,                                       /* tp_itemsize */
