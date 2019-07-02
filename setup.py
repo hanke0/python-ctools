@@ -17,7 +17,7 @@
 from __future__ import print_function
 import io
 import os
-from setuptools import setup, Extension
+from setuptools import setup, Extension, find_packages
 
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -39,6 +39,15 @@ else:
     )
 
 
+def find_version():
+    d = {}
+    with open(os.path.join(here, "ctools", "version.py"), "rt") as f:
+        value = f.read()
+        exec(value, d, d)
+
+    return d['__version__']
+
+
 extensions = [
     Extension("_ctools_utils", source("ctools_utils.c"), **extra_extension_args),
     Extension("_ctools_cachemap", source("ctools_cachemap.c"), **extra_extension_args),
@@ -49,7 +58,7 @@ with io.open('README.rst', 'rt', encoding='utf8') as f:
 
 setup(
     name="ctools",
-    version="0.0.5.beta1",
+    version=find_version(),
     author="hanke",
     author_email="hanke0@outlook.com",
     description="A collection of useful extensions for python implement in C.",
@@ -61,7 +70,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     ext_modules=extensions,
-    packages=['ctools'],
+    packages=find_packages(include=['ctools', 'ctools.*']),
     classifiers=[
         "Programming Language :: C",
         "Programming Language :: Python :: 3 :: Only",

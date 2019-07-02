@@ -28,4 +28,7 @@ pypi:
 install:  ## Install package
 	@pip install .
 
+test:
+	@python tools/runtest.py
+
 .PHONY: help dist clean format benchmark pypi-test pypi install

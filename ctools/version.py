@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Copyright 2019 ko-han. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,12 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from _ctools_utils import *
-from _ctools_cachemap import *
-from ctools._tester import Tester
-
-test = Tester(__name__)
-del Tester
+__all__ = ["__version__"]
 
 
-from .version import __version__
+def safe_version(v):
+    try:
+        from pkg_resources import safe_version
+        return safe_version(v)
+    except ImportError:
+        return v
+
+
+_version = '0.0.5.beta1'
+
+
+__version__ = safe_version(_version)
