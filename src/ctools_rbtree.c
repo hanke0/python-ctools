@@ -21,8 +21,8 @@ typedef struct _rbtree_node
 {
   // clang-format off
   PyObject_HEAD
-  // clang-format on
-  PyObject* key;
+    // clang-format on
+    PyObject* key;
   PyObject* value;
   PyObject* left;
   PyObject* right;

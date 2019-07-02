@@ -673,7 +673,7 @@ CacheMap_set_capacity(CacheMap* self, PyObject* capacity)
 }
 
 static PyObject*
-CacheMap__storage(CacheMap *self)
+CacheMap__storage(CacheMap* self)
 {
   PyObject* dict = self->dict;
   Py_INCREF(dict);
