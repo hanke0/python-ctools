@@ -62,14 +62,13 @@ API
         :return: parsed datetime
         """
 
-See more at `api.md
-            <https://github.com/ko-han/python-ctools/blob/master/doc/api.md>`_.
+See more at `api.md <https://github.com/ko-han/python-ctools/blob/master/doc/api.md>` -.
 
 Benchmark
 =========
 .. code-block:: text
 
-    $ ./run.sh benchmark
+    $ make benchmark
       int8_to_datetime,       63.481 ns ± 4.179 nseach (10 runs, 1,000,000 loops)
       jump_consistent_hash,   156.082 ns ± 6.489 nseach (10 runs, 1,000,000 loops)
       strhash,                139.542 ns ± 4.268 nseach (10 runs, 1,000,000 loops)
@@ -77,9 +76,8 @@ Benchmark
 
 How To Test
 ===========
-.. code-block:: text
-
-    $ ./run.sh tests
+`pytest`_ needed. Simple use ``make test``. If package is installed, you can run ``ctools.test()``
+for testing.
 
 
 More
@@ -88,3 +86,4 @@ What's important is free.
 
 .. _pip: https://pip.pypa.io/en/stable/quickstart/
 .. _jump_consistent_hash: https://arxiv.org/abs/1406.2294
+.. _pytest: https://docs.pytest.org/en/latest/contents.html
