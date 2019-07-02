@@ -6,6 +6,8 @@ A collection of useful extensions for python implement in C.
 :Version: 0.0.5
 :Python Implementation: CPython only
 
+.. contents::
+
 Installation
 ============
 
@@ -28,11 +30,8 @@ API
         This function uses C bindings for speed.
 
         :param key: The key to hash.
-        :type key: int
         :param num_buckets: Number of buckets to use.
-        :type num_buckets: int
         :return: hash number
-        :rtype: int
         """
 
 * A normal hash function for str with consistent value.
@@ -46,9 +45,7 @@ API
         This function uses C bindings for speed.
 
         :param s: The string to hash.
-        :type s: string
         :return: hash number
-        :rtype: int
         """
 
 * Transfer integer like 20170101 (Java style) to python datetime object.
@@ -62,11 +59,11 @@ API
         This function uses C bindings for speed.
 
         :param date_integer: The string to hash.
-        :type date_integer: int
         :return: parsed datetime
-        :rtype: datetime.datetime
         """
 
+See more at `api.md
+            <https://github.com/ko-han/python-ctools/blob/master/doc/api.md>`_.
 
 Benchmark
 =========

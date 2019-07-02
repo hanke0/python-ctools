@@ -31,5 +31,7 @@ install:  ## Install package
 test:  ## Install package and Test
 	@python tools/runtest.py
 
+doc:  ## genetate api doc
+	@python tools/genapidoc.py
 
-.PHONY: help dist clean format benchmark pypi-test pypi install test
+.PHONY: help dist clean format benchmark pypi-test pypi install test doc

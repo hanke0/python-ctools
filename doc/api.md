@@ -1,36 +1,23 @@
-# Copyright 2019 ko-han. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-from datetime import datetime
-from typing import Any, Mapping, Iterable, Tuple, Callable, Optional
-
-##-----start-----##
-
-#- api
-#- description: A consistent hash implement. See paper at [jump_consistent_hash](https://arxiv.org/abs/1406.2294).
+* A consistent hash implement. See paper at [jump_consistent_hash](https://arxiv.org/abs/1406.2294).
+```python
 def jump_consistent_hash(key: int, num_bucket: int) -> int: pass
+```
 
-#- api
-#- description: A normal hash function for str with consistent value.
+
+* A normal hash function for str with consistent value.
+```python
 def strhash(s: str, method: str = 'fnv1a') -> int: ...
+```
 
-#- api
-#- description: Transfer integer like 20170101 (Java style) to python datetime object.
+
+* Transfer integer like 20170101 (Java style) to python datetime object.
+```python
 def int8_to_datetime(date_integer: int) -> datetime: ...
+```
 
-#- api
-#- description: A cache Map behaving like dict
+
+* A cache Map behaving like dict
+```python
 class CacheMap:
 
     def __init__(self, capacity: int) -> None:
@@ -125,3 +112,6 @@ class CacheMap:
         Return the value for key if key is in the dictionary, else callback().
         """
         pass
+```
+
+
