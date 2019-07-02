@@ -17,7 +17,7 @@ format:  ## Format code
 	@clang-format -style=Mozilla -i src/*.c
 
 benchmark:  ## Run benchmark
-	@python benchmarks/benchmark.py
+	@python tools/runbenchmark.py benchmarks/
 
 pypi-test:
 	@tools/upload-pypi.sh test
@@ -28,7 +28,8 @@ pypi:
 install:  ## Install package
 	@pip install .
 
-test:
+test:  ## Install package and Test
 	@python tools/runtest.py
 
-.PHONY: help dist clean format benchmark pypi-test pypi install
+
+.PHONY: help dist clean format benchmark pypi-test pypi install test
