@@ -62,7 +62,7 @@ API
         :return: parsed datetime
         """
 
-See more at `api.md <https://github.com/ko-han/python-ctools/blob/master/doc/api.md>` -.
+See more at `api.md <https://github.com/ko-han/python-ctools/blob/master/doc/api.md>`_.
 
 Benchmark
 =========
