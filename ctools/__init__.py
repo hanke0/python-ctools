@@ -16,10 +16,10 @@
 
 from _ctools_utils import *
 from _ctools_cachemap import *
+from _ctools_ttlcache import *
 from ctools._tester import Tester
 
 test = Tester(__name__)
 del Tester
-
 
 from .version import __version__

@@ -51,6 +51,7 @@ def find_version():
 extensions = [
     Extension("_ctools_utils", source("ctools_utils.c"), **extra_extension_args),
     Extension("_ctools_cachemap", source("ctools_cachemap.c"), **extra_extension_args),
+    Extension("_ctools_ttlcache", source("ctools_ttlcache.c"), **extra_extension_args),
 ]
 
 with io.open('README.rst', 'rt', encoding='utf8') as f:
