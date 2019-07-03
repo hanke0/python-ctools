@@ -240,6 +240,7 @@ CMakeCache.txt
 CMakeFiles
 CMakeScripts
 Testing
+CMakeLists.txt
 cmake_install.cmake
 install_manifest.txt
 compile_commands.json
