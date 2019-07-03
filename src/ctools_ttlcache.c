@@ -163,6 +163,23 @@ typedef struct
 #define TTLCache_GetItem(self, key)                                            \
   ((TTLCacheEntry*)PyDict_GetItem(((TTLCache*)(self))->dict, (PyObject*)(key)))
 
+int
+TTLCache_DelItem(TTLCache* self, PyObject* key)
+{
+  TTLCacheEntry* entry = TTLCache_GetItem(self, key);
+  if (!entry) {
+    if (!PyErr_Occurred()) {
+      PyErr_Format(PyExc_KeyError, "%S", key);
+    }
+    return -1;
+  }
+  if (PyDict_DelItem(self->dict, key)) {
+    Py_XINCREF(entry->ma_value);
+    return -1;
+  }
+  return 0;
+}
+
 /* borrowed reference. error would be set. */
 static TTLCacheEntry*
 TTLCache_get_ttl_item(TTLCache* self, PyObject* key)
@@ -186,23 +203,6 @@ TTLCache_get_ttl_item(TTLCache* self, PyObject* key)
     return NULL;
   }
   return entry;
-}
-
-int
-TTLCache_DelItem(TTLCache* self, PyObject* key)
-{
-  TTLCacheEntry* entry = TTLCache_GetItem(self, key);
-  if (!entry) {
-    if (!PyErr_Occurred()) {
-      PyErr_Format(PyExc_KeyError, "%S", key);
-    }
-    return -1;
-  }
-  if (PyDict_DelItem(self->dict, key)) {
-    Py_XINCREF(entry->ma_value);
-    return -1;
-  }
-  return 0;
 }
 
 Py_ssize_t
