@@ -38,16 +38,16 @@ typedef struct _cacheentry
   /* clang-format on */
   uint32_t last_visit;
   uint32_t visits;
-} CacheEntry;
+} CacheMapEntry;
 
 static PyTypeObject CacheEntry_Type;
 
-static CacheEntry*
+static CacheMapEntry*
 CacheEntry_New(PyObject* ma_value)
 {
-  CacheEntry* self;
+  CacheMapEntry* self;
   assert(ma_value);
-  self = (CacheEntry*)PyObject_GC_New(CacheEntry, &CacheEntry_Type);
+  self = (CacheMapEntry*)PyObject_GC_New(CacheMapEntry, &CacheEntry_Type);
   if (!self)
     return NULL;
   self->ma_value = ma_value;
@@ -73,28 +73,28 @@ CacheEntry_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
   } while (0)
 
 static int
-CacheEntry_init(CacheEntry* self, PyObject* args, PyObject* kwds)
+CacheEntry_init(CacheMapEntry* self, PyObject* args, PyObject* kwds)
 {
   CacheEntry_Init(self);
   return 0;
 }
 
 static int
-CacheEntry_tp_traverse(CacheEntry* self, visitproc visit, void* arg)
+CacheEntry_tp_traverse(CacheMapEntry* self, visitproc visit, void* arg)
 {
   Py_VISIT(self->ma_value);
   return 0;
 }
 
 static int
-CacheEntry_tp_clear(CacheEntry* self)
+CacheEntry_tp_clear(CacheMapEntry* self)
 {
   Py_CLEAR(self->ma_value);
   return 0;
 }
 
 static void
-CacheEntry_tp_dealloc(CacheEntry* self)
+CacheEntry_tp_dealloc(CacheMapEntry* self)
 {
   PyObject_GC_UnTrack(self);
   CacheEntry_tp_clear(self);
@@ -108,13 +108,13 @@ CacheEntry_tp_dealloc(CacheEntry* self)
   } while (0)
 
 static inline PyObject*
-CacheEntry_GetValue(CacheEntry* self)
+CacheEntry_GetValue(CacheMapEntry* self)
 {
   CacheEntry_NewVisit(self);
   return self->ma_value;
 }
 static PyObject*
-CacheEntry_get_ma_value(CacheEntry* self)
+CacheEntry_get_ma_value(CacheMapEntry* self)
 {
   CacheEntry_NewVisit(self);
   PyObject* ma_value = self->ma_value;
@@ -123,7 +123,7 @@ CacheEntry_get_ma_value(CacheEntry* self)
 }
 
 static inline unsigned int
-CacheEntry_GetWeight(CacheEntry* self, unsigned int now)
+CacheEntry_GetWeight(CacheMapEntry* self, unsigned int now)
 {
   register unsigned int num, counter;
   counter = self->visits;
@@ -132,7 +132,7 @@ CacheEntry_GetWeight(CacheEntry* self, unsigned int now)
 }
 
 static PyObject*
-CacheEntry_get_weight(CacheEntry* self)
+CacheEntry_get_weight(CacheMapEntry* self)
 {
   return Py_BuildValue("I", CacheEntry_GetWeight(self, time_in_minutes()));
 }
@@ -144,7 +144,7 @@ static PyMethodDef CacheEntry_methods[] = {
 };
 
 static PyObject*
-CacheEntry_repr(CacheEntry* self)
+CacheEntry_repr(CacheMapEntry* self)
 {
   return PyObject_Repr(self->ma_value);
 }
@@ -153,8 +153,8 @@ static PyTypeObject CacheEntry_Type = {
   /* clang-format off */
   PyVarObject_HEAD_INIT(NULL, 0)
   /* clang-format on */
-  "CacheEntry",                            /* tp_name */
-  sizeof(CacheEntry),                      /* tp_basicsize */
+  "CacheMapEntry",                         /* tp_name */
+  sizeof(CacheMapEntry),                   /* tp_basicsize */
   0,                                       /* tp_itemsize */
   (destructor)CacheEntry_tp_dealloc,       /* tp_dealloc */
   0,                                       /* tp_print */
@@ -191,7 +191,7 @@ static PyTypeObject CacheEntry_Type = {
   0,                                       /* tp_alloc */
   (newfunc)CacheEntry_new,                 /* tp_new */
 };
-/* CacheEntry Type Define */
+/* CacheMapEntry Type Define */
 
 typedef struct
 {
@@ -247,7 +247,7 @@ static PySequenceMethods CacheMap_as_sequence = {
 };
 
 #define CacheMap_GetItem(self, key)                                            \
-  ((CacheEntry*)PyDict_GetItem(((CacheMap*)self)->dict, (PyObject*)(key)))
+  ((CacheMapEntry*)PyDict_GetItem(((CacheMap*)self)->dict, (PyObject*)(key)))
 
 /* New Reference */
 static PyObject*
@@ -265,7 +265,7 @@ CacheMap_NextEvictKey(CacheMap* self)
     return NULL;
   } else if (dict_len < CacheMap_BUCKET_SIZE) {
     while (PyDict_Next(self->dict, &pos, &key, &wrapper)) {
-      weight = CacheEntry_GetWeight((CacheEntry*)wrapper, now);
+      weight = CacheEntry_GetWeight((CacheMapEntry*)wrapper, now);
       if (min == 0 || weight < min) {
         min = weight;
         rv = key;
@@ -279,7 +279,7 @@ CacheMap_NextEvictKey(CacheMap* self)
       /* fast get list item, borrowed reference */
       key = PyList_GET_ITEM(keylist, pos);
       wrapper = PyDict_GetItem(self->dict, key);
-      weight = CacheEntry_GetWeight((CacheEntry*)wrapper, now);
+      weight = CacheEntry_GetWeight((CacheMapEntry*)wrapper, now);
       if (min == 0 || weight < min) {
         min = weight;
         rv = key;
@@ -289,7 +289,7 @@ CacheMap_NextEvictKey(CacheMap* self)
       pos = CacheMap_BUCKET_NUM * b_size +
             (dict_len - CacheMap_BUCKET_NUM * b_size) / 2;
       wrapper = PyDict_GetItem(self->dict, PyList_GetItem(keylist, pos));
-      weight = CacheEntry_GetWeight((CacheEntry*)wrapper, now);
+      weight = CacheEntry_GetWeight((CacheMapEntry*)wrapper, now);
       if (min == 0 || weight < min) {
         rv = key;
       }
@@ -319,7 +319,7 @@ CacheMap_evict(CacheMap* self)
 int
 CacheMap_DelItem(CacheMap* self, PyObject* key)
 {
-  CacheEntry* cacheentry = CacheMap_GetItem(self, key);
+  CacheMapEntry* cacheentry = CacheMap_GetItem(self, key);
   if (!cacheentry) {
     PyErr_Format(PyExc_KeyError, "%S", key);
     return -1;
@@ -334,7 +334,7 @@ CacheMap_DelItem(CacheMap* self, PyObject* key)
 int
 CacheMap_SetItem(CacheMap* self, PyObject* key, PyObject* value)
 {
-  CacheEntry* cacheentry = (CacheEntry*)PyDict_GetItem(self->dict, key);
+  CacheMapEntry* cacheentry = (CacheMapEntry*)PyDict_GetItem(self->dict, key);
   if (cacheentry) {
     Py_DECREF(cacheentry->ma_value);
     Py_INCREF(value);
@@ -443,7 +443,7 @@ CacheMap_repr(CacheMap* self)
 static PyObject*
 CacheMap_mp_subscript(CacheMap* self, PyObject* key)
 {
-  CacheEntry* wrapper = CacheMap_GetItem(self, key);
+  CacheMapEntry* wrapper = CacheMap_GetItem(self, key);
   if (!wrapper) {
     self->misses++;
     return PyErr_Format(PyExc_KeyError, "%S", key);
@@ -492,9 +492,9 @@ CacheMap_values(CacheMap* self)
   if (size == 0)
     return values;
 
-  CacheEntry* cacheentry;
+  CacheMapEntry* cacheentry;
   for (Py_ssize_t i = 0; i < size; i++) {
-    cacheentry = (CacheEntry*)PyList_GET_ITEM(values, i);
+    cacheentry = (CacheMapEntry*)PyList_GET_ITEM(values, i);
     Py_INCREF(cacheentry);
     PyList_SET_ITEM(values, i, CacheEntry_get_ma_value(cacheentry));
     Py_DECREF(cacheentry);
@@ -505,7 +505,7 @@ CacheMap_values(CacheMap* self)
 static PyObject*
 CacheMap_items(CacheMap* self)
 {
-  CacheEntry* cacheentry;
+  CacheMapEntry* cacheentry;
   PyObject* items = PyDict_Items(self->dict);
   PyObject* kv;
   if (!items) {
@@ -517,7 +517,7 @@ CacheMap_items(CacheMap* self)
 
   for (Py_ssize_t i = 0; i < size; i++) {
     kv = PyList_GET_ITEM(items, i);
-    cacheentry = (CacheEntry*)PyTuple_GET_ITEM(kv, 1);
+    cacheentry = (CacheMapEntry*)PyTuple_GET_ITEM(kv, 1);
     Py_INCREF(cacheentry);
     PyTuple_SET_ITEM(kv, 1, CacheEntry_get_ma_value(cacheentry));
     Py_DECREF(cacheentry);
@@ -530,7 +530,7 @@ CacheMap_get(CacheMap* self, PyObject* args, PyObject* kw)
 {
   PyObject* key;
   PyObject* _default = NULL;
-  CacheEntry* result;
+  CacheMapEntry* result;
 
   static char* kwlist[] = { "key", "default", NULL };
   if (!PyArg_ParseTupleAndKeywords(args, kw, "O|O", kwlist, &key, &_default))
@@ -551,7 +551,7 @@ CacheMap_pop(CacheMap* self, PyObject* args, PyObject* kw)
 {
   PyObject* key;
   PyObject* _default = NULL;
-  CacheEntry* result;
+  CacheMapEntry* result;
 
   static char* kwlist[] = { "key", "default", NULL };
   if (!PyArg_ParseTupleAndKeywords(args, kw, "O|O", kwlist, &key, &_default))
@@ -576,7 +576,7 @@ CacheMap_setdefault(CacheMap* self, PyObject* args, PyObject* kw)
 {
   PyObject* key;
   PyObject* _default = NULL;
-  CacheEntry* result;
+  CacheMapEntry* result;
 
   static char* kwlist[] = { "key", "default", NULL };
   if (!PyArg_ParseTupleAndKeywords(args, kw, "O|O", kwlist, &key, &_default))
@@ -601,7 +601,7 @@ CacheMap_setnx(CacheMap* self, PyObject* args, PyObject* kw)
 {
   PyObject* key;
   PyObject *_default = NULL, *callback = NULL;
-  CacheEntry* result;
+  CacheMapEntry* result;
 
   static char* kwlist[] = { "key", "callback", NULL };
   if (!PyArg_ParseTupleAndKeywords(args, kw, "OO", kwlist, &key, &callback))
@@ -802,7 +802,7 @@ PyInit__ctools_cachemap(void)
   Py_INCREF(&CacheMap_Type);
 
   PyModule_AddObject(m, "CacheMap", (PyObject*)&CacheMap_Type);
-  PyModule_AddObject(m, "CacheEntry", (PyObject*)&CacheEntry_Type);
+  PyModule_AddObject(m, "CacheMapEntry", (PyObject*)&CacheEntry_Type);
 
   return m;
 }

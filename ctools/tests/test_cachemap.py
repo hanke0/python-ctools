@@ -5,7 +5,7 @@ import sys
 import ctools
 
 
-class TestCacheEntry(unittest.TestCase):
+class TestCacheMapEntry(unittest.TestCase):
 
     def assertRefEqual(self, a, b):
         self.assertEqual(sys.getrefcount(a), sys.getrefcount(b))
@@ -18,7 +18,7 @@ class TestCacheEntry(unittest.TestCase):
             def get_value(self):
                 return self.a
 
-        entry = ctools.CacheEntry(uuid.uuid1())
+        entry = ctools.CacheMapEntry(uuid.uuid1())
         a = A(uuid.uuid1())
         self.assertRefEqual(entry, a)
 
