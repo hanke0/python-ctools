@@ -48,7 +48,7 @@ extern "C"
     }                                                                          \
   } while (0)
 
-#define CHECK_NULL_AND_RETURN(o, r)                                            \
+#define RETURN_IF_NULL(o, r)                                                   \
   if (o == NULL)                                                               \
   return r
 
