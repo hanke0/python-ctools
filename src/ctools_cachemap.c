@@ -369,7 +369,7 @@ CacheMap_Clear(CacheMap* self)
 static PyTypeObject CacheMap_Type;
 
 static CacheMap*
-CacheMap_New()
+CacheMap_New(void)
 {
   CacheMap* self;
   self = (CacheMap*)PyObject_GC_New(CacheMap, &CacheMap_Type);
