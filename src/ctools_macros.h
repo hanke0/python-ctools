@@ -16,9 +16,22 @@ limitations under the License.
 #ifndef _CTOOLS_MACROS_H_
 #define _CTOOLS_MACROS_H_
 
+#include <stdio.h>
+
 #ifdef __cplusplus
 extern "C"
 {
+#endif
+
+#ifdef NDEBUG
+#define DEBUG_PRINTF(FORMAT, ...) ((void)0)
+#else
+#define DEBUG_PRINTF(FORMAT, ...)                                              \
+  printf("%s() in %s, line %i: " FORMAT "\n",                                  \
+         __func__,                                                             \
+         __FILE__,                                                             \
+         __LINE__,                                                             \
+         __VA_ARGS__)
 #endif
 
 #define PyObject_HASHABLE(o) (PyObject_Hash((o)) == -1)
@@ -27,7 +40,7 @@ extern "C"
   if (PyErr_Occurred())                                                        \
   return r
 
-#define SET_KEY_ERROR_IF_ERROR_NOT_SET(key, r)                                 \
+#define RETURN_KEY_ERROR_IF_ERROR_NOT_SET(key, r)                              \
   do {                                                                         \
     if (!PyErr_Occurred()) {                                                   \
       if (!PyErr_Format(PyExc_KeyError, "%S", key))                            \
