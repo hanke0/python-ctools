@@ -189,7 +189,7 @@ TTLCache_GetTTLItemWithError(TTLCache* self, PyObject* key)
   int i;
   int64_t t;
   entry = TTLCache_GetItemWithError(self, key);
-  CHECK_NULL_AND_RETURN(entry, NULL);
+  RETURN_IF_NULL(entry, NULL);
 
   t = NOW();
   if (entry->expire < t) {
@@ -247,7 +247,7 @@ TTLCache_New(int64_t ttl)
   TTLCache* self;
   assert(ttl > 0);
   self = (TTLCache*)PyObject_GC_New(TTLCache, &TTLCache_Type);
-  CHECK_NULL_AND_RETURN(self, NULL);
+  RETURN_IF_NULL(self, NULL);
 
   if (!(self->dict = PyDict_New())) {
     Py_DECREF(self);
@@ -376,7 +376,7 @@ static PyObject*
 TTLCache_values(TTLCache* self)
 {
   PyObject* values = PyDict_Values(self->dict);
-  CHECK_NULL_AND_RETURN(values, NULL);
+  RETURN_IF_NULL(values, NULL);
 
   Py_ssize_t size = PyList_GET_SIZE(values);
   if (size == 0)
@@ -510,7 +510,7 @@ TTLCache_setnx(TTLCache* self, PyObject* args, PyObject* kw)
   }
   RETURN_IF_ERROR_SET(NULL);
   _default = PyObject_CallFunction(callback, NULL);
-  CHECK_NULL_AND_RETURN(_default, NULL);
+  RETURN_IF_NULL(_default, NULL);
   Py_INCREF(_default);
   if (TTLCache_SetItem(self, key, _default)) {
     Py_DECREF(_default);
@@ -608,7 +608,7 @@ TTLCache_tp_iter(TTLCache* self)
 {
   PyObject *keys, *it;
   keys = TTLCache_keys(self);
-  CHECK_NULL_AND_RETURN(keys, NULL);
+  RETURN_IF_NULL(keys, NULL);
   it = PySeqIter_New(keys);
   if (it == NULL) {
     Py_DECREF(keys);

@@ -49,7 +49,7 @@ CacheEntry_New(PyObject* ma_value)
   CacheMapEntry* self;
   assert(ma_value);
   self = (CacheMapEntry*)PyObject_GC_New(CacheMapEntry, &CacheEntry_Type);
-  CHECK_NULL_AND_RETURN(self, NULL);
+  RETURN_IF_NULL(self, NULL);
   self->ma_value = ma_value;
   Py_INCREF(ma_value);
   PyObject_GC_Track(self);
@@ -268,7 +268,7 @@ CacheMap_NextEvictKey(CacheMap* self)
     }
   } else {
     PyObject* keylist = PyDict_Keys(self->dict);
-    CHECK_NULL_AND_RETURN(keylist, NULL);
+    RETURN_IF_NULL(keylist, NULL);
     Py_ssize_t b_size = dict_len / CacheMap_BUCKET_NUM;
     for (int i = 0; i < CacheMap_BUCKET_NUM - 1; i++) {
       pos = i * b_size + rand_integer(b_size);
@@ -348,7 +348,7 @@ CacheMap_SetItem(CacheMap* self, PyObject* key, PyObject* value)
   }
 
   entry = CacheEntry_New(value);
-  CHECK_NULL_AND_RETURN(entry, -1);
+  RETURN_IF_NULL(entry, -1);
   CacheEntry_Init(entry);
   if (PyDict_SetItem(self->dict, key, (PyObject*)entry) != 0) {
     Py_DECREF(entry);
@@ -373,7 +373,7 @@ CacheMap_New(void)
 {
   CacheMap* self;
   self = (CacheMap*)PyObject_GC_New(CacheMap, &CacheMap_Type);
-  CHECK_NULL_AND_RETURN(self, NULL);
+  RETURN_IF_NULL(self, NULL);
   if (!(self->dict = PyDict_New())) {
     Py_DECREF(self);
     return NULL;
@@ -437,7 +437,7 @@ CacheMap_repr(CacheMap* self)
   PyObject* s;
   PyObject* rv;
   s = PyObject_Repr(self->dict);
-  CHECK_NULL_AND_RETURN(s, NULL);
+  RETURN_IF_NULL(s, NULL);
   rv = PyUnicode_FromFormat("CacheMap(%S)", s);
   if (!rv) {
     Py_DECREF(s);
@@ -497,7 +497,7 @@ CacheMap_values(CacheMap* self)
   CacheMapEntry* entry;
   Py_ssize_t size;
   values = PyDict_Values(self->dict);
-  CHECK_NULL_AND_RETURN(values, NULL);
+  RETURN_IF_NULL(values, NULL);
 
   size = PyList_GET_SIZE(values);
   if (size == 0)
@@ -521,7 +521,7 @@ CacheMap_items(CacheMap* self)
   Py_ssize_t size;
 
   items = PyDict_Items(self->dict);
-  CHECK_NULL_AND_RETURN(items, NULL);
+  RETURN_IF_NULL(items, NULL);
   size = PyList_GET_SIZE(items);
   if (size == 0)
     return items;
@@ -628,7 +628,7 @@ CacheMap_setnx(CacheMap* self, PyObject* args, PyObject* kw)
   }
 
   _default = PyObject_CallFunction(callback, NULL);
-  CHECK_NULL_AND_RETURN(_default, NULL);
+  RETURN_IF_NULL(_default, NULL);
   DEBUG_PRINTF("after object ref=%ld", _default->ob_refcnt);
   Py_INCREF(_default);
   if (CacheMap_SetItem(self, key, _default) != 0) {
