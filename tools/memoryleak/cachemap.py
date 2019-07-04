@@ -52,6 +52,7 @@ try:
         cache.get(random(), random())
         cache.setnx(random(), lambda: random())
         cache.update(a=random(), b=random())
+        s = str(cache)
         for i in cache:
             pass
 
