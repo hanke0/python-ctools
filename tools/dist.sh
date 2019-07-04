@@ -6,9 +6,9 @@ sdist() {
 
 bdist() {
     export CFLAGS='--std=c99'
-    python -m pip wheel -w dist/ .
+    python -m pip wheel -w dist/ . -v
 	for v in '3.5' '3.6' '3.7'; do
-		type python${v} && python${v} -m pip wheel -w dist/ .
+		type python${v} && python${v} -m pip wheel -w dist/ . -v
 	done
 }
 
