@@ -12,11 +12,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-#ifndef _CTOOLS_FUNCS_H
-#define _CTOOLS_FUNCS_H
-#include "ctools_config.h"
+
 #include <Python.h>
 #include <datetime.h>
+
+#include "ctools_config.h"
 
 PyDoc_STRVAR(jump_consistent_hash__doc__,
              "jump_consistent_hash(key: int, num_buckets: int) -> int:\n\n\
@@ -186,6 +186,16 @@ Ctools__strhash(PyObject* m, PyObject* args)
   }
 }
 
+static PyObject*
+build_with_debug(PyObject* self, PyObject* unused)
+{
+#ifndef NDEBUG
+  Py_RETURN_TRUE;
+#else
+  Py_RETURN_FALSE;
+#endif
+}
+
 static PyMethodDef ctools_utils_methods[] = {
   { "jump_consistent_hash",
     Ctools__jump_hash,
@@ -196,6 +206,7 @@ static PyMethodDef ctools_utils_methods[] = {
     Ctools__int8_to_datetime,
     METH_O,
     int8_to_datetime__doc__ },
+  { "build_with_debug", (PyCFunction)build_with_debug, METH_NOARGS, NULL },
   { NULL, NULL, 0, NULL },
 };
 
@@ -218,5 +229,3 @@ PyInit__ctools_utils(void)
 
   return PyModule_Create(&_ctools_utils_module);
 }
-
-#endif /* _CTOOLS_FUNCS_H */
