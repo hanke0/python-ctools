@@ -10,10 +10,10 @@ sys.path.pop(0)
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-def install(python):
+def install(python, env):
     cmd = [python, '-m', "pip", "install", project_root]
     print("Install: ", " ".join(cmd))
-    return subprocess.call(cmd, env=os.environ)
+    return subprocess.call(cmd, env=env)
 
 
 def run_test(argv):
@@ -28,6 +28,9 @@ def main(argv=None):
                         help="do not build the project (use system installed version)")
     parser.add_argument('--python', '-p', help="Python bin path")
 
+    env = os.environ
+    env.setdefault('CTOOLS_DEBUG', "ON")
+
     in_subprocess = False
     for i, s in enumerate(sys.argv):
         if s == "--run-test-in-this-python":
@@ -39,11 +42,12 @@ def main(argv=None):
     python = args.python or sys.executable
 
     if not args.no_install:
-        r = install(python)
+        r = install(python, env)
         if r:
             return r
+
     if not in_subprocess:
-        return subprocess.call([python, sys.argv[0], '--no-install', '--run-test-in-this-python'] + unknown_args, env=os.environ)
+        return subprocess.call([python, sys.argv[0], '--no-install', '--run-test-in-this-python'] + unknown_args, env=env)
     else:
         return run_test(unknown_args)
 
