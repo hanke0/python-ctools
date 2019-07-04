@@ -18,9 +18,13 @@ import os
 
 def _show_info(test_args):
     import ctools
+    title = "Testing Information"
+    print("\n-" * len(title))
+    print(title)
+    print( "-" * len(title))
     print("Python: ", sys.executable)
-    print('Ctools:', ctools.__version__)
-    print("Arguments:", " ".join(test_args))
+    print('Ctools:', ctools.__version__, "(debug build)" if ctools.build_with_debug() else "")
+    print("Arguments:", " ".join(test_args), '\n')
 
 
 class Tester(object):
@@ -48,9 +52,14 @@ class Tester(object):
 
         test_args += ["--pyargs"] + list(tests)
 
+        if verbose:
+            for i in test_args:
+                if i.startswith('-v'):
+                    break
+            else:
+                test_args.append("-vvv")
+
         _show_info(test_args)
-        if verbose and "-v" not in test_args:
-            test_args.append("-v")
 
         try:
             code = pytest.main(test_args)
