@@ -27,14 +27,14 @@ def source(*args):
 
 
 if os.getenv('CTOOLS_DEBUG', '').upper() == "ON":
-    print('CTOOLS DEBUG ON')
-    extra_extension_args = dict(
-        define_macros=[('NDEBUG', '1')]
-    )
-else:
-    print('CTOOLS DEBUG OFF')
+    print('---------------CTOOLS DEBUG ON------------------')
     extra_extension_args = dict(
         undef_macros=["NDEBUG"]
+    )
+else:
+    print('---------------CTOOLS DEBUG OFF------------------')
+    extra_extension_args = dict(
+        define_macros=[('NDEBUG', '1')]
     )
 
 
