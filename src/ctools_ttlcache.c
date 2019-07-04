@@ -171,7 +171,7 @@ TTLCache_DelItem(TTLCache* self, PyObject* key)
 {
   TTLCacheEntry* entry = TTLCache_GetItemWithError(self, key);
   if (!entry) {
-    SET_KEY_ERROR_IF_ERROR_NOT_SET(key, -1);
+    RETURN_KEY_ERROR_IF_ERROR_NOT_SET(key, -1);
     return -1;
   }
   if (PyDict_DelItem(self->dict, key) != 0) {
@@ -316,7 +316,7 @@ TTLCache_mp_subscript(TTLCache* self, PyObject* key)
 {
   TTLCacheEntry* wrapper = TTLCache_GetTTLItemWithError(self, key);
   if (!wrapper) {
-    SET_KEY_ERROR_IF_ERROR_NOT_SET(key, NULL);
+    RETURN_KEY_ERROR_IF_ERROR_NOT_SET(key, NULL);
     return NULL;
   }
   return TTLCacheEntry_get_ma_value(wrapper);
@@ -474,19 +474,18 @@ TTLCache_setdefault(TTLCache* self, PyObject* args, PyObject* kw)
   if (!PyArg_ParseTupleAndKeywords(args, kw, "O|O", kwlist, &key, &_default))
     return NULL;
   result = TTLCache_GetTTLItemWithError((TTLCache*)self, key);
-  if (!result) {
-    RETURN_IF_ERROR_SET(NULL);
-    if (!_default)
-      _default = Py_None;
-    Py_INCREF(_default);
-    if (TTLCache_SetItem(self, key, _default)) {
-      Py_DECREF(_default);
-      return NULL;
-    }
-    return _default;
+  if (result) {
+    return TTLCacheEntry_get_ma_value(result);
   }
-
-  return TTLCacheEntry_get_ma_value(result);
+  RETURN_IF_ERROR_SET(NULL);
+  if (!_default)
+    _default = Py_None;
+  Py_INCREF(_default);
+  if (TTLCache_SetItem(self, key, _default)) {
+    Py_DECREF(_default);
+    return NULL;
+  }
+  return _default;
 }
 
 static PyObject*
@@ -506,21 +505,18 @@ TTLCache_setnx(TTLCache* self, PyObject* args, PyObject* kw)
   }
 
   result = TTLCache_GetTTLItemWithError((TTLCache*)self, key);
-  if (!result) {
-    RETURN_IF_ERROR_SET(NULL);
-    _default = PyObject_CallFunction(callback, NULL);
-    if (_default == NULL) {
-      return NULL;
-    }
-    Py_INCREF(_default);
-    if (TTLCache_SetItem(self, key, _default)) {
-      Py_DECREF(_default);
-      return NULL;
-    }
-    return _default;
+  if (result) {
+    return TTLCacheEntry_get_ma_value(result);
   }
-
-  return TTLCacheEntry_get_ma_value(result);
+  RETURN_IF_ERROR_SET(NULL);
+  _default = PyObject_CallFunction(callback, NULL);
+  CHECK_NULL_AND_RETURN(_default, NULL);
+  Py_INCREF(_default);
+  if (TTLCache_SetItem(self, key, _default)) {
+    Py_DECREF(_default);
+    return NULL;
+  }
+  return _default;
 }
 
 static PyObject*
