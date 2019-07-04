@@ -26,7 +26,7 @@ pypi:
 	@tools/upload-pypi.sh
 
 install:  ## Install package
-	@pip install .
+	@pip install . -vvv
 
 test:  ## Install package and Test
 	@python tools/runtest.py
