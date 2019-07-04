@@ -373,9 +373,7 @@ CacheMap_New(void)
 {
   CacheMap* self;
   self = (CacheMap*)PyObject_GC_New(CacheMap, &CacheMap_Type);
-  DEBUG_PRINTF("PyObjectNew ref=%ld\n", ((PyObject*)self)->ob_refcnt);
-  if (!self)
-    return NULL;
+  CHECK_NULL_AND_RETURN(self, NULL);
   if (!(self->dict = PyDict_New())) {
     Py_DECREF(self);
     return NULL;
