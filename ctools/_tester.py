@@ -15,6 +15,8 @@
 import sys
 import os
 
+here = os.path.dirname(os.path.abspath(__file__))
+
 
 def _show_info(test_args):
     import ctools
@@ -52,6 +54,7 @@ class Tester(object):
             test_args.extend(sys.argv[1:])
 
         test_args += ["--pyargs"] + list(tests)
+        test_args += ["--deselect", os.path.join(here, 'tests', '_bases.py')]
 
         if verbose:
             for i in test_args:

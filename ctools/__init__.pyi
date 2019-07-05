@@ -35,8 +35,7 @@ class CacheMap:
 
     def __init__(self, capacity: int) -> None:
         """
-
-        :param capacity: capacity
+        :param capacity: max items cache would hold.
         """
         pass
 
