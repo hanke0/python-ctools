@@ -23,7 +23,11 @@ def jump_consistent_hash(key: int, num_bucket: int) -> int: pass
 
 #- api
 #- description: A normal hash function for str with consistent value.
-def strhash(s: str, method: str = 'fnv1a') -> int: ...
+def strhash(s: str, method: str = 'fnv1a') -> int:
+    """
+    Change Log: start from 0.0.4, support method arguments.Allowed method are fnv1a(default), fnv1, djb2 and murmur.
+    """
+    pass
 
 #- api
 #- description: Transfer integer like 20170101 (Java style) to python datetime object.
