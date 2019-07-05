@@ -21,49 +21,8 @@ Install and update using `pip`_ (python3 only):
 API
 ===
 
-* A consistent hash implement. See paper at `jump_consistent_hash`_.
-
-.. code-block:: text
-
-    jump_consistent_hash(key: int, num_buckets: int) -> int:
-        """Generate a number in the range [0, num_buckets).
-
-        This function uses C bindings for speed.
-
-        :param key: The key to hash.
-        :param num_buckets: Number of buckets to use.
-        :return: hash number
-        """
-
-* A normal hash function for str with consistent value.
-
-.. code-block:: text
-
-    strhash(s: str) -> int:
-        """
-        hash str with consistent value.
-
-        This function uses C bindings for speed.
-
-        :param s: The string to hash.
-        :return: hash number
-        """
-
-* Transfer integer like 20170101 (Java style) to python datetime object.
-
-.. code-block:: text
-
-    int8_to_datetime(date_integer: int) -> datetime.datetime:
-        """
-        Convert int like 20180101 to datetime.datetime(2018, 1, 1)).
-
-        This function uses C bindings for speed.
-
-        :param date_integer: The string to hash.
-        :return: parsed datetime
-        """
-
-See more at `api.md <https://github.com/ko-han/python-ctools/blob/master/doc/api.md>`_.
+Latest develop document `api.md <https://github.com/ko-han/python-ctools/blob/master/doc/api.md>`_.
+See wiki for `stable release document  <https://github.com/ko-han/python-ctools/wiki>`_.
 
 Benchmark
 =========
