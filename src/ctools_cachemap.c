@@ -628,7 +628,6 @@ CacheMap_setnx(CacheMap* self, PyObject* args, PyObject* kw)
 
   _default = PyObject_CallFunction(callback, NULL);
   RETURN_IF_NULL(_default, NULL);
-  DEBUG_PRINTF("after object ref=%ld", _default->ob_refcnt);
   if (CacheMap_SetItem(self, key, _default) != 0) {
     Py_XDECREF(_default);
     return NULL;
