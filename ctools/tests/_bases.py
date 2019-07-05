@@ -344,6 +344,26 @@ class BaseTestMapLike(TestCase):
         self.assertRefEqual(ckey, dkey)
         self.assertRefEqual(cval, dval)
 
+    def test_error_set(self):
+        ckey = dict()
+        map_set_random(ckey)
+        dkey = dict()
+        map_set_random(dkey)
+        cval = dict()
+        map_set_random(cval)
+        dval = dict()
+        map_set_random(dval)
+        cache = self.create_map()
+        mp = DefaultMap()
+        with not_raise():
+            cache[ckey] = cval
+
+        with not_raise():
+            mp[dkey] = dval
+
+        self.assertRefEqual(ckey, dkey)
+        self.assertRefEqual(cval, dval)
+
 
 if __name__ == '__main__':
     unittest.main()
