@@ -21,7 +21,7 @@ def _show_info(test_args):
     title = "Testing Information"
     print("\n-" * len(title))
     print(title)
-    print( "-" * len(title))
+    print("-" * len(title))
     print("Python: ", sys.executable)
     print('Ctools:', ctools.__version__, "(debug build)" if ctools.build_with_debug() else "")
     print("Arguments:", " ".join(test_args), '\n')
@@ -31,7 +31,8 @@ class Tester(object):
     def __init__(self, module_name):
         self.module_name = module_name
 
-    def __call__(self, extra_argv=None, coverage=False, include_sys_argv=True, tests=None, verbose=True):
+    def __call__(self, extra_argv=None, coverage=False, include_sys_argv=True, tests=None,
+                 verbose=True):
         import pytest
 
         module = sys.modules[self.module_name]
@@ -67,3 +68,59 @@ class Tester(object):
             code = exc.code
 
         return code
+
+
+def memory_leak_test(test, max_rss=None, max_incr=None, circle=None, multi=10, prefix=""):
+    import time
+    import psutil
+    pid = os.getpid()
+
+    process = psutil.Process(pid)
+    print('PID =', pid)
+
+    run_times = 1
+    last = None
+    cum_incr = 0
+
+    rss_limit = max_rss
+    incr_limit = max_incr
+
+    while True:
+        start = time.time()
+        test()
+        spend = round(time.time() - start, 5)
+
+        rss_bytes = process.memory_info().rss
+
+        if last is None:
+            last = rss_bytes
+            if rss_limit is None:
+                rss_limit = multi * last
+            incr = 0.0
+        else:
+            incr = rss_bytes - last
+            cum_incr += incr
+            last = rss_bytes
+            if incr_limit is None:
+                if cum_incr > 0:
+                    incr_limit = multi * cum_incr
+            else:
+                if cum_incr > incr_limit:
+                    print(f'rss increase {cum_incr:,} touch roof {incr_limit:,}')
+                    return 1
+
+        if rss_limit and rss_bytes > rss_limit:
+            print(f"rss {rss_bytes:,} touch roof {rss_limit:,}")
+            return 1
+
+        print(prefix, f"loop {run_times} finish, cost {spend}, ", end="")
+        print(f"rss={rss_bytes:,}, increase={incr:,}")
+        run_times += 1
+
+        if circle is None:
+            continue
+
+        if run_times >= circle:
+            return 0
+
+    return 0

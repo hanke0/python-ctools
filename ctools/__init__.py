@@ -17,9 +17,9 @@
 from _ctools_utils import *
 from _ctools_cachemap import *
 from _ctools_ttlcache import *
-from ctools._tester import Tester
+from ctools._tester import Tester, memory_leak_test
+from .version import __version__
 
 test = Tester(__name__)
 del Tester
 
-from .version import __version__

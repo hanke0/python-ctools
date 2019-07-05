@@ -1,23 +1,13 @@
 import uuid
-import os
 import time
 import sys
 
-import psutil
 import ctools
 
 
-def random():
+def random_string():
     return str(uuid.uuid1())
 
-
-pid = os.getpid()
-
-process = psutil.Process(pid)
-print('PID =', pid)
-
-run_times = 1
-limit = 1024 * 1024 * 1024  # 1 GB
 
 class TTLCache(dict):
 
@@ -54,41 +44,35 @@ class TTLCache(dict):
             self[k] = v
 
 
-run_type = 'cachemap'
-if len(sys.argv) == 2 and sys.argv[1] == 'dict':
-    ctools.TTLCache = TTLCache
-    run_type = 'dict'
+def test():
+    cache = ctools.TTLCache(1)
 
-print('run type = ', run_type)
+    for c in range(43198):
+        key = random_string()
+        val = random_string()
+        cache[key] = val
+        assert cache[key] == val
 
-try:
-    while True:
-        start = time.time()
-        cache = ctools.TTLCache(1)
+    keys = cache.keys()
+    values = cache.values()
+    cache.setdefault(random_string(), random_string())
+    cache.get(random_string(), random_string())
+    cache.setnx(random_string(), lambda: random_string())
+    cache.update(a=random_string(), b=random_string())
+    s = str(cache)
+    for i in cache:
+        cache.get(i)
 
-        for c in range(0x0000efff, 0x000efff0):
-            key = random()
-            val = random()
-            cache[key] = val
-            assert cache[key] == val
 
-        keys = cache.keys()
-        values = cache.values()
-        cache.setdefault(random(), random())
-        cache.get(random(), random())
-        cache.setnx(random(), lambda: random())
-        cache.update(a=random(), b=random())
-        s = str(cache)
-        for i in cache:
-            cache.get(i)
+if __name__ == '__main__':
+    run_type = 'ttlcache'
+    if len(sys.argv) == 2 and sys.argv[1] == 'dict':
+        ctools.TTLCache = TTLCache
+        run_type = 'dict'
 
-        print(run_type, run_times, "loop finish, cost", time.time() - start, flush=True)
-        rss_bytes = process.memory_info().rss
-        if rss_bytes > limit:
-            print("memory touch roof", rss_bytes, flush=True)
-            sys.exit(1)
-        run_times += 1
-
-except KeyboardInterrupt:
-    print(run_type, 'exit!')
-    sys.exit(0)
+    print('run type = ', run_type)
+    try:
+        sys.exit(ctools.memory_leak_test(test, prefix=run_type))
+    except KeyboardInterrupt:
+        print("exit by Ctrl-C")
+        sys.exit(0)
