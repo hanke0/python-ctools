@@ -41,8 +41,7 @@ TTLCacheEntry_New(PyObject* ma_value, int64_t ttl)
   assert(ma_value);
   assert(ttl > 0);
   self = (TTLCacheEntry*)PyObject_GC_New(TTLCacheEntry, &TTLCacheEntry_Type);
-  if (!self)
-    return NULL;
+  RETURN_IF_NULL(self, NULL);
   self->ma_value = ma_value;
   self->expire = NOW() + ttl;
   Py_INCREF(ma_value);
@@ -121,7 +120,7 @@ static PyTypeObject TTLCacheEntry_Type = {
   0,                                       /* tp_as_number */
   0,                                       /* tp_as_sequence */
   0,                                       /* tp_as_mapping */
-  0,                                       /* tp_hash */
+  PyObject_HashNotImplemented,             /* tp_hash */
   0,                                       /* tp_call */
   0,                                       /* tp_str */
   0,                                       /* tp_getattro */

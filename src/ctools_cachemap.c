@@ -757,7 +757,7 @@ static PyTypeObject CacheMap_Type = {
   0,                                       /* tp_as_number */
   &CacheMap_as_sequence,                   /* tp_as_sequence */
   &CacheMap_as_mapping,                    /* tp_as_mapping */
-  0,                                       /* tp_hash */
+  PyObject_HashNotImplemented,             /* tp_hash */
   0,                                       /* tp_call */
   0,                                       /* tp_str */
   0,                                       /* tp_getattro */
