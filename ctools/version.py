@@ -23,7 +23,7 @@ def safe_version(v):
         return v
 
 
-_version = '0.0.5.beta2'
+_version = '0.1.0.beta1'
 
 
 __version__ = safe_version(_version)
