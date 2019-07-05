@@ -509,9 +509,8 @@ TTLCache_setnx(TTLCache* self, PyObject* args, PyObject* kw)
   RETURN_IF_ERROR_SET(NULL);
   _default = PyObject_CallFunction(callback, NULL);
   RETURN_IF_NULL(_default, NULL);
-  Py_INCREF(_default);
   if (TTLCache_SetItem(self, key, _default)) {
-    Py_DECREF(_default);
+    Py_XDECREF(_default);
     return NULL;
   }
   return _default;
