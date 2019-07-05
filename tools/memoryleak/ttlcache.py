@@ -1,12 +1,21 @@
 import uuid
 import time
 import sys
+from contextlib import contextmanager
 
 import ctools
 
 
 def random_string():
     return str(uuid.uuid1())
+
+
+@contextmanager
+def not_raise(exc=Exception):
+    try:
+        yield
+    except exc:
+        pass
 
 
 class TTLCache(dict):
@@ -52,6 +61,9 @@ def test():
         val = random_string()
         cache[key] = val
         assert cache[key] == val
+
+    with not_raise():
+        cache[[]] = uuid.uuid1()
 
     keys = cache.keys()
     values = cache.values()

@@ -1,5 +1,6 @@
 import uuid
 import sys
+from contextlib import contextmanager
 
 import ctools
 
@@ -16,14 +17,25 @@ def dict_as_cachemap(size):
     return Cache()
 
 
+@contextmanager
+def not_raise(exc=Exception):
+    try:
+        yield
+    except exc:
+        pass
+
+
 def test():
     cache = ctools.CacheMap(1024)
 
-    for c in range(0x0000efff, 0x000efff0):
+    for c in range(42657):
         key = random()
         val = random()
         cache[key] = val
         assert cache[key] == val
+
+    with not_raise():
+       cache[[]] = uuid.uuid1()
 
     keys = cache.keys()
     values = cache.values()
