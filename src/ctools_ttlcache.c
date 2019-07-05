@@ -557,7 +557,7 @@ TTLCache_set_default_ttl(TTLCache* self, PyObject* ttl)
 }
 
 static PyObject*
-TTLCache_get_ttl(TTLCache* self)
+TTLCache_get_default_ttl(TTLCache* self)
 {
   return PyLong_FromLongLong(self->default_ttl);
 }
@@ -596,7 +596,7 @@ static PyMethodDef TTLCache_methods[] = {
   { "clear", (PyCFunction)TTLCache_clear, METH_NOARGS, NULL },
   { "setnx", (PyCFunction)TTLCache_setnx, METH_VARARGS | METH_KEYWORDS, NULL },
   { "_storage", (PyCFunction)TTLCache__storage, METH_NOARGS, NULL },
-  { "get_ttl", (PyCFunction)TTLCache_get_ttl, METH_NOARGS, NULL },
+  { "get_default_ttl", (PyCFunction)TTLCache_get_default_ttl, METH_NOARGS, NULL },
   { NULL, NULL, 0, NULL } /* Sentinel */
 };
 
