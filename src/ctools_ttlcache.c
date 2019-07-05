@@ -384,7 +384,6 @@ TTLCache_values(TTLCache* self)
   TTLCacheEntry* entry;
   for (Py_ssize_t i = 0; i < size; i++) {
     entry = (TTLCacheEntry*)PyList_GET_ITEM(values, i);
-    Py_INCREF(entry);
     PyList_SET_ITEM(values, i, TTLCacheEntry_get_ma_value(entry));
     Py_DECREF(entry);
   }
