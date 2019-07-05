@@ -18,10 +18,11 @@ Install and update using `pip`_ (python3 only):
 
     pip install -U ctools
 
-API
-===
+Documents
+=========
 
 Latest develop document `api.md <https://github.com/ko-han/python-ctools/blob/master/doc/api.md>`_.
+
 See wiki for `stable release document  <https://github.com/ko-han/python-ctools/wiki>`_.
 
 Benchmark
