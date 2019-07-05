@@ -505,7 +505,6 @@ CacheMap_values(CacheMap* self)
 
   for (Py_ssize_t i = 0; i < size; i++) {
     entry = (CacheMapEntry*)PyList_GET_ITEM(values, i);
-    Py_INCREF(entry);
     PyList_SET_ITEM(values, i, CacheEntry_get_ma_value(entry));
     Py_DECREF(entry);
   }
