@@ -16,12 +16,11 @@ limitations under the License.
 #ifndef _CTOOLS_MACROS_H_
 #define _CTOOLS_MACROS_H_
 
-#include <stdio.h>
-
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+#include <stdio.h>
 
 #ifdef NDEBUG
 #define DEBUG_PRINTF(FORMAT, ...) ((void)0)
