@@ -89,6 +89,6 @@ def safe_version(v):
     return "".join(parts)
 
 
-_version = "0.1.0.beta1"
+_version = "0.1.0"
 
 __version__ = safe_version(_version)
