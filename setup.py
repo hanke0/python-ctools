@@ -63,6 +63,11 @@ setup(
     author_email="hanke0@outlook.com",
     description="A collection of useful extensions for python implement in C.",
     url="https://github.com/ko-han/python-ctools",
+    project_urls={
+        "Bug Tracker": "https://github.com/ko-han/python-ctools/issues",
+        "Documentation": "https://github.com/ko-han/python-ctools/wiki",
+        "Source Code": "https://github.com/ko-han/python-ctools",
+    },
     license='Apache License 2.0',
     long_description=readme,
     long_description_content_type='text/x-rst',
