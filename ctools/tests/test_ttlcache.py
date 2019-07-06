@@ -8,7 +8,6 @@ from ctools.tests._bases import BaseTestEntry, BaseTestMapLike
 
 
 class TestTTLCacheEntry(BaseTestEntry):
-
     def create_entry(self):
         return ctools.TTLCacheEntry(uuid.uuid1(), 1024)
 
@@ -21,7 +20,6 @@ def set_random(mp):
 
 
 class TestTTLCache(BaseTestMapLike):
-
     def create_map(self):
         return ctools.TTLCache(1024)
 
@@ -48,5 +46,5 @@ class TestTTLCache(BaseTestMapLike):
 
 del BaseTestEntry, BaseTestMapLike
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

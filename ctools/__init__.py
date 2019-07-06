@@ -22,4 +22,3 @@ from .version import __version__
 
 test = Tester(__name__)
 del Tester
-

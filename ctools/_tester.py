@@ -21,21 +21,32 @@ here = os.path.dirname(os.path.abspath(__file__))
 
 def _show_info(test_args):
     import ctools
+
     title = "Testing Information"
     print("\n-" * len(title))
     print(title)
     print("-" * len(title))
     print("Python: ", sys.executable)
-    print('Ctools:', ctools.__version__, "(debug build)" if ctools.build_with_debug() else "")
-    print("Arguments:", " ".join(test_args), '\n')
+    print(
+        "Ctools:",
+        ctools.__version__,
+        "(debug build)" if ctools.build_with_debug() else "",
+    )
+    print("Arguments:", " ".join(test_args), "\n")
 
 
 class Tester(object):
     def __init__(self, module_name):
         self.module_name = module_name
 
-    def __call__(self, extra_argv=None, coverage=False, include_sys_argv=True, tests=None,
-                 verbose=True):
+    def __call__(
+        self,
+        extra_argv=None,
+        coverage=False,
+        include_sys_argv=True,
+        tests=None,
+        verbose=True,
+    ):
         import pytest
 
         module = sys.modules[self.module_name]
@@ -55,11 +66,11 @@ class Tester(object):
             test_args.extend(sys.argv[1:])
 
         test_args += ["--pyargs"] + list(tests)
-        test_args += ["--deselect", os.path.join(here, 'tests', '_bases.py')]
+        test_args += ["--deselect", os.path.join(here, "tests", "_bases.py")]
 
         if verbose:
             for i in test_args:
-                if i.startswith('-v'):
+                if i.startswith("-v"):
                     break
             else:
                 test_args.append("-vvv")
@@ -74,11 +85,13 @@ class Tester(object):
         return code
 
 
-_memory_report = namedtuple('MemoryReport', "exc_code,cycles,max_rss,last_rss,max_incr,cum_incr,escaped")
+_memory_report = namedtuple(
+    "MemoryReport", "exc_code,cycles,max_rss,last_rss,max_incr,cum_incr,escaped"
+)
 
 
 def memory_leak_test(
-    test, max_rss=None, max_incr=None, cycles=None, multi=10, log_prefix="", log=True,
+    test, max_rss=None, max_incr=None, cycles=None, multi=10, log_prefix="", log=True
 ):
     import time
     import psutil
@@ -90,7 +103,7 @@ def memory_leak_test(
 
     pid = os.getpid()
     process = psutil.Process(pid)
-    print_('PID =', pid)
+    print_("PID =", pid)
 
     cycle_count = 1
     last_rss = None
@@ -124,7 +137,9 @@ def memory_leak_test(
                         incr_limit = multi * cum_incr
 
             print_(log_prefix, end=" ")
-            print_(f"loop={cycle_count}, escaped={spend}, rss={rss_bytes:,}, increase={incr:,}")
+            print_(
+                f"loop={cycle_count}, escaped={spend}, rss={rss_bytes:,}, increase={incr:,}"
+            )
 
             if rss_limit and rss_bytes > rss_limit:
                 print_(f"rss {rss_bytes:,} touch roof {rss_limit:,}")
@@ -132,7 +147,7 @@ def memory_leak_test(
                 break
 
             if incr_limit and cum_incr > incr_limit:
-                print_(f'rss increase {cum_incr:,} touch roof {incr_limit:,}')
+                print_(f"rss increase {cum_incr:,} touch roof {incr_limit:,}")
                 exc_code = 1
                 break
 
@@ -145,8 +160,14 @@ def memory_leak_test(
                 break
 
     except KeyboardInterrupt:
-        print_(_memory_report(exc_code, cycle_count, max_rss, last_rss, max_incr, cum_incr, escaped))
+        print_(
+            _memory_report(
+                exc_code, cycle_count, max_rss, last_rss, max_incr, cum_incr, escaped
+            )
+        )
         raise
-    report = _memory_report(exc_code, cycle_count, max_rss, last_rss, max_incr, cum_incr, escaped)
+    report = _memory_report(
+        exc_code, cycle_count, max_rss, last_rss, max_incr, cum_incr, escaped
+    )
     print_(report)
     return report

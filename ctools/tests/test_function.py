@@ -7,7 +7,6 @@ import ctools
 
 
 class TestFunction(unittest.TestCase):
-
     def test_int8_to_datetime(self):
         start = datetime(2000, 1, 1)
         for i in range(1024):
@@ -21,17 +20,11 @@ class TestFunction(unittest.TestCase):
     def test_jump_consistent_hash(self):
         count = 1024
         bucket = 100
-        m = {
-            i: ctools.jump_consistent_hash(i, bucket)
-            for i in range(count)
-        }
+        m = {i: ctools.jump_consistent_hash(i, bucket) for i in range(count)}
         for i in range(count):
             b = ctools.jump_consistent_hash(i, bucket)
             self.assertEqual(m[i], b)
-        n = {
-            i: ctools.jump_consistent_hash(i, bucket + 1)
-            for i in range(count)
-        }
+        n = {i: ctools.jump_consistent_hash(i, bucket + 1) for i in range(count)}
         equal_count = 0
         for i in range(count):
             if m[i] == n[i]:
@@ -54,10 +47,10 @@ class TestFunction(unittest.TestCase):
             self.assertEqual(b, ctools.strhash(us, meth))
 
         self.assertEqual(ctools.strhash(s), ctools.strhash(s, "fnv1a"))
-        self.assertEqual(ctools.strhash(us), ctools.strhash(us, 'fnv1a'))
+        self.assertEqual(ctools.strhash(us), ctools.strhash(us, "fnv1a"))
 
         self.assertNotEqual(ctools.strhash(s), ctools.strhash(s, "fnv1"))
         self.assertNotEqual(ctools.strhash(s), ctools.strhash(s, "fnv1"))
 
         with self.assertRaises(TypeError):
-            ctools.strhash(s, method='fnv1a')
+            ctools.strhash(s, method="fnv1a")

@@ -35,7 +35,7 @@ def test():
         assert cache[key] == val
 
     with not_raise():
-       cache[[]] = uuid.uuid1()
+        cache[[]] = uuid.uuid1()
 
     keys = cache.keys()
     values = cache.values()
@@ -48,13 +48,13 @@ def test():
         pass
 
 
-if __name__ == '__main__':
-    run_type = 'cachemap'
-    if len(sys.argv) == 2 and sys.argv[1] == 'dict':
+if __name__ == "__main__":
+    run_type = "cachemap"
+    if len(sys.argv) == 2 and sys.argv[1] == "dict":
         ctools.CacheMap = dict_as_cachemap
-        run_type = 'dict'
+        run_type = "dict"
 
-    print('run type = ', run_type)
+    print("run type = ", run_type)
     try:
         report = ctools.memory_leak_test(test, log_prefix=run_type)
         sys.exit(report.exc_code)

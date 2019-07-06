@@ -26,16 +26,12 @@ def source(*args):
     return [os.path.join("src", *args)]
 
 
-if os.getenv('CTOOLS_DEBUG', '').upper() == "ON":
-    print('---------------CTOOLS DEBUG ON------------------')
-    extra_extension_args = dict(
-        undef_macros=["NDEBUG"]
-    )
+if os.getenv("CTOOLS_DEBUG", "").upper() == "ON":
+    print("---------------CTOOLS DEBUG ON------------------")
+    extra_extension_args = dict(undef_macros=["NDEBUG"])
 else:
-    print('---------------CTOOLS DEBUG OFF------------------')
-    extra_extension_args = dict(
-        define_macros=[('NDEBUG', '1')]
-    )
+    print("---------------CTOOLS DEBUG OFF------------------")
+    extra_extension_args = dict(define_macros=[("NDEBUG", "1")])
 
 
 def find_version():
@@ -44,7 +40,7 @@ def find_version():
         value = f.read()
         exec(value, d, d)
 
-    return d['__version__']
+    return d["__version__"]
 
 
 extensions = [
@@ -53,7 +49,7 @@ extensions = [
     Extension("_ctools_ttlcache", source("ctools_ttlcache.c"), **extra_extension_args),
 ]
 
-with io.open('README.rst', 'rt', encoding='utf8') as f:
+with io.open("README.rst", "rt", encoding="utf8") as f:
     readme = f.read()
 
 setup(
@@ -68,14 +64,14 @@ setup(
         "Documentation": "https://github.com/ko-han/python-ctools/wiki",
         "Source Code": "https://github.com/ko-han/python-ctools",
     },
-    license='Apache License 2.0',
+    license="Apache License 2.0",
     long_description=readme,
-    long_description_content_type='text/x-rst',
+    long_description_content_type="text/x-rst",
     python_requires=">=3",
     include_package_data=True,
     zip_safe=False,
     ext_modules=extensions,
-    packages=find_packages(include=['ctools', 'ctools.*']),
+    packages=find_packages(include=["ctools", "ctools.*"]),
     classifiers=[
         "Programming Language :: C",
         "Programming Language :: Python :: 3 :: Only",

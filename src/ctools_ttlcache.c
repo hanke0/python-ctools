@@ -596,7 +596,10 @@ static PyMethodDef TTLCache_methods[] = {
   { "clear", (PyCFunction)TTLCache_clear, METH_NOARGS, NULL },
   { "setnx", (PyCFunction)TTLCache_setnx, METH_VARARGS | METH_KEYWORDS, NULL },
   { "_storage", (PyCFunction)TTLCache__storage, METH_NOARGS, NULL },
-  { "get_default_ttl", (PyCFunction)TTLCache_get_default_ttl, METH_NOARGS, NULL },
+  { "get_default_ttl",
+    (PyCFunction)TTLCache_get_default_ttl,
+    METH_NOARGS,
+    NULL },
   { NULL, NULL, 0, NULL } /* Sentinel */
 };
 

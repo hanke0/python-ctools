@@ -21,7 +21,6 @@ def not_raise(exc=Exception):
 
 
 class TestCase(unittest.TestCase):
-
     def assertRefEqual(self, a, b, msg=None):
         self.assertEqual(sys.getrefcount(a), sys.getrefcount(b), msg=msg)
 
@@ -52,7 +51,6 @@ def map_set_random(mp):
 
 
 class DefaultMap(dict):
-
     def setnx(self, k, ca):
         if k not in self:
             v = ca()
@@ -287,7 +285,7 @@ class BaseTestMapLike(TestCase):
         self.assertRefEqual(dkey, ckey)
         self.assertRefEqual(dval, cval)
         self.assertEqual(len(cache), len(mp))
-        self.assertIn('a', cache)
+        self.assertIn("a", cache)
 
     def test_normal_setdefault(self):
         cache = self.create_map()
@@ -340,7 +338,7 @@ class BaseTestMapLike(TestCase):
         dkey, dval = map_set_random(mp)
         cache.clear()
         mp.clear()
-        self.assertEqual(len(cache), 0, msg='cache map is not empty after clear')
+        self.assertEqual(len(cache), 0, msg="cache map is not empty after clear")
         self.assertRefEqual(ckey, dkey)
         self.assertRefEqual(cval, dval)
 
@@ -365,5 +363,5 @@ class BaseTestMapLike(TestCase):
         self.assertRefEqual(cval, dval)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

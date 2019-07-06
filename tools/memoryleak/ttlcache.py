@@ -19,7 +19,6 @@ def not_raise(exc=Exception):
 
 
 class TTLCache(dict):
-
     def __init__(self, ttl):
         self.ttl = ttl
 
@@ -76,13 +75,13 @@ def test():
         cache.get(i)
 
 
-if __name__ == '__main__':
-    run_type = 'ttlcache'
-    if len(sys.argv) == 2 and sys.argv[1] == 'dict':
+if __name__ == "__main__":
+    run_type = "ttlcache"
+    if len(sys.argv) == 2 and sys.argv[1] == "dict":
         ctools.TTLCache = TTLCache
-        run_type = 'dict'
+        run_type = "dict"
 
-    print('run type = ', run_type)
+    print("run type = ", run_type)
     try:
         report = ctools.memory_leak_test(test, log_prefix=run_type)
         sys.exit(report.exc_code)

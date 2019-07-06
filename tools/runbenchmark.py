@@ -34,7 +34,6 @@ def humanize(t):
 
 
 class Benchmark:
-
     def __init__(self, path):
         self.path = os.path.abspath(path)
 
@@ -52,7 +51,7 @@ class Benchmark:
     def _is_benchmark(self, name, obj):
         if not inspect.isfunction(obj):
             return False
-        if name == 'benchmark_setup':
+        if name == "benchmark_setup":
             return False
         if name.startswith("benchmark_"):
             return True
@@ -70,7 +69,10 @@ class Benchmark:
         for file in self.files:
             g = self._exec_file(file)
             benchmarks = self._filter_benchmarks(g)
-            print("\nFound {} benchmarks in file {}".format(len(benchmarks), file), flush=True)
+            print(
+                "\nFound {} benchmarks in file {}".format(len(benchmarks), file),
+                flush=True,
+            )
             for name in benchmarks:
                 b_rv = self.run_str(name, g)
                 s = "{}::{}    {}".format(file, name, self._pretty_rv(*b_rv))
@@ -82,9 +84,9 @@ class Benchmark:
         callstr = "{}({})".format(name, ",".join(args))
         lines = []
         for k, v in getattr(call, "__setup__", {}).items():
-            lines.append('{}={}()'.format(k, v.__name__))
+            lines.append("{}={}()".format(k, v.__name__))
 
-        setup = (";".join(lines))
+        setup = ";".join(lines)
 
         repeat = 10
         total_cost = 8
@@ -102,15 +104,18 @@ class Benchmark:
                     count *= 10
                 loop = count
 
-        costs = timeit.repeat(callstr, setup=setup, globals=g, number=loop, repeat=repeat)
+        costs = timeit.repeat(
+            callstr, setup=setup, globals=g, number=loop, repeat=repeat
+        )
         costs = [t / loop for t in costs]  # seconds
         return loop, repeat, costs
 
     @staticmethod
     def _pretty_rv(loop, repeat, costs):
         mean, std = mean_std(costs)
-        return "{} ± {}\t(each {:,} runs, {:,} loops)".format(humanize(mean), humanize(std),
-                                                              repeat, loop)
+        return "{} ± {}\t(each {:,} runs, {:,} loops)".format(
+            humanize(mean), humanize(std), repeat, loop
+        )
 
 
 def main():
@@ -120,7 +125,7 @@ def main():
         path = "."
     else:
         path = sys.argv[1]
-        if path.startswith('-'):
+        if path.startswith("-"):
             parser.print_help()
             sys.exit(1)
 
@@ -130,5 +135,5 @@ def main():
     sys.exit(0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

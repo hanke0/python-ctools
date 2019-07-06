@@ -7,7 +7,6 @@ from ctools.tests._bases import BaseTestMapLike, BaseTestEntry
 
 
 class TestCacheMapEntry(BaseTestEntry):
-
     def create_entry(self):
         return ctools.CacheMapEntry(uuid.uuid1())
 
@@ -20,19 +19,18 @@ def set_random(mp):
 
 
 class TestCacheMap(BaseTestMapLike):
-
     def create_map(self):
         return ctools.CacheMap(257)
 
     def test_get_set(self):
         d = ctools.CacheMap(2)
-        d['a'] = 1
-        d['c'] = 2
-        d['e'] = 3
+        d["a"] = 1
+        d["c"] = 2
+        d["e"] = 3
         self.assertEqual(len(d), 2)
 
         for i in range(10):
-            self.assertEqual(d['c'], 2)
+            self.assertEqual(d["c"], 2)
 
     def test_len(self):
         for m in range(254, 1024):
@@ -47,5 +45,5 @@ class TestCacheMap(BaseTestMapLike):
 
 del BaseTestEntry, BaseTestMapLike
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -8,7 +8,7 @@ def benchmark_int8_to_datetime():
 
 
 def rand_int():
-    return random.randint(0, 0xffffffff)
+    return random.randint(0, 0xFFFFFFFF)
 
 
 @benchmark_setup(i=rand_int)
