@@ -15,6 +15,7 @@ clean:  ## Clean cache, include dist
 format:  ## Format code
 	@clang-format -style=Mozilla -i src/*.h
 	@clang-format -style=Mozilla -i src/*.c
+	@black **/*.py
 
 benchmark:  ## Run benchmark
 	@$(CURDIR)/tools/runbenchmark.py benchmarks/
