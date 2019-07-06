@@ -56,7 +56,8 @@ if __name__ == '__main__':
 
     print('run type = ', run_type)
     try:
-        sys.exit(ctools.memory_leak_test(test, prefix=run_type))
+        report = ctools.memory_leak_test(test, log_prefix=run_type)
+        sys.exit(report.exc_code)
     except KeyboardInterrupt:
         print("exit by Ctrl-C")
         sys.exit(0)

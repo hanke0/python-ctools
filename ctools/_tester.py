@@ -14,6 +14,7 @@
 
 import sys
 import os
+from collections import namedtuple
 
 here = os.path.dirname(os.path.abspath(__file__))
 
@@ -73,57 +74,79 @@ class Tester(object):
         return code
 
 
-def memory_leak_test(test, max_rss=None, max_incr=None, circle=None, multi=10, prefix=""):
+_memory_report = namedtuple('MemoryReport', "exc_code,cycles,max_rss,last_rss,max_incr,cum_incr,escaped")
+
+
+def memory_leak_test(
+    test, max_rss=None, max_incr=None, cycles=None, multi=10, log_prefix="", log=True,
+):
     import time
     import psutil
+
+    if log:
+        print_ = print
+    else:
+        print_ = lambda *_, **__: None
+
     pid = os.getpid()
-
     process = psutil.Process(pid)
-    print('PID =', pid)
+    print_('PID =', pid)
 
-    run_times = 1
-    last = None
+    cycle_count = 1
+    last_rss = None
     cum_incr = 0
 
     rss_limit = max_rss
     incr_limit = max_incr
+    exc_code = 0
+    escaped = 0.0
 
-    while True:
-        start = time.time()
-        test()
-        spend = round(time.time() - start, 5)
+    try:
+        while True:
+            start = time.time()
+            test()
+            spend = round(time.time() - start, 5)
+            escaped += spend
 
-        rss_bytes = process.memory_info().rss
+            rss_bytes = process.memory_info().rss
 
-        if last is None:
-            last = rss_bytes
-            if rss_limit is None:
-                rss_limit = multi * last
-            incr = 0.0
-        else:
-            incr = rss_bytes - last
-            cum_incr += incr
-            last = rss_bytes
-            if incr_limit is None:
-                if cum_incr > 0:
-                    incr_limit = multi * cum_incr
+            if last_rss is None:
+                last_rss = rss_bytes
+                if rss_limit is None:
+                    rss_limit = multi * last_rss
+                incr = 0.0
             else:
-                if cum_incr > incr_limit:
-                    print(f'rss increase {cum_incr:,} touch roof {incr_limit:,}')
-                    return 1
+                incr = rss_bytes - last_rss
+                cum_incr += incr
+                last_rss = rss_bytes
+                if incr_limit is None:
+                    if cum_incr > 0:
+                        incr_limit = multi * cum_incr
 
-        if rss_limit and rss_bytes > rss_limit:
-            print(f"rss {rss_bytes:,} touch roof {rss_limit:,}")
-            return 1
+            print_(log_prefix, f"loop {cycle_count} finish, escaped {spend} s, ", end="")
+            print_(f"rss={rss_bytes:,}, increase={incr:,}")
 
-        print(prefix, f"loop {run_times} finish, cost {spend}, ", end="")
-        print(f"rss={rss_bytes:,}, increase={incr:,}")
-        run_times += 1
+            if rss_limit and rss_bytes > rss_limit:
+                print_(f"rss {rss_bytes:,} touch roof {rss_limit:,}")
+                exc_code = 1
+                break
 
-        if circle is None:
-            continue
+            if incr_limit and cum_incr > incr_limit:
+                print_(f'rss increase {cum_incr:,} touch roof {incr_limit:,}')
+                exc_code = 1
+                break
 
-        if run_times >= circle:
-            return 0
+            cycle_count += 1
 
-    return 0
+            if cycles is None:
+                continue
+
+            if cycle_count >= cycles:
+                break
+
+    except KeyboardInterrupt:
+        print_(_memory_report(exc_code, cycle_count, max_rss, last_rss, max_incr, cum_incr, escaped))
+        raise
+    report = _memory_report(exc_code, cycle_count, max_rss, last_rss, max_incr, cum_incr, escaped)
+    print_(report)
+    return report
