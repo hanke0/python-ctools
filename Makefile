@@ -5,9 +5,9 @@ help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 dist:  ## Build dists
-	@$(CURDIR)tools/clean-cache.sh
-	@$(CURDIR)tools/dist.sh
-	@$(CURDIR)tools/clean-cache.sh soft
+	@$(CURDIR)/tools/clean-cache.sh
+	@$(CURDIR)/tools/dist.sh
+	@$(CURDIR)/tools/clean-cache.sh soft
 
 clean:  ## Clean cache, include dist
 	@$(CURDIR)/tools/clean-cache.sh
@@ -17,7 +17,7 @@ format:  ## Format code
 	@clang-format -style=Mozilla -i src/*.c
 
 benchmark:  ## Run benchmark
-	@$(CURDIR)tools/runbenchmark.py benchmarks/
+	@$(CURDIR)/tools/runbenchmark.py benchmarks/
 
 pypi-test:
 	@$(CURDIR)/tools/upload-pypi.sh test
