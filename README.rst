@@ -4,7 +4,7 @@ A collection of useful extensions for python implement in C.
 
 :Python: >= 3.5
 :Version: 0.1.0
-:Latest stable: 0.0.4
+:Latest stable: 0.1.0
 :Python Implementation: CPython only
 
 .. contents::
