@@ -123,8 +123,8 @@ def memory_leak_test(
                     if cum_incr > 0:
                         incr_limit = multi * cum_incr
 
-            print_(log_prefix, f"loop {cycle_count} finish, escaped {spend} s, ", end="")
-            print_(f"rss={rss_bytes:,}, increase={incr:,}")
+            print_(log_prefix, end=" ")
+            print_(f"loop={cycle_count}, escaped={spend}, rss={rss_bytes:,}, increase={incr:,}")
 
             if rss_limit and rss_bytes > rss_limit:
                 print_(f"rss {rss_bytes:,} touch roof {rss_limit:,}")
