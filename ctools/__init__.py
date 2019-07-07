@@ -17,6 +17,7 @@
 from _ctools_utils import *
 from _ctools_cachemap import *
 from _ctools_ttlcache import *
+from _ctools_channel import *
 from ctools._tester import Tester, memory_leak_test
 from .version import __version__
 
