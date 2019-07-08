@@ -27,39 +27,30 @@ def main(argv=None):
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument(
         "--no-install",
-        "-n",
         action="store_true",
         default=False,
         help="do not build the project (use system installed version)",
     )
-    parser.add_argument("--python", "-p", help="Python bin path")
+    parser.add_argument("--python", help="Python bin path")
 
     env = os.environ
     env.setdefault("CTOOLS_DEBUG", "ON")
 
-    in_subprocess = False
-    for i, s in enumerate(sys.argv):
-        if s == "--run-test-in-this-python":
-            sys.argv.pop(i)
-            in_subprocess = True
-            break
-
     args, unknown_args = parser.parse_known_args(argv)
+
     python = args.python or sys.executable
 
     if not args.no_install:
         r = install(python, env)
         if r:
             return r
-
-    if not in_subprocess:
-        return subprocess.call(
-            [python, sys.argv[0], "--no-install", "--run-test-in-this-python"]
-            + unknown_args,
-            env=env,
-        )
-    else:
+    if os.getenv('__CTOOLS_IN_SUBPROCESS', 'Y') == "Y":
         return run_test(unknown_args)
+
+    env['__CTOOLS_IN_SUBPROCESS'] = "Y"
+    return subprocess.call(
+        [python, sys.argv[0], "--no-install"] + unknown_args, env=env
+    )
 
 
 if __name__ == "__main__":
