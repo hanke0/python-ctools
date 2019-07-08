@@ -214,11 +214,10 @@ Channel_send_idx(Channel* self)
   }
 
   if (Py_SIZE(self) == 1) {
-    if (self->ob_item[0] == NULL) {
-      return -1;
-    } else {
+    if (self->ob_item[0] == NULL)
       return 0;
-    }
+    else
+      return -1;
   }
 
   /* size is 2**n */
@@ -249,11 +248,10 @@ Channel_recv_idx(Channel* self)
   }
 
   if (Py_SIZE(self) == 1) {
-    if (self->ob_item[0] == NULL) {
-      return 0;
-    } else {
+    if (self->ob_item[0] == NULL)
       return -1;
-    }
+    else
+      return 0;
   }
 
   /* size is 2**n */
@@ -330,8 +328,9 @@ Channel_send(PyObject* self, PyObject* obj)
     Py_RETURN_FALSE;
   }
   item = ch->ob_item[sendx];
-  Py_XDECREF(item);
+  assert(item == NULL);
   Py_INCREF(obj);
+  ch->ob_item[sendx] = obj;
   Channel_incr_sendx(ch);
   Py_RETURN_TRUE;
 }
