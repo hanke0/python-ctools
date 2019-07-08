@@ -44,10 +44,10 @@ def main(argv=None):
         r = install(python, env)
         if r:
             return r
-    if os.getenv('__CTOOLS_IN_SUBPROCESS', 'Y') == "Y":
+    if os.getenv("__CTOOLS_IN_SUBPROCESS", "Y") == "Y":
         return run_test(unknown_args)
 
-    env['__CTOOLS_IN_SUBPROCESS'] = "Y"
+    env["__CTOOLS_IN_SUBPROCESS"] = "Y"
     return subprocess.call(
         [python, sys.argv[0], "--no-install"] + unknown_args, env=env
     )
