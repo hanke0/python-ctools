@@ -389,12 +389,16 @@ Channel_safe_consume(PyObject* self, PyObject* callback)
     Py_DECREF(item);
     return NULL;
   }
-  Py_XDECREF(callback_rv);
+  if (callback_rv == Py_False) {
+    Py_DECREF(item);
+    return callback_rv;
+  }
+
   Py_DECREF(item);
   Py_DECREF(item);
   ch->ob_item[recvx] = NULL;
   Channel_incr_recvx(ch);
-  Py_RETURN_TRUE;
+  return callback_rv;
 }
 
 static PyObject*
