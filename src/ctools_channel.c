@@ -184,6 +184,7 @@ Channel_incr_sendx(Channel* self)
   } else {
     self->sflag = 1;
   }
+  self->sendx = sendx;
 }
 
 static void
@@ -195,7 +196,7 @@ Channel_incr_recvx(Channel* self)
     return;
   }
   int recvx;
-  recvx = self->sendx + 1;
+  recvx = self->recvx + 1;
   if (recvx >= 2 * Py_SIZE(self)) {
     recvx %= 2 * Py_SIZE(self);
   }
@@ -204,6 +205,7 @@ Channel_incr_recvx(Channel* self)
   } else {
     self->rflag = 1;
   }
+  self->recvx = recvx;
 }
 
 static int
@@ -299,7 +301,6 @@ Channel_recv(PyObject* self, PyObject* unused)
     PyTuple_SET_ITEM(rv, 1, Py_False);
     return rv;
   }
-
   item = ch->ob_item[recvx];
   assert(item);
   ch->ob_item[recvx] = NULL;
