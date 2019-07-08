@@ -51,6 +51,8 @@ extern "C"
   if (o == NULL)                                                               \
   return r
 
+#define IS_POW_OF_2(x) ((x) != 0 && (((x) & ((x)-1)) == 0))
+
 #ifdef __cplusplus
 }
 #endif

@@ -26,24 +26,24 @@ typedef struct
   PyObject** ob_item;
   /* clang-format on */
   /* cursor between [0, 2 * size), if cursor >= size, set flag to 1
-   * if flag == -1; channel is closed
-   * when wcursor == rcursor; rflag == wflag -> channel is empty
-   *                          rflag != wflag -> channel is full
+   * if flag <= 0; channel is closed
+   * when sendx == recvx; rflag == sflag -> channel is empty
+   *                      rflag != sflag -> channel is full
    *
    */
-  Py_ssize_t wcursor;
-  Py_ssize_t rcursor;
-  int wflag;
-  int rflag;
+  int sendx;
+  int recvx;
+  char sflag;
+  char rflag;
 } Channel;
 
 static PyTypeObject Channel_Type;
 
 Channel*
-Channel_New(Py_ssize_t size)
+Channel_New(int size)
 {
   Channel* op;
-  Py_ssize_t i;
+  int i;
   assert(size > 0);
   /* check for overflow. */
   if (size > (PY_SSIZE_T_MAX - sizeof(Channel)) / sizeof(PyObject*)) {
@@ -64,10 +64,16 @@ Channel_New(Py_ssize_t size)
   for (i = 0; i < size; i++)
     op->ob_item[i] = NULL;
 
-  op->wcursor = 0;
-  op->rcursor = 0;
-  op->wflag = 0;
-  op->rflag = 0;
+  op->sendx = 0;
+  op->recvx = 0;
+  if (IS_POW_OF_2(size)) {
+    op->sflag = 3;
+    op->rflag = 3;
+  } else {
+    op->sflag = 1;
+    op->rflag = 1;
+  }
+
   Py_SIZE(op) = size;
   PyObject_GC_Track(op);
   return op;
@@ -76,8 +82,8 @@ Channel_New(Py_ssize_t size)
 static void
 Channel_tp_dealloc(Channel* ob)
 {
-  Py_ssize_t i;
-  Py_ssize_t len = Py_SIZE(ob);
+  int i;
+  int len = Py_SIZE(ob);
   PyObject_GC_UnTrack(ob);
   /* clang-format off */
   Py_TRASHCAN_SAFE_BEGIN(ob)
@@ -98,7 +104,7 @@ Channel_tp_dealloc(Channel* ob)
 static int
 Channel_tp_traverse(Channel* o, visitproc visit, void* arg)
 {
-  Py_ssize_t i;
+  int i;
 
   for (i = Py_SIZE(o); --i >= 0;)
     Py_VISIT(o->ob_item[i]);
@@ -108,7 +114,7 @@ Channel_tp_traverse(Channel* o, visitproc visit, void* arg)
 static int
 Channel_tp_clear(Channel* op)
 {
-  Py_ssize_t i;
+  int i;
   PyObject** item = op->ob_item;
   if (item != NULL) {
     /* Because XDECREF can recursively invoke operations on
@@ -116,9 +122,9 @@ Channel_tp_clear(Channel* op)
     i = Py_SIZE(op);
     Py_SIZE(op) = 0;
     op->ob_item = NULL;
-    op->wcursor = 0;
-    op->rcursor = 0;
-    op->wflag = 0;
+    op->sendx = 0;
+    op->recvx = 0;
+    op->sflag = 0;
     op->rflag = 0;
     while (--i >= 0) {
       Py_XDECREF(item[i]);
@@ -134,50 +140,15 @@ Channel_tp_clear(Channel* op)
 static PyObject*
 Channel_tp_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
 {
-  Py_ssize_t size;
+  int size;
   static char* kwlist[] = { "size", NULL };
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "n", kwlist, &size))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "i", kwlist, &size))
     return NULL;
   if (size <= 0) {
     PyErr_SetString(PyExc_ValueError, "size should be positive.");
     return NULL;
   }
-  DEBUG_PRINTF("size is %ld", size);
   return (PyObject*)Channel_New(size);
-}
-
-static inline int
-Channel_IsEmpty(Channel* self)
-{
-  if (Py_SIZE(self) == 1) {
-    return self->ob_item[0] == NULL;
-  }
-  if (self->wcursor != self->rcursor) {
-    return 0;
-  }
-  /* channel is empty */
-  if (self->rflag == self->wflag) {
-    return 1;
-  }
-  return 0;
-}
-
-static inline int
-Channel_IsFull(Channel* self)
-{
-  if (Py_SIZE(self) == 1) {
-    return self->ob_item[0] != NULL;
-  }
-  if (self->wcursor != self->rcursor) {
-  }
-  if (self->wcursor > self->rcursor) {
-    return 0;
-  }
-  /* flag not equal means that channel is full */
-  if (self->rflag != self->wflag) {
-    return 1;
-  }
-  return 0;
 }
 
 static PyObject*
@@ -195,38 +166,146 @@ Channel_clear(Channel* self, PyObject* unused)
   Py_RETURN_NONE;
 }
 
+static void
+Channel_incr_sendx(Channel* self)
+{
+  assert(self->sflag > 0);
+  if (self->sflag == 3) {
+    self->sendx = (self->sendx + 1) & (2 * Py_SIZE(self) - 1);
+    return;
+  }
+  int sendx;
+  sendx = self->sendx + 1;
+  if (sendx >= 2 * Py_SIZE(self)) {
+    sendx %= 2 * Py_SIZE(self);
+  }
+  if (sendx >= Py_SIZE(self)) {
+    self->sflag = 2;
+  } else {
+    self->sflag = 1;
+  }
+}
+
+static void
+Channel_incr_recvx(Channel* self)
+{
+  assert(self->rflag > 0);
+  if (self->rflag == 3) {
+    self->recvx = (self->recvx + 1) & (2 * Py_SIZE(self) - 1);
+    return;
+  }
+  int recvx;
+  recvx = self->sendx + 1;
+  if (recvx >= 2 * Py_SIZE(self)) {
+    recvx %= 2 * Py_SIZE(self);
+  }
+  if (recvx >= Py_SIZE(self)) {
+    self->rflag = 2;
+  } else {
+    self->rflag = 1;
+  }
+}
+
+static int
+Channel_send_idx(Channel* self)
+{
+  if (self->sflag < 0) {
+    return -2;
+  }
+
+  if (Py_SIZE(self) == 1) {
+    if (self->ob_item[0] == NULL) {
+      return -1;
+    } else {
+      return 0;
+    }
+  }
+
+  /* size is 2**n */
+  if (self->sflag == 3) {
+    /* Is it full? */
+    if (self->sendx == (self->recvx ^ Py_SIZE(self))) {
+      return -1;
+    }
+    return self->sendx & (Py_SIZE(self) - 1);
+  }
+
+  if ((self->sendx % Py_SIZE(self)) != (self->recvx % Py_SIZE(self))) {
+    return self->sendx % Py_SIZE(self);
+  }
+
+  /* flag not equal means that channel is full */
+  if (abs(self->rflag) != self->sflag) {
+    return -1;
+  }
+  return self->sendx % Py_SIZE(self);
+}
+
+static int
+Channel_recv_idx(Channel* self)
+{
+  if (self->rflag < 0) {
+    return -2;
+  }
+
+  if (Py_SIZE(self) == 1) {
+    if (self->ob_item[0] == NULL) {
+      return 0;
+    } else {
+      return -1;
+    }
+  }
+
+  /* size is 2**n */
+  if (self->rflag == 3) {
+    /* Is it empty? */
+    if (self->sendx == self->recvx) {
+      return -1;
+    }
+    return self->recvx & (Py_SIZE(self) - 1);
+  }
+
+  if ((self->sendx % Py_SIZE(self)) != (self->recvx % Py_SIZE(self))) {
+    return self->recvx % Py_SIZE(self);
+  }
+
+  /* flag equal means that channel is empty */
+  if (abs(self->sflag) == self->rflag) {
+    return -1;
+  }
+  return self->recvx % Py_SIZE(self);
+}
+
 static PyObject*
 Channel_recv(PyObject* self, PyObject* unused)
 {
   PyObject* item;
   PyObject* rv;
-  Py_ssize_t idx;
+  int recvx;
   Channel* ch = (Channel*)self;
-  if (ch->rflag == -1) {
+
+  recvx = Channel_recv_idx(ch);
+  if (recvx == -2) {
     PyErr_SetString(PyExc_RuntimeError, "channel is closed for receiving.");
     return NULL;
   }
+
   if ((rv = PyTuple_New(2)) == NULL) {
     return NULL;
   }
 
-  if (Channel_IsEmpty(ch)) {
+  if (recvx == -1) {
     Py_INCREF(Py_None);
     Py_INCREF(Py_False);
     PyTuple_SET_ITEM(rv, 0, Py_None);
     PyTuple_SET_ITEM(rv, 1, Py_False);
     return rv;
   }
-  item = ch->ob_item[ch->rcursor];
-  assert(item);
-  ch->ob_item[ch->rcursor] = NULL;
 
-  idx = ch->rcursor + 1;
-  if (idx >= 2 * Py_SIZE(ch)) {
-    idx -= 2 * Py_SIZE(ch);
-    ch->rflag = 1;
-  }
-  ch->rcursor = idx;
+  item = ch->ob_item[recvx];
+  assert(item);
+  ch->ob_item[recvx] = NULL;
+  Channel_incr_recvx(ch);
 
   Py_INCREF(Py_True);
   PyTuple_SET_ITEM(rv, 0, item);
@@ -239,26 +318,21 @@ Channel_send(PyObject* self, PyObject* obj)
 {
   Channel* ch = (Channel*)self;
   PyObject* item;
-  Py_ssize_t idx;
+  int sendx;
 
-  if (ch->wflag == -1) {
+  sendx = Channel_send_idx(ch);
+  if (sendx == -2) {
     PyErr_SetString(PyExc_RuntimeError, "channel is closed for sending.");
     return NULL;
   }
 
-  if (Channel_IsFull(ch)) {
+  if (sendx == -1) {
     Py_RETURN_FALSE;
   }
-  item = ch->ob_item[ch->wcursor];
+  item = ch->ob_item[sendx];
   Py_XDECREF(item);
   Py_INCREF(obj);
-  ch->ob_item[ch->wcursor] = obj;
-  idx = ch->wcursor + 1;
-  if (idx >= 2 * Py_SIZE(ch)) {
-    idx -= 2 * Py_SIZE(ch);
-    ch->wflag = 1;
-  }
-  ch->wcursor = idx;
+  Channel_incr_sendx(ch);
   Py_RETURN_TRUE;
 }
 
@@ -275,10 +349,10 @@ Channel_close(PyObject* self, PyObject* args, PyObject* kwds)
 
   ch = (Channel*)self;
   if (write) {
-    ch->wflag = -1;
+    ch->sflag *= -1;
   }
   if (read) {
-    ch->rflag = -1;
+    ch->rflag *= -1;
   }
   Py_RETURN_NONE;
 }
@@ -288,51 +362,49 @@ Channel_safe_consume(PyObject* self, PyObject* callback)
 {
   PyObject* item;
   PyObject* callback_rv;
-  Channel* ch;
-  Py_ssize_t idx;
-
-  ch = (Channel*)self;
+  Channel* ch = (Channel*)self;
+  int recvx;
 
   if (!(PyCallable_Check(callback))) {
     PyErr_SetString(PyExc_TypeError, "object is not callable");
     return NULL;
   }
 
-  if (ch->rflag == -1) {
+  recvx = Channel_recv_idx(ch);
+
+  if (recvx == -2) {
     PyErr_SetString(PyExc_RuntimeError, "channel is closed for receiving.");
     return NULL;
   }
 
-  if (Channel_IsEmpty(ch)) {
+  if (recvx == -1) {
     Py_RETURN_FALSE;
   }
 
-  item = ch->ob_item[ch->rcursor];
+  item = ch->ob_item[recvx];
   assert(item);
+  Py_INCREF(item);
   callback_rv = PyObject_CallFunction(callback, "O", item);
-  RETURN_IF_NULL(callback_rv, NULL);
-  Py_XDECREF(callback_rv);
-
-  ch->ob_item[ch->rcursor] = NULL;
-  idx = ch->rcursor + 1;
-  if (idx >= 2 * Py_SIZE(ch)) {
-    idx -= 2 * Py_SIZE(ch);
-    ch->rflag = 1;
+  if (callback_rv == NULL) {
+    Py_DECREF(item);
+    return NULL;
   }
-  ch->rcursor = idx;
-  return item;
+  Py_XDECREF(callback_rv);
+  Py_DECREF(item);
+  Py_DECREF(item);
+  ch->ob_item[recvx] = NULL;
+  Channel_incr_recvx(ch);
+  Py_RETURN_TRUE;
 }
 
 static PyObject*
 Channel_sendable(PyObject* self, PyObject* unused)
 {
   Channel* ch = (Channel*)self;
+  int sendx;
+  sendx = Channel_send_idx(ch);
 
-  if (ch->wflag == -1) {
-    Py_RETURN_FALSE;
-  }
-
-  if (Channel_IsFull(ch)) {
+  if (sendx == -2 || sendx == -1) {
     Py_RETURN_FALSE;
   }
   Py_RETURN_TRUE;
@@ -342,11 +414,10 @@ static PyObject*
 Channel_recvable(PyObject* self, PyObject* unused)
 {
   Channel* ch = (Channel*)self;
-  if (ch->rflag == -1) {
-    Py_RETURN_FALSE;
-  }
+  int recvx;
+  recvx = Channel_recv_idx(ch);
 
-  if (Channel_IsEmpty(ch)) {
+  if (recvx == -2 || recvx == -1) {
     Py_RETURN_FALSE;
   }
   Py_RETURN_TRUE;
