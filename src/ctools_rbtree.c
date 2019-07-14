@@ -21,11 +21,25 @@ limitations under the License.
 #define RBRED 1
 #define RBBLACK 0
 
-#define SET_RBNODE_RED(node) (node)->color = RBRED
-#define SET_RBNODE_BLACK(node) (node)->color = RBBLACK
-#define IS_RBNODE_BLACK(node) ((node)->color == RBBLACK)
-#define IS_RBNODE_RED(node) (!(node)->color == RBBLACK)
-#define RBTREE_NODE_CAST(x) ((RBTreeNode*)(x))
+#define RBTreeNode_CAST(x) ((RBTreeNode*)(x))
+#define RBTreeNode_Color(node) (RBTreeNode_CAST(node)->color)
+#define RBTreeNode_Key(node) (RBTreeNode_CAST(node)->key)
+#define RBTreeNode_Value(node) (RBTreeNode_CAST(node)->value)
+#define RBTreeNode_Parent(node) (RBTreeNode_CAST(node)->parent)
+#define RBTreeNode_Left(node) (RBTreeNode_CAST(node)->left)
+#define RBTreeNode_Right(node) (RBTreeNode_CAST(node)->right)
+
+#define RBTreeNode_SetColor(node, v) (RBTreeNode_CAST(node)->color = (v))
+#define RBTreeNode_SetKey(node, v) (RBTreeNode_CAST(node)->key = PYOBJECT_CAST(v))
+#define RBTreeNode_SetValue(node, v) (RBTreeNode_CAST(node)->value = PYOBJECT_CAST(v))
+#define RBTreeNode_SetParent(node, v) (RBTreeNode_CAST(node)->parent = PYOBJECT_CAST(v))
+#define RBTreeNode_SetLeft(node, v) (RBTreeNode_CAST(node)->left = PYOBJECT_CAST(v))
+#define RBTreeNode_SetRight(node, v) (RBTreeNode_CAST(node)->right = PYOBJECT_CAST(v))
+
+#define RBTreeNode_SetRed(node) (RBTreeNode_Color(node) = RBRED)
+#define RBTreeNode_SetBlack(node) (RBTreeNode_Color(node) = RBBLACK)
+#define RBTreeNode_IsRed(node) (RBTreeNode_Color(node) == RBRED)
+#define RBTreeNode_IsBlack(node) (RBTreeNode_Color(node) != RBRED)
 
 typedef struct _rbtree_node
 {
@@ -64,7 +78,7 @@ RBTreeNode_New(PyObject* key, PyObject* value)
   node->parent = NULL;
   node->right = NULL;
   node->left = NULL;
-  SET_RBNODE_RED(node);
+  RBTreeNode_SetRed(node);
   PyObject_GC_Track(node);
   return node;
 }
@@ -167,7 +181,7 @@ static PyTypeObject _RBSentinel_Type = {
 
 static RBTreeNode _RBSentinelStruct = {
   1,                 /* ref count */
-  &_RBSentinel_Type, /*  ob type */
+  &_RBSentinel_Type, /* ob type */
   NULL,              /* key*/
   NULL,              /* value */
   NULL,              /* left */
@@ -190,21 +204,21 @@ static RBTreeNode _RBSentinelStruct = {
 static void
 left_rotate(PyObject** root, RBTreeNode* node)
 {
-  RBTreeNode* tmp = RBTREE_NODE_CAST(node->right);
-  RBTreeNode* sentinel = RBSentinel;
+  RBTreeNode* tmp = RBTreeNode_CAST(node->right);
+  PyObject* sentinel = PYOBJECT_CAST(RBSentinel);
   /* First step */
   node->right = tmp->left;
   if (tmp->left != sentinel)
-    RBTREE_NODE_CAST(tmp->left)->parent = PYOBJECT_CAST(node);
+    RBTreeNode_CAST(tmp->left)->parent = PYOBJECT_CAST(node);
 
   /* Second step */
   tmp->parent = node->parent;
   if (node->parent == sentinel)
     *root = PYOBJECT_CAST(tmp);
-  else if (PYOBJECT_CAST(node) == (RBTREE_NODE_CAST(node->parent)->left))
-    RBTREE_NODE_CAST(node->parent)->left = PYOBJECT_CAST(tmp);
+  else if (PYOBJECT_CAST(node) == (RBTreeNode_CAST(node->parent)->left))
+    RBTreeNode_CAST(node->parent)->left = PYOBJECT_CAST(tmp);
   else
-    RBTREE_NODE_CAST(node->parent)->right = PYOBJECT_CAST(tmp);
+    RBTreeNode_CAST(node->parent)->right = PYOBJECT_CAST(tmp);
 
   /* Third step */
   tmp->left = PYOBJECT_CAST(node);
@@ -214,20 +228,47 @@ left_rotate(PyObject** root, RBTreeNode* node)
 static void
 right_rotate(PyObject** root, RBTreeNode* node, PyObject* sentinel)
 {
-  RBTreeNode* tmp = RBTREE_NODE_CAST(node->left);
+  RBTreeNode* tmp = RBTreeNode_CAST(node->left);
 
   node->left = tmp->right;
   if (tmp->right != sentinel)
-    RBTREE_NODE_CAST(tmp->right)->parent = PYOBJECT_CAST(node);
+    RBTreeNode_CAST(tmp->right)->parent = PYOBJECT_CAST(node);
 
   tmp->parent = node->parent;
   if (tmp->right == sentinel)
     *root = PYOBJECT_CAST(tmp);
-  else if (PYOBJECT_CAST(node) == RBTREE_NODE_CAST(node->parent)->left)
-    RBTREE_NODE_CAST(node->parent)->left = PYOBJECT_CAST(tmp);
+  else if (PYOBJECT_CAST(node) == RBTreeNode_CAST(node->parent)->left)
+    RBTreeNode_CAST(node->parent)->left = PYOBJECT_CAST(tmp);
   else
-    RBTREE_NODE_CAST(node->parent)->right = PYOBJECT_CAST(tmp);
+    RBTreeNode_CAST(node->parent)->right = PYOBJECT_CAST(tmp);
 
   tmp->right = PYOBJECT_CAST(node);
   node->parent = PYOBJECT_CAST(tmp);
+}
+
+static int
+rbtree_insert(RBTree* tree, RBTreeNode* node)
+{
+  PyObject** root = &tree->root;
+  PyObject* x = *root;
+  PyObject* y;
+  PyObject* sentinel = PYOBJECT_CAST(RBSentinel);
+  int compare;
+
+  if (*root == sentinel) {
+    node->parent = sentinel;
+    node->left = sentinel;
+    node->right = sentinel;
+    RBTreeNode_IsBlack(node);
+    *root = PYOBJECT_CAST(node);
+    return 0;
+  }
+  for (;;) {
+    y = x;
+    if (x == sentinel)
+      break;
+
+    /* TODO: insert */
+  }
+
 }
