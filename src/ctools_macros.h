@@ -53,6 +53,8 @@ extern "C"
 
 #define IS_POW_OF_2(x) ((x) != 0 && (((x) & ((x)-1)) == 0))
 
+#define PYOBJECT_CAST(x) ((PyObject*)(x))
+
 #ifdef __cplusplus
 }
 #endif
