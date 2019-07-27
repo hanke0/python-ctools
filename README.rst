@@ -37,7 +37,7 @@ Benchmark
 
 How To Test
 ===========
-`pytest`_ needed. Simple use ``make test``. If package is installed, you can run ``ctools.test()``
+`pytest`_ needed. Simple use ``make test``. If package is installed, you can run ``python -c 'import ctools;ctools.test()'``
 for testing.
 
 
