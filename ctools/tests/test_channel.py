@@ -4,9 +4,7 @@ import ctools
 from ctools.tests._bases import TestCase
 
 
-
 class TestChannel(TestCase):
-
     def test_size1(self):
         ch = ctools.Channel(1)
 
@@ -36,7 +34,7 @@ class TestChannel(TestCase):
         self.assertFalse(ch.recvable())
 
         for i in range(32):
-           self.assertTrue(ch.send(i))
+            self.assertTrue(ch.send(i))
         self.assertFalse(ch.sendable())
         self.assertTrue(ch.recvable())
         self.assertFalse(ch.send(2))
@@ -106,7 +104,7 @@ class TestChannel(TestCase):
         self.assertRefEqual(ev, a)
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     import unittest
+
     unittest.main()
