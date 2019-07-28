@@ -1,36 +1,69 @@
 ============================================================
 A collection of useful extensions for python implement in C.
 ============================================================
-
 .. image:: https://travis-ci.org/ko-han/python-ctools.svg?branch=master
-   :alt: Ctools build status on Travis CI
-   :target: https://travis-ci.org/ko-han/python-ctools
-
-.. image:: https://img.shields.io/badge/license-Apache--2.0-green
-   :alt: license
-
-:Python: >= 3.5
-:Version: 0.1.0
-:Latest stable: 0.1.0
-:Python Implementation: CPython only
-
-.. contents::
+    :alt: Ctools build status on Travis CI
+    :target: https://travis-ci.org/ko-han/python-ctools
+.. image:: https://img.shields.io/github/license/ko-han/python-ctools
+    :alt: license
+    :target: https://github.com/ko-han/python-ctools/blob/master/LICENSE
+.. image:: https://img.shields.io/pypi/v/ctools
+    :alt: version
+    :target: https://pypi.org/project/ctools/
+.. image:: https://img.shields.io/pypi/implementation/ctools
+    :alt: implementation
+    :target: https://pypi.org/project/ctools/
+.. image:: https://img.shields.io/pypi/pyversions/ctools
+    :alt: python version
+    :target: https://pypi.org/project/ctools/
+.. image:: https://img.shields.io/pypi/wheel/ctools
+    :alt: wheel
+    :target: https://pypi.org/project/ctools/
 
 Installation
 ============
 
-Install and update using `pip`_ (python3 only):
+Install and update using `pip`_:
 
 .. code-block:: text
 
     pip install -U ctools
 
-Documents
+Example
 =========
 
-Latest develop document at `api.md <https://github.com/ko-han/python-ctools/blob/master/doc/api.md>`_.
+Cache things.
 
-See wiki for `stable release document  <https://github.com/ko-han/python-ctools/wiki>`_.
+.. code-block:: python
+
+    cache = ctools.CacheMap(2)
+    cache['a'] = 'a'
+    cache['b'] = 'b'
+    a = cache['a']
+    assert len(a) == 2
+    cache['c'] = 'c'
+    assert 'a' not in cache
+
+    cache = ctools.TTLCache(10)
+    cache['a'] = 'a'
+    time.sleep(11)
+    assert 'a' not in a
+
+An implementation of golang chan like channel.
+
+.. code-block::  python
+
+    ch = ctools.Channel(1)
+    ok = ch.send(1)
+    assert ok
+    assert not ch.send(2)
+    d, ok = ch.recv()
+    assert ok
+    assert d == 1
+
+Document
+=========
+`https://github.com/ko-han/python-ctools/wiki  <https://github.com/ko-han/python-ctools/wiki>`_.
 
 Benchmark
 =========
