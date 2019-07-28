@@ -6,6 +6,9 @@ A collection of useful extensions for python implement in C.
    :alt: Ctools build status on Travis CI
    :target: https://travis-ci.org/ko-han/python-ctools
 
+.. image:: https://img.shields.io/badge/license-Apache--2.0-green
+   :alt: license
+
 :Python: >= 3.5
 :Version: 0.1.0
 :Latest stable: 0.1.0
