@@ -138,7 +138,9 @@ def memory_leak_test(
 
             print_(log_prefix, end=" ")
             print_(
-                "loop={}, escaped={}, rss={:,}, increase={:,}".format(cycle_count, spend, rss_bytes, incr)
+                "loop={}, escaped={}, rss={:,}, increase={:,}".format(
+                    cycle_count, spend, rss_bytes, incr
+                )
             )
 
             if rss_limit and rss_bytes > rss_limit:
