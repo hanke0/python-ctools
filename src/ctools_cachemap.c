@@ -122,7 +122,7 @@ CacheEntry_GetWeight(CacheMapEntry* self, unsigned int now)
   register unsigned int num, counter;
   counter = self->visits;
   num = (now - self->last_visit) / CacheEntry_DECREASE_EVERY_MINUTES;
-  return num > counter ? 0 : counter - num;
+  return counter > num ? counter - num : 0;
 }
 
 static PyObject*
