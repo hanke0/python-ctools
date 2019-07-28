@@ -138,16 +138,16 @@ def memory_leak_test(
 
             print_(log_prefix, end=" ")
             print_(
-                f"loop={cycle_count}, escaped={spend}, rss={rss_bytes:,}, increase={incr:,}"
+                "loop={}, escaped={}, rss={:,}, increase={:,}".format(cycle_count, spend, rss_bytes, incr)
             )
 
             if rss_limit and rss_bytes > rss_limit:
-                print_(f"rss {rss_bytes:,} touch roof {rss_limit:,}")
+                print_("rss {:,} touch roof {:,}".format(rss_bytes, rss_limit))
                 exc_code = 1
                 break
 
             if incr_limit and cum_incr > incr_limit:
-                print_(f"rss increase {cum_incr:,} touch roof {incr_limit:,}")
+                print_("rss increase {:,} touch roof {:,}".format(cum_incr, incr_limit))
                 exc_code = 1
                 break
 
