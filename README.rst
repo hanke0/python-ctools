@@ -2,6 +2,10 @@
 A collection of useful extensions for python implement in C.
 ============================================================
 
+.. image:: https://travis-ci.org/ko-han/python-ctools.svg?branch=master
+   :alt: Ctools build status on Travis CI
+   :target: https://travis-ci.org/ko-han/python-ctools
+
 :Python: >= 3.5
 :Version: 0.1.0
 :Latest stable: 0.1.0
