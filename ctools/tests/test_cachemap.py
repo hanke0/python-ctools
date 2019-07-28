@@ -26,11 +26,13 @@ class TestCacheMap(BaseTestMapLike):
         d = ctools.CacheMap(2)
         d["a"] = 1
         d["c"] = 2
+        # py35 dict is not ordered, add priority of key 'c' here
+        self.assertEqual(d["c"], 2)
         d["e"] = 3
         self.assertEqual(len(d), 2)
 
         for i in range(10):
-            self.assertEqual(d["c"], 2)
+            self.assertEqual(d['c'], 2)
 
     def test_len(self):
         for m in range(254, 1024):
