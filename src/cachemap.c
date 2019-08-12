@@ -16,8 +16,7 @@ limitations under the License.
 #include <Python.h>
 #include <time.h>
 
-#include "ctools_config.h"
-#include "ctools_macros.h"
+#include "util.h"
 
 #define CacheEntry_DEFAULT_VISITS 255U
 #define CacheEntry_DECREASE_EVERY_MINUTES 10
@@ -147,7 +146,7 @@ static PyTypeObject CacheEntry_Type = {
   /* clang-format off */
   PyVarObject_HEAD_INIT(NULL, 0)
   /* clang-format on */
-  "CacheMapEntry",                         /* tp_name */
+  "ctools.CacheMapEntry",                         /* tp_name */
   sizeof(CacheMapEntry),                   /* tp_basicsize */
   0,                                       /* tp_itemsize */
   (destructor)CacheEntry_tp_dealloc,       /* tp_dealloc */
@@ -742,7 +741,7 @@ static PyTypeObject CacheMap_Type = {
   /* clang-format off */
   PyVarObject_HEAD_INIT(NULL, 0)
   /* clang-format on */
-  "CacheMap",                              /* tp_name */
+  "ctools.CacheMap",                              /* tp_name */
   sizeof(CacheMap),                        /* tp_basicsize */
   0,                                       /* tp_itemsize */
   (destructor)CacheMap_tp_dealloc,         /* tp_dealloc */
@@ -780,37 +779,3 @@ static PyTypeObject CacheMap_Type = {
   0,                                       /* tp_alloc */
   (newfunc)CacheMap_tp_new,                /* tp_new */
 };
-
-static struct PyModuleDef _ctools_cachemap_module = {
-  PyModuleDef_HEAD_INIT,
-  "_ctools_cachemap", /* m_name */
-  NULL,               /* m_doc */
-  -1,                 /* m_size */
-  NULL,               /* m_methods */
-  NULL,               /* m_reload */
-  NULL,               /* m_traverse */
-  NULL,               /* m_clear */
-  NULL,               /* m_free */
-};
-
-PyMODINIT_FUNC
-PyInit__ctools_cachemap(void)
-{
-  if (PyType_Ready(&CacheMap_Type) < 0)
-    return NULL;
-
-  if (PyType_Ready(&CacheEntry_Type) < 0)
-    return NULL;
-
-  PyObject* m = PyModule_Create(&_ctools_cachemap_module);
-  if (m == NULL)
-    return NULL;
-
-  Py_INCREF(&CacheEntry_Type);
-  Py_INCREF(&CacheMap_Type);
-
-  PyModule_AddObject(m, "CacheMap", (PyObject*)&CacheMap_Type);
-  PyModule_AddObject(m, "CacheMapEntry", (PyObject*)&CacheEntry_Type);
-
-  return m;
-}

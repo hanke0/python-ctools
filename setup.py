@@ -26,11 +26,12 @@ def source(*args):
     return [os.path.join("src", *args)]
 
 
-if os.getenv("CTOOLS_DEBUG", "").upper() == "ON":
-    print("---------------CTOOLS DEBUG ON------------------")
+DEBUG = os.getenv("CTOOLS_DEBUG", "").upper() == "ON"
+
+
+if DEBUG:
     extra_extension_args = dict(undef_macros=["NDEBUG"])
 else:
-    print("---------------CTOOLS DEBUG OFF------------------")
     extra_extension_args = dict(define_macros=[("NDEBUG", "1")])
 
 
@@ -44,10 +45,7 @@ def find_version():
 
 
 extensions = [
-    Extension("_ctools_utils", source("ctools_utils.c"), **extra_extension_args),
-    Extension("_ctools_cachemap", source("ctools_cachemap.c"), **extra_extension_args),
-    Extension("_ctools_ttlcache", source("ctools_ttlcache.c"), **extra_extension_args),
-    Extension("_ctools_channel", source("ctools_channel.c"), **extra_extension_args),
+    Extension("_ctools", source("ctoolsmodule.c"), **extra_extension_args),
 ]
 
 with io.open("README.rst", "rt", encoding="utf8") as f:

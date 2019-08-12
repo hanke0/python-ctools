@@ -16,8 +16,6 @@ limitations under the License.
 #include <Python.h>
 #include <datetime.h>
 
-#include "ctools_config.h"
-
 PyDoc_STRVAR(jump_consistent_hash__doc__,
              "jump_consistent_hash(key: int, num_buckets: int) -> int:\n\n\
     Generate a number in the range [0, num_buckets).\n\
@@ -194,38 +192,4 @@ build_with_debug(PyObject* self, PyObject* unused)
 #else
   Py_RETURN_FALSE;
 #endif
-}
-
-static PyMethodDef ctools_utils_methods[] = {
-  { "jump_consistent_hash",
-    Ctools__jump_hash,
-    METH_VARARGS,
-    jump_consistent_hash__doc__ },
-  { "strhash", Ctools__strhash, METH_VARARGS, strhash__doc__ },
-  { "int8_to_datetime",
-    Ctools__int8_to_datetime,
-    METH_O,
-    int8_to_datetime__doc__ },
-  { "build_with_debug", (PyCFunction)build_with_debug, METH_NOARGS, NULL },
-  { NULL, NULL, 0, NULL },
-};
-
-static struct PyModuleDef _ctools_utils_module = {
-  PyModuleDef_HEAD_INIT,
-  "_ctools_utils",      /* m_name */
-  NULL,                 /* m_doc */
-  -1,                   /* m_size */
-  ctools_utils_methods, /* m_methods */
-  NULL,                 /* m_reload */
-  NULL,                 /* m_traverse */
-  NULL,                 /* m_clear */
-  NULL,                 /* m_free */
-};
-
-PyMODINIT_FUNC
-PyInit__ctools_utils(void)
-{
-  PyDateTime_IMPORT;
-
-  return PyModule_Create(&_ctools_utils_module);
 }

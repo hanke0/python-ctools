@@ -14,10 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from _ctools_utils import *
-from _ctools_cachemap import *
-from _ctools_ttlcache import *
-from _ctools_channel import *
+from _ctools import *
 from ctools._tester import Tester, memory_leak_test
 from .version import __version__
 

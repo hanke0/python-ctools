@@ -15,8 +15,7 @@ limitations under the License.
 
 #include <Python.h>
 
-#include "ctools_config.h"
-#include "ctools_macros.h"
+#include "util.h"
 
 #define RBRED 1
 #define RBBLACK 0

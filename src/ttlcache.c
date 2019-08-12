@@ -16,8 +16,7 @@ limitations under the License.
 #include <Python.h>
 #include <time.h>
 
-#include "ctools_config.h"
-#include "ctools_macros.h"
+#include "util.h"
 
 #define DEFAULT_TTL 60
 
@@ -108,7 +107,7 @@ static PyTypeObject TTLCacheEntry_Type = {
   /* clang-format off */
     PyVarObject_HEAD_INIT(NULL, 0)
   /* clang-format on */
-  "TTLCacheEntry",                         /* tp_name */
+  "ctools.TTLCacheEntry",                         /* tp_name */
   sizeof(TTLCacheEntry),                   /* tp_basicsize */
   0,                                       /* tp_itemsize */
   (destructor)TTLCacheEntry_tp_dealloc,    /* tp_dealloc */
@@ -626,7 +625,7 @@ static PyTypeObject TTLCache_Type = {
   /* clang-format off */
     PyVarObject_HEAD_INIT(NULL, 0)
   /* clang-format on */
-  "TTLCache",                              /* tp_name */
+  "ctools.TTLCache",                              /* tp_name */
   sizeof(TTLCache),                        /* tp_basicsize */
   0,                                       /* tp_itemsize */
   (destructor)TTLCache_tp_dealloc,         /* tp_dealloc */
@@ -664,37 +663,3 @@ static PyTypeObject TTLCache_Type = {
   0,                                       /* tp_alloc */
   (newfunc)TTLCache_tp_new,                /* tp_new */
 };
-
-static struct PyModuleDef _ctools_TTLCache_module = {
-  PyModuleDef_HEAD_INIT,
-  "_ctools_ttlcache", /* m_name */
-  NULL,               /* m_doc */
-  -1,                 /* m_size */
-  NULL,               /* m_methods */
-  NULL,               /* m_reload */
-  NULL,               /* m_traverse */
-  NULL,               /* m_clear */
-  NULL,               /* m_free */
-};
-
-PyMODINIT_FUNC
-PyInit__ctools_ttlcache(void)
-{
-  if (PyType_Ready(&TTLCache_Type) < 0)
-    return NULL;
-
-  if (PyType_Ready(&TTLCacheEntry_Type) < 0)
-    return NULL;
-
-  PyObject* m = PyModule_Create(&_ctools_TTLCache_module);
-  if (m == NULL)
-    return NULL;
-
-  Py_INCREF(&TTLCacheEntry_Type);
-  Py_INCREF(&TTLCache_Type);
-
-  PyModule_AddObject(m, "TTLCache", (PyObject*)&TTLCache_Type);
-  PyModule_AddObject(m, "TTLCacheEntry", (PyObject*)&TTLCacheEntry_Type);
-
-  return m;
-}

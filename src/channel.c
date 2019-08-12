@@ -16,8 +16,7 @@ limitations under the License.
 #include <Python.h>
 #include <time.h>
 
-#include "ctools_config.h"
-#include "ctools_macros.h"
+#include "util.h"
 
 typedef struct
 {
@@ -449,7 +448,7 @@ static PyTypeObject Channel_Type = {
   /* clang-format off */
   PyVarObject_HEAD_INIT(&PyType_Type, 0)
   /* clang-format on */
-  "Channel",                               /* tp_name */
+  "ctools.Channel",                               /* tp_name */
   sizeof(Channel),                         /* tp_basicsize */
   0,                                       /* tp_itemsize */
   (destructor)Channel_tp_dealloc,          /* tp_dealloc */
@@ -488,33 +487,3 @@ static PyTypeObject Channel_Type = {
   (newfunc)Channel_tp_new,                 /* tp_new */
   PyObject_GC_Del                          /* tp_free */
 };
-
-static struct PyModuleDef _ctools_channel_module = {
-  PyModuleDef_HEAD_INIT,
-  "_ctools_channel", /* m_name */
-  NULL,              /* m_doc */
-  -1,                /* m_size */
-  NULL,              /* m_methods */
-  NULL,              /* m_reload */
-  NULL,              /* m_traverse */
-  NULL,              /* m_clear */
-  NULL,              /* m_free */
-};
-
-PyMODINIT_FUNC
-PyInit__ctools_channel(void)
-{
-  if (PyType_Ready(&Channel_Type) < 0)
-    return NULL;
-
-  PyObject* m = PyModule_Create(&_ctools_channel_module);
-  if (m == NULL)
-    return NULL;
-
-  Py_INCREF(&Channel_Type);
-
-  if (PyModule_AddObject(m, "Channel", (PyObject*)&Channel_Type) == -1)
-    return NULL;
-
-  return m;
-}
