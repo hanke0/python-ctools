@@ -21,8 +21,8 @@ limitations under the License.
 typedef struct
 {
   /* clang-format off */
-  PyObject_VAR_HEAD
-  PyObject** ob_item;
+    PyObject_VAR_HEAD
+    PyObject **ob_item;
   /* clang-format on */
   /* cursor between [0, 2 * size), if cursor >= size, set flag to 1
    * if flag <= 0; channel is closed
@@ -85,8 +85,8 @@ Channel_tp_dealloc(Channel* ob)
   int len = Py_SIZE(ob);
   PyObject_GC_UnTrack(ob);
   /* clang-format off */
-  Py_TRASHCAN_SAFE_BEGIN(ob)
-  if (len > 0)
+    Py_TRASHCAN_SAFE_BEGIN(ob)
+            if (len > 0)
   /* clang-format on */
   {
     i = len;
@@ -96,7 +96,7 @@ Channel_tp_dealloc(Channel* ob)
   PyMem_FREE(ob->ob_item);
   PyObject_GC_Del(ob);
   /* clang-format off */
-  Py_TRASHCAN_SAFE_END(ob)
+        Py_TRASHCAN_SAFE_END(ob)
   /* clang-format on */
 }
 
@@ -446,9 +446,9 @@ static PyMethodDef Channel_methods[] = {
 
 static PyTypeObject Channel_Type = {
   /* clang-format off */
-  PyVarObject_HEAD_INIT(&PyType_Type, 0)
+    PyVarObject_HEAD_INIT(&PyType_Type, 0)
   /* clang-format on */
-  "ctools.Channel",                               /* tp_name */
+  "ctools.Channel",                        /* tp_name */
   sizeof(Channel),                         /* tp_basicsize */
   0,                                       /* tp_itemsize */
   (destructor)Channel_tp_dealloc,          /* tp_dealloc */
@@ -487,3 +487,32 @@ static PyTypeObject Channel_Type = {
   (newfunc)Channel_tp_new,                 /* tp_new */
   PyObject_GC_Del                          /* tp_free */
 };
+
+static struct PyModuleDef _module = {
+  PyModuleDef_HEAD_INIT,
+  "_channel", /* m_name */
+  NULL,       /* m_doc */
+  -1,         /* m_size */
+  NULL,       /* m_methods */
+  NULL,       /* m_reload */
+  NULL,       /* m_traverse */
+  NULL,       /* m_clear */
+  NULL,       /* m_free */
+};
+
+PyMODINIT_FUNC
+PyInit__channel(void)
+{
+  PyObject* module;
+  if (PyType_Ready(&Channel_Type) < 0)
+    return NULL;
+
+  module = PyModule_Create(&_module);
+  if (module == NULL)
+    return NULL;
+
+  Py_INCREF(&Channel_Type);
+  PyModule_AddObject(module, "Channel", (PyObject*)&Channel_Type);
+
+  return module;
+}

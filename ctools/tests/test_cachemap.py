@@ -8,7 +8,7 @@ from ctools.tests._bases import BaseTestMapLike, BaseTestEntry
 
 class TestCacheMapEntry(BaseTestEntry):
     def create_entry(self):
-        return ctools.CacheMapEntry(uuid.uuid1())
+        return ctools._cachemap.CacheMapEntry(uuid.uuid1())
 
 
 def set_random(mp):

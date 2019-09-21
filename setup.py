@@ -18,7 +18,6 @@ import io
 import os
 from setuptools import setup, Extension, find_packages
 
-
 here = os.path.abspath(os.path.dirname(__file__))
 
 
@@ -45,7 +44,10 @@ def find_version():
 
 
 extensions = [
-    Extension("_ctools", source("ctoolsmodule.c"), **extra_extension_args),
+    Extension("ctools._cachemap", source("cachemap.c"), **extra_extension_args),
+    Extension("ctools._channel", source("channel.c"), **extra_extension_args),
+    Extension("ctools._ttlcache", source("ttlcache.c"), **extra_extension_args),
+    Extension("ctools._funcs", source("functions.c"), **extra_extension_args),
 ]
 
 with io.open("README.rst", "rt", encoding="utf8") as f:

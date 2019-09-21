@@ -33,8 +33,8 @@ time_in_minutes(void)
 typedef struct _cacheentry
 {
   /* clang-format off */
-  PyObject_HEAD
-  PyObject* ma_value;
+    PyObject_HEAD
+    PyObject *ma_value;
   /* clang-format on */
   uint32_t last_visit;
   uint32_t visits;
@@ -144,9 +144,9 @@ CacheEntry_repr(CacheMapEntry* self)
 
 static PyTypeObject CacheEntry_Type = {
   /* clang-format off */
-  PyVarObject_HEAD_INIT(NULL, 0)
+    PyVarObject_HEAD_INIT(NULL, 0)
   /* clang-format on */
-  "ctools.CacheMapEntry",                         /* tp_name */
+  "ctools.CacheMapEntry",                  /* tp_name */
   sizeof(CacheMapEntry),                   /* tp_basicsize */
   0,                                       /* tp_itemsize */
   (destructor)CacheEntry_tp_dealloc,       /* tp_dealloc */
@@ -189,8 +189,8 @@ static PyTypeObject CacheEntry_Type = {
 typedef struct
 {
   /* clang-format off */
-  PyObject_HEAD
-  PyObject* dict;
+    PyObject_HEAD
+    PyObject *dict;
   /* clang-format on */
   Py_ssize_t capacity;
   Py_ssize_t hits;
@@ -739,9 +739,9 @@ PyDoc_STRVAR(CacheMap__doc__, "A fast CacheMap behaving much like dict.");
 
 static PyTypeObject CacheMap_Type = {
   /* clang-format off */
-  PyVarObject_HEAD_INIT(NULL, 0)
+    PyVarObject_HEAD_INIT(NULL, 0)
   /* clang-format on */
-  "ctools.CacheMap",                              /* tp_name */
+  "ctools.CacheMap",                       /* tp_name */
   sizeof(CacheMap),                        /* tp_basicsize */
   0,                                       /* tp_itemsize */
   (destructor)CacheMap_tp_dealloc,         /* tp_dealloc */
@@ -779,3 +779,38 @@ static PyTypeObject CacheMap_Type = {
   0,                                       /* tp_alloc */
   (newfunc)CacheMap_tp_new,                /* tp_new */
 };
+
+static struct PyModuleDef _module = {
+  PyModuleDef_HEAD_INIT,
+  "_cachemap", /* m_name */
+  NULL,        /* m_doc */
+  -1,          /* m_size */
+  NULL,        /* m_methods */
+  NULL,        /* m_reload */
+  NULL,        /* m_traverse */
+  NULL,        /* m_clear */
+  NULL,        /* m_free */
+};
+
+PyMODINIT_FUNC
+PyInit__cachemap(void)
+{
+  PyObject* module;
+  if (PyType_Ready(&CacheMap_Type) < 0)
+    return NULL;
+
+  if (PyType_Ready(&CacheEntry_Type) < 0)
+    return NULL;
+
+  module = PyModule_Create(&_module);
+  if (module == NULL)
+    return NULL;
+
+  Py_INCREF(&CacheEntry_Type);
+  Py_INCREF(&CacheMap_Type);
+
+  PyModule_AddObject(module, "CacheMap", (PyObject*)&CacheMap_Type);
+  PyModule_AddObject(module, "CacheMapEntry", (PyObject*)&CacheEntry_Type);
+
+  return module;
+}

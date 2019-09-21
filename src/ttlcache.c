@@ -25,8 +25,8 @@ limitations under the License.
 typedef struct
 {
   /* clang-format off */
-  PyObject_HEAD
-  PyObject *ma_value;
+    PyObject_HEAD
+    PyObject *ma_value;
   /* clang-format on */
   int64_t expire;
 } TTLCacheEntry;
@@ -107,7 +107,7 @@ static PyTypeObject TTLCacheEntry_Type = {
   /* clang-format off */
     PyVarObject_HEAD_INIT(NULL, 0)
   /* clang-format on */
-  "ctools.TTLCacheEntry",                         /* tp_name */
+  "ctools.TTLCacheEntry",                  /* tp_name */
   sizeof(TTLCacheEntry),                   /* tp_basicsize */
   0,                                       /* tp_itemsize */
   (destructor)TTLCacheEntry_tp_dealloc,    /* tp_dealloc */
@@ -150,8 +150,8 @@ static PyTypeObject TTLCacheEntry_Type = {
 typedef struct
 {
   /* clang-format off */
-  PyObject_HEAD
-  PyObject *dict;
+    PyObject_HEAD
+    PyObject *dict;
   /* clang-format on */
   int64_t default_ttl;
 } TTLCache;
@@ -625,7 +625,7 @@ static PyTypeObject TTLCache_Type = {
   /* clang-format off */
     PyVarObject_HEAD_INIT(NULL, 0)
   /* clang-format on */
-  "ctools.TTLCache",                              /* tp_name */
+  "ctools.TTLCache",                       /* tp_name */
   sizeof(TTLCache),                        /* tp_basicsize */
   0,                                       /* tp_itemsize */
   (destructor)TTLCache_tp_dealloc,         /* tp_dealloc */
@@ -663,3 +663,38 @@ static PyTypeObject TTLCache_Type = {
   0,                                       /* tp_alloc */
   (newfunc)TTLCache_tp_new,                /* tp_new */
 };
+
+static struct PyModuleDef _module = {
+  PyModuleDef_HEAD_INIT,
+  "_ttlcache", /* m_name */
+  NULL,        /* m_doc */
+  -1,          /* m_size */
+  NULL,        /* m_methods */
+  NULL,        /* m_reload */
+  NULL,        /* m_traverse */
+  NULL,        /* m_clear */
+  NULL,        /* m_free */
+};
+
+PyMODINIT_FUNC
+PyInit__ttlcache(void)
+{
+  PyObject* module;
+  if (PyType_Ready(&TTLCacheEntry_Type) < 0)
+    return NULL;
+
+  if (PyType_Ready(&TTLCache_Type) < 0)
+    return NULL;
+
+  module = PyModule_Create(&_module);
+  if (module == NULL)
+    return NULL;
+
+  Py_INCREF(&TTLCacheEntry_Type);
+  Py_INCREF(&TTLCache_Type);
+
+  PyModule_AddObject(module, "TTLCacheEntry", (PyObject*)&TTLCacheEntry_Type);
+  PyModule_AddObject(module, "TTLCache", (PyObject*)&TTLCache_Type);
+
+  return module;
+}

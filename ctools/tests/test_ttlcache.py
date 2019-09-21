@@ -9,7 +9,7 @@ from ctools.tests._bases import BaseTestEntry, BaseTestMapLike
 
 class TestTTLCacheEntry(BaseTestEntry):
     def create_entry(self):
-        return ctools.TTLCacheEntry(uuid.uuid1(), 1024)
+        return ctools._ttlcache.TTLCacheEntry(uuid.uuid1(), 1024)
 
 
 def set_random(mp):

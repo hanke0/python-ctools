@@ -193,3 +193,40 @@ build_with_debug(PyObject* self, PyObject* unused)
   Py_RETURN_FALSE;
 #endif
 }
+
+static PyMethodDef _methods[] = {
+  { "jump_consistent_hash",
+    Ctools__jump_hash,
+    METH_VARARGS,
+    jump_consistent_hash__doc__ },
+  { "strhash", Ctools__strhash, METH_VARARGS, strhash__doc__ },
+  { "int8_to_datetime",
+    Ctools__int8_to_datetime,
+    METH_O,
+    int8_to_datetime__doc__ },
+  { "build_with_debug", (PyCFunction)build_with_debug, METH_NOARGS, NULL },
+  { NULL, NULL, 0, NULL },
+};
+
+static struct PyModuleDef _module = {
+  PyModuleDef_HEAD_INIT,
+  "_funcs", /* m_name */
+  NULL,     /* m_doc */
+  -1,       /* m_size */
+  _methods, /* m_methods */
+  NULL,     /* m_reload */
+  NULL,     /* m_traverse */
+  NULL,     /* m_clear */
+  NULL,     /* m_free */
+};
+
+PyMODINIT_FUNC
+PyInit__funcs(void)
+{
+  PyObject* module;
+  module = PyModule_Create(&_module);
+  if (module == NULL)
+    return NULL;
+  PyDateTime_IMPORT;
+  return module;
+}
