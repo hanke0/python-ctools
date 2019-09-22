@@ -151,10 +151,10 @@ djb2(const char* str, unsigned long len)
 PyDoc_STRVAR(strhash__doc__, "strhash(s, method='fnv1a') -> int:\n\n\
     hash str with consistent value.\n\n\
     This function uses C bindings for speed.\n\n\
-    Args\n\n\
+    Args:\n\n\
         s (str): The string to hash.\n\n\
         method (str): fnv1a | fnv1 | djb2 | murmur\n\n\
-    Return\n\n\
+    Returns:\n\n\
         int: hash number");
 
 static PyObject*
