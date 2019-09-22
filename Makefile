@@ -32,7 +32,7 @@ build:  ## build package
 test: build  ## Install package and Test
 	@$(CURDIR)/tools/runtest.py
 
-doc:  ## genetate api doc
-	@$(CURDIR)/tools/genapidoc.py
+doc: build  ## genetate api doc
+	cd docs && make clean && make html
 
 .PHONY: help dist clean format benchmark pypi-test pypi build test doc

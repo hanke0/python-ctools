@@ -151,12 +151,11 @@ djb2(const char* str, unsigned long len)
 PyDoc_STRVAR(strhash__doc__, "strhash(s, method='fnv1a') -> int:\n\n\
     hash str with consistent value.\n\n\
     This function uses C bindings for speed.\n\n\
-    Change Log: start from 0.0.4, support method arguments.Allowed method are fnv1a(default), fnv1, djb2 and murmur.\
-    :param s: The string to hash.\n\
-    :param method: fnv1a | fnv1 | djb2\n\
-    :type s: string\n\
-    :return: hash number\n\
-    :rtype: int\n");
+    Args\n\n\
+        s (str): The string to hash.\n\n\
+        method (str): fnv1a | fnv1 | djb2 | murmur\n\n\
+    Return\n\n\
+        hash number: (int)");
 
 static PyObject*
 Ctools__strhash(PyObject* m, PyObject* args)

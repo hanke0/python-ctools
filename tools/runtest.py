@@ -30,7 +30,7 @@ def _setup_project_root():
 
 def main(argv=None):
     if argv is not None and "--no-project-root" in argv:
-        argv.remove('--no-project-root')
+        argv.remove("--no-project-root")
     else:
         _setup_project_root()
 

@@ -29,5 +29,5 @@ for api in api_list:
         lines.append("\n\n\n")
 
 
-with open(os.path.join(project_root, "doc", "api.md"), "wt") as f:
+with open(os.path.join(project_root, "docs", "api.md"), "wt") as f:
     f.writelines(lines)
