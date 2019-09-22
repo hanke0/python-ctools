@@ -15,7 +15,7 @@
 # limitations under the License.
 
 
-__version__ = "3.0.3"
+__version__ = "0.1.0"
 
 from ctools._cachemap import CacheMap
 from ctools._channel import Channel

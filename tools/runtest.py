@@ -13,7 +13,7 @@ def terminal_size():
     return columns, rows
 
 
-def _show_info(test_args):
+def _show_info():
     import ctools
 
     separate = "-" * terminal_size()[0]
@@ -30,11 +30,21 @@ def _show_info(test_args):
     print(separate)
 
 
+def _setup_project_root():
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    sys.path.pop(0)
+    sys.path.insert(0, project_root)
+
+
 def main(argv=None):
-    argv = argv or sys.argv
-    _show_info(argv)
+    if argv is not None and "--no-project-root" in argv:
+        argv.remove('--no-project-root')
+    else:
+        _setup_project_root()
+
+    _show_info()
     try:
-        code = pytest.main()
+        code = pytest.main(argv)
     except SystemExit as exc:
         code = exc.code
 
