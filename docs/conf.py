@@ -15,6 +15,7 @@ import sys
 
 try:
     import ctools
+
     del ctools
 except ImportError:
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
