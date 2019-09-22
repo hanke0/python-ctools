@@ -63,7 +63,7 @@ setup(
     url="https://github.com/ko-han/python-ctools",
     project_urls={
         "Bug Tracker": "https://github.com/ko-han/python-ctools/issues",
-        "Documentation": "https://github.com/ko-han/python-ctools/wiki",
+        "Documentation": "https://python-ctools.readthedocs.io",
         "Source Code": "https://github.com/ko-han/python-ctools",
     },
     license="Apache License 2.0",

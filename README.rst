@@ -61,10 +61,6 @@ An implementation of golang chan like channel.
     assert ok
     assert d == 1
 
-Document
-=========
-`https://github.com/ko-han/python-ctools/wiki  <https://github.com/ko-han/python-ctools/wiki>`_.
-
 Benchmark
 =========
 .. code-block:: text
@@ -83,6 +79,7 @@ for testing.
 
 More
 ====
+* Documents: https://python-ctools.readthedocs.io
 What's important is free.
 
 .. _pip: https://pip.pypa.io/en/stable/quickstart/
