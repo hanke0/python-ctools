@@ -478,7 +478,7 @@ static PyMappingMethods CacheMap_as_mapping = {
 };
 
 static PyObject*
-CacheMap_hints(CacheMap* self)
+CacheMap_hit_info(CacheMap* self)
 {
   return Py_BuildValue("iii", self->capacity, self->hits, self->misses);
 }
@@ -700,28 +700,28 @@ static PyMethodDef CacheMap_methods[] = {
   { "evict",
     (PyCFunction)CacheMap_evict,
     METH_NOARGS,
-    "evict()\n\nevict a item. raise error if no item in cache raise error if "
+    "evict()\n\nevict a item. raise error if no item in cache."
     "no item in cache." },
   { "set_capacity",
     (PyCFunction)CacheMap_set_capacity,
     METH_O,
     "set_capacity(capacity: int)\n\n reset capacity of cache." },
-  { "hints", (PyCFunction)CacheMap_hints, METH_NOARGS, NULL },
+  {"hit_info", (PyCFunction)CacheMap_hit_info, METH_NOARGS, "return capacity, hits, and misses count" },
   { "next_evict_key", (PyCFunction)CacheMap_NextEvictKey, METH_NOARGS, NULL },
-  { "get", (PyCFunction)CacheMap_get, METH_VARARGS | METH_KEYWORDS, NULL },
+  { "get", (PyCFunction)CacheMap_get, METH_VARARGS | METH_KEYWORDS, "get(key, default=None)\n\nget item from cache" },
   { "setdefault",
     (PyCFunction)CacheMap_setdefault,
     METH_VARARGS | METH_KEYWORDS,
-    NULL },
-  { "pop", (PyCFunction)CacheMap_pop, METH_VARARGS | METH_KEYWORDS, NULL },
-  { "keys", (PyCFunction)CacheMap_keys, METH_NOARGS, NULL },
-  { "values", (PyCFunction)CacheMap_values, METH_NOARGS, NULL },
-  { "items", (PyCFunction)CacheMap_items, METH_NOARGS, NULL },
+    "setdefault(key, default=None)\n\nget item in cache, if key not exists, set default to cache and return it." },
+  { "pop", (PyCFunction)CacheMap_pop, METH_VARARGS | METH_KEYWORDS, "pop(key, default=None)\n\npop an item from cache, if key not exists return default" },
+  { "keys", (PyCFunction)CacheMap_keys, METH_NOARGS, "\n\niter keys" },
+  { "values", (PyCFunction)CacheMap_values, METH_NOARGS, "iter values" },
+  { "items", (PyCFunction)CacheMap_items, METH_NOARGS, "iter keys and values" },
   { "update",
     (PyCFunction)CacheMap_update,
     METH_VARARGS | METH_KEYWORDS,
-    NULL },
-  { "clear", (PyCFunction)CacheMap_clear, METH_NOARGS, NULL },
+    "update items to cache."},
+  { "clear", (PyCFunction)CacheMap_clear, METH_NOARGS, "clean cache" },
   { "setnx",
     (PyCFunction)CacheMap_setnx,
     METH_VARARGS | METH_KEYWORDS,
