@@ -34,7 +34,6 @@ else:
 
 
 def find_version():
-    d = {}
     with open(os.path.join(here, "ctools", "__init__.py"), "rt") as f:
         value = f.read()
 
