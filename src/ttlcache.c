@@ -194,6 +194,8 @@ TTLCache_GetTTLItemWithError(TTLCache* self, PyObject* key)
     /* key is already in cache, error would not raised */
     i = TTLCache_DelItem(self, key);
     assert(i != -1);
+    /* ignore unused-but-set-variable here */
+    (void) i;
     return NULL;
   }
   return entry;
@@ -593,7 +595,7 @@ static PyMethodDef TTLCache_methods[] = {
     METH_VARARGS | METH_KEYWORDS,
     NULL },
   { "clear", (PyCFunction)TTLCache_clear, METH_NOARGS, NULL },
-  { "setnx", (PyCFunction)TTLCache_setnx, METH_VARARGS | METH_KEYWORDS, NULL },
+  { "setnx", (PyCFunction)TTLCache_setnx, METH_VARARGS | METH_KEYWORDS, "like setdefault but accept a callable obejct"},
   { "_storage", (PyCFunction)TTLCache__storage, METH_NOARGS, NULL },
   { "get_default_ttl",
     (PyCFunction)TTLCache_get_default_ttl,
@@ -619,7 +621,8 @@ TTLCache_tp_iter(TTLCache* self)
   return it;
 }
 
-PyDoc_STRVAR(TTLCache__doc__, "A fast TTLCache behaving much like dict.");
+PyDoc_STRVAR(TTLCache__doc__, "A fast TTLCache behaving much like dict."
+                              "    :param ttl: max seconds a items stores.");
 
 static PyTypeObject TTLCache_Type = {
   /* clang-format off */
