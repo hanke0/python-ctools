@@ -1,22 +1,14 @@
 #!/usr/bin/env python
 import sys
 import os
+import shutil
 import pytest
-
-
-def terminal_size():
-    try:
-        columns, rows = os.get_terminal_size(0)
-    except OSError:
-        columns, rows = os.get_terminal_size(1)
-
-    return columns, rows
 
 
 def _show_info():
     import ctools
 
-    separate = "-" * terminal_size()[0]
+    separate = "-" * shutil.get_terminal_size()[0]
     print(separate)
     print("Testing Information")
     print("\t", "Python: ", sys.executable)
