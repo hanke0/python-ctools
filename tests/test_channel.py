@@ -1,10 +1,14 @@
+import unittest
 import uuid
+import sys
 
 import ctools
-from ctools.tests._bases import TestCase
 
 
-class TestChannel(TestCase):
+class TestChannel(unittest.TestCase):
+    def assertRefEqual(self, a, b, msg=None):
+        self.assertEqual(sys.getrefcount(a), sys.getrefcount(b), msg=msg)
+
     def test_size1(self):
         ch = ctools.Channel(1)
 
@@ -105,6 +109,4 @@ class TestChannel(TestCase):
 
 
 if __name__ == "__main__":
-    import unittest
-
     unittest.main()

@@ -26,13 +26,13 @@ pypi-test:
 pypi:
 	@$(CURDIR)/tools/upload-pypi.sh
 
-install:  ## Install package
-	@$(CURDIR)/tools/install.sh
+build:  ## build package
+	@python setup.py build_ext --inplace
 
-test:  ## Install package and Test
+test: build  ## Install package and Test
 	@$(CURDIR)/tools/runtest.py
 
 doc:  ## genetate api doc
 	@$(CURDIR)/tools/genapidoc.py
 
-.PHONY: help dist clean format benchmark pypi-test pypi install test doc
+.PHONY: help dist clean format benchmark pypi-test pypi build test doc

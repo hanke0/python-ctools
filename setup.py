@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import re
 import io
 import os
 from setuptools import setup, Extension, find_packages
@@ -27,7 +27,6 @@ def source(*args):
 
 DEBUG = os.getenv("CTOOLS_DEBUG", "").upper() == "ON"
 
-
 if DEBUG:
     extra_extension_args = dict(undef_macros=["NDEBUG"])
 else:
@@ -36,11 +35,14 @@ else:
 
 def find_version():
     d = {}
-    with open(os.path.join(here, "ctools", "version.py"), "rt") as f:
+    with open(os.path.join(here, "ctools", "__init__.py"), "rt") as f:
         value = f.read()
-        exec(value, d, d)
 
-    return d["__version__"]
+    regex = r"""__version__\s?=\s?['"](?P<version>.+)['"]"""
+    match = re.search(regex, value)
+    if match is None:
+        raise RuntimeError("can't get version info")
+    return match.group("version").strip()
 
 
 extensions = [
@@ -68,7 +70,7 @@ setup(
     license="Apache License 2.0",
     long_description=readme,
     long_description_content_type="text/x-rst",
-    python_requires=">=3",
+    python_requires=">=3.5",
     include_package_data=True,
     zip_safe=False,
     ext_modules=extensions,

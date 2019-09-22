@@ -13,13 +13,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+
+__version__ = "3.0.3"
+
 from ctools._cachemap import CacheMap
 from ctools._channel import Channel
 from ctools._ttlcache import TTLCache
 from ctools._funcs import *
-
-from ctools._tester import Tester, memory_leak_test
-from .version import __version__
-
-test = Tester(__name__)
-del Tester

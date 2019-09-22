@@ -1,56 +1,44 @@
 #!/usr/bin/env python
-
 import sys
 import os
-import subprocess
-import argparse
-
-sys.path.pop(0)
-
-project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+import pytest
 
 
-def install(python, env):
-    cmd = [python, "-m", "pip", "install", project_root]
-    print("Install: ", " ".join(cmd))
-    return subprocess.call(cmd, env=env)
+def terminal_size():
+    try:
+        columns, rows = os.get_terminal_size(0)
+    except OSError:
+        columns, rows = os.get_terminal_size(1)
+
+    return columns, rows
 
 
-def run_test(argv):
-    sys.argv = sys.argv[:1] + argv
+def _show_info(test_args):
     import ctools
 
-    return ctools.test()
+    separate = "-" * terminal_size()[0]
+    print(separate)
+    print("Testing Information")
+    print("\t", "Python: ", sys.executable)
+    print(
+        "\t",
+        "Ctools:",
+        ctools.__version__,
+        "(debug build)" if ctools.build_with_debug() else "",
+        "at %s" % ctools.__file__,
+    )
+    print(separate)
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument(
-        "--no-install",
-        action="store_true",
-        default=False,
-        help="do not build the project (use system installed version)",
-    )
-    parser.add_argument("--python", help="Python bin path")
+    argv = argv or sys.argv
+    _show_info(argv)
+    try:
+        code = pytest.main()
+    except SystemExit as exc:
+        code = exc.code
 
-    env = os.environ
-    env.setdefault("CTOOLS_DEBUG", "ON")
-
-    args, unknown_args = parser.parse_known_args(argv)
-
-    python = args.python or sys.executable
-
-    if not args.no_install:
-        r = install(python, env)
-        if r:
-            return r
-    if os.getenv("__CTOOLS_IN_SUBPROCESS", "Y") == "Y":
-        return run_test(unknown_args)
-
-    env["__CTOOLS_IN_SUBPROCESS"] = "Y"
-    return subprocess.call(
-        [python, sys.argv[0], "--no-install"] + unknown_args, env=env
-    )
+    return code
 
 
 if __name__ == "__main__":

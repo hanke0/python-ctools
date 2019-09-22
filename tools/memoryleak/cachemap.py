@@ -55,6 +55,7 @@ if __name__ == "__main__":
         run_type = "dict"
 
     print("run type = ", run_type)
+    from memleaktest import memory_leak_test
     try:
         report = ctools.memory_leak_test(test, log_prefix=run_type)
         sys.exit(report.exc_code)

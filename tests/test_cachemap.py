@@ -3,6 +3,8 @@ import uuid
 import sys
 from contextlib import contextmanager
 
+import ctools
+
 
 class DefaultEntry:
     def __init__(self, o):
@@ -20,14 +22,9 @@ def not_raise(exc=Exception):
         pass
 
 
-class TestCase(unittest.TestCase):
+class BaseTestEntry(unittest.TestCase):
     def assertRefEqual(self, a, b, msg=None):
         self.assertEqual(sys.getrefcount(a), sys.getrefcount(b), msg=msg)
-
-
-class BaseTestEntry(TestCase):
-    def create_entry(self):
-        return DefaultEntry(uuid.uuid1())
 
     def test_normal_ref(self):
         entry = self.create_entry()
@@ -41,6 +38,9 @@ class BaseTestEntry(TestCase):
         del entry
         del a
         self.assertRefEqual(v1, v2)
+
+    def create_entry(self):
+        return ctools._cachemap.CacheMapEntry(uuid.uuid1())
 
 
 def map_set_random(mp):
@@ -74,9 +74,12 @@ class DefaultMap(dict):
         return self.keys()
 
 
-class BaseTestMapLike(TestCase):
+class TestCacheMap(unittest.TestCase):
     def create_map(self):
-        return DefaultMap()
+        return ctools.CacheMap(257)
+
+    def assertRefEqual(self, a, b, msg=None):
+        self.assertEqual(sys.getrefcount(a), sys.getrefcount(b), msg=msg)
 
     def test_normal_set_item(self):
         cache = self.create_map()
@@ -361,6 +364,28 @@ class BaseTestMapLike(TestCase):
 
         self.assertRefEqual(ckey, dkey)
         self.assertRefEqual(cval, dval)
+
+    def test_get_set(self):
+        d = ctools.CacheMap(2)
+        d["a"] = 1
+        d["c"] = 2
+        # py35 dict is not ordered, add priority of key 'c' here
+        self.assertEqual(d["c"], 2)
+        d["e"] = 3
+        self.assertEqual(len(d), 2)
+
+        for i in range(10):
+            self.assertEqual(d["c"], 2)
+
+    def test_len(self):
+        for m in range(254, 1024):
+            d = ctools.CacheMap(m)
+            for i in range(m + 1):
+                d[str(i)] = str(i)
+                if i < m and len(d) != i + 1:
+                    self.assertEqual(len(d), i)
+
+            self.assertEqual(len(d), m)
 
 
 if __name__ == "__main__":
