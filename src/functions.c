@@ -20,11 +20,11 @@ PyDoc_STRVAR(jump_consistent_hash__doc__,
              "jump_consistent_hash(key: int, num_buckets: int) -> int:\n\n\
     Generate a number in the range [0, num_buckets).\n\
     This function uses C bindings for speed.\n\n\
-    :param key: The key to hash.\n\
-    :type key: int\n\
-    :param num_buckets: Number of buckets to use.\n\
-    :type num_buckets: int\n\
-    :return: hash number\n\
+    :param key: The key to hash.\n\n\
+    :type key: int\n\n\
+    :param num_buckets: Number of buckets to use.\n\n\
+    :type num_buckets: int\n\n\
+    :return: hash number\n\n\
     :rtype: int\n");
 
 static PyObject*
@@ -49,13 +49,13 @@ Ctools__jump_hash(PyObject* m, PyObject* args)
   PyDateTime_FromDateAndTime(year, month, day, 0, 0, 0, 0)
 
 PyDoc_STRVAR(int8_to_datetime__doc__,
-             "int8_to_datetime(date_integer) -> datetime.datetime:\n\n\
+             "int8_to_datetime(date_integer: int) -> datetime.datetime:\n\n\
     Convert int like 20180101 to datetime.datetime(2018, 1, 1)).\n\n\
     This function uses C bindings for speed.\n\n\
-    :param date_integer: The string to hash.\n\
-    :type date_integer: int\n\
-    :return: parsed datetime\n\
-    :rtype: datetime.datetime\n");
+    :param date_integer: The string to hash.\n\n\
+    :type date_integer: int\n\n\
+    :return: parsed datetime\n\n\
+    :rtype: datetime.datetime\n\n");
 
 static PyObject*
 Ctools__int8_to_datetime(PyObject* m, PyObject* date_integer)
@@ -155,7 +155,7 @@ PyDoc_STRVAR(strhash__doc__, "strhash(s, method='fnv1a') -> int:\n\n\
         s (str): The string to hash.\n\n\
         method (str): fnv1a | fnv1 | djb2 | murmur\n\n\
     Return\n\n\
-        hash number: (int)");
+        int: hash number");
 
 static PyObject*
 Ctools__strhash(PyObject* m, PyObject* args)
