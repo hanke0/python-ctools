@@ -17,20 +17,19 @@ limitations under the License.
 #define _CTOOLS_MACROS_H_
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 #include <stdio.h>
 #ifdef _MSC_VER
 #ifndef int8_t
-  typedef signed __int8 int8_t;
-  typedef signed __int16 int16_t;
-  typedef signed __int32 int32_t;
-  typedef unsigned __int8 uint8_t;
-  typedef unsigned __int16 uint16_t;
-  typedef unsigned __int32 uint32_t;
-  typedef signed __int64 int64_t;
-  typedef unsigned __int64 uint64_t;
+typedef signed __int8 int8_t;
+typedef signed __int16 int16_t;
+typedef signed __int32 int32_t;
+typedef unsigned __int8 uint8_t;
+typedef unsigned __int16 uint16_t;
+typedef unsigned __int32 uint32_t;
+typedef signed __int64 int64_t;
+typedef unsigned __int64 uint64_t;
 #define INT8_MIN ((int8_t)_I8_MIN)
 #define INT8_MAX _I8_MAX
 #define INT16_MIN ((int16_t)_I16_MIN)
@@ -50,10 +49,7 @@ extern "C"
 #define DEBUG_PRINTF(FORMAT, ...) ((void)0)
 #else
 #define DEBUG_PRINTF(FORMAT, ...)                                              \
-  printf("%s() in %s, line %i: " FORMAT "\n",                                  \
-         __func__,                                                             \
-         __FILE__,                                                             \
-         __LINE__,                                                             \
+  printf("%s() in %s, line %i: " FORMAT "\n", __func__, __FILE__, __LINE__,    \
          __VA_ARGS__)
 #endif
 
@@ -77,7 +73,7 @@ extern "C"
 
 #define IS_POW_OF_2(x) ((x) != 0 && (((x) & ((x)-1)) == 0))
 
-#define PYOBJECT_CAST(x) ((PyObject*)(x))
+#define PYOBJECT_CAST(x) ((PyObject *)(x))
 
 #ifdef __cplusplus
 }

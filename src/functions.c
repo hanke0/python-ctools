@@ -27,9 +27,7 @@ PyDoc_STRVAR(jump_consistent_hash__doc__,
     :return: hash number\n\n\
     :rtype: int\n");
 
-static PyObject*
-Ctools__jump_hash(PyObject* m, PyObject* args)
-{
+static PyObject *Ctools__jump_hash(PyObject *m, PyObject *args) {
   uint64_t key;
   int32_t num_buckets;
 
@@ -57,9 +55,7 @@ PyDoc_STRVAR(int8_to_datetime__doc__,
     :return: parsed datetime\n\n\
     :rtype: datetime.datetime\n\n");
 
-static PyObject*
-Ctools__int8_to_datetime(PyObject* m, PyObject* date_integer)
-{
+static PyObject *Ctools__int8_to_datetime(PyObject *m, PyObject *date_integer) {
   register long date = PyLong_AsLong(date_integer);
   if (date > 99990101 || date < 101) {
     PyErr_SetString(PyExc_ValueError,
@@ -68,35 +64,29 @@ Ctools__int8_to_datetime(PyObject* m, PyObject* date_integer)
   }
   return PyDateTime_FromDate(date / 10000, date % 10000 / 100, date % 100);
 }
-static unsigned int
-fnv1a(const char* s, unsigned long len)
-{
+static unsigned int fnv1a(const char *s, unsigned long len) {
   unsigned int hash = 2166136261U;
   for (unsigned long i = 0; i < len; i++) {
     hash = hash ^ s[i];
     /* hash * (1 << 24 + 1 << 8 + 0x93) */
     hash +=
-      (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
+        (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
   }
   return hash;
 }
 
-static unsigned int
-fnv1(const char* s, unsigned long len)
-{
+static unsigned int fnv1(const char *s, unsigned long len) {
   unsigned int hash = 2166136261U;
   for (unsigned long i = 0; i < len; i++) {
     /* hash * (1 << 24 + 1 << 8 + 0x93) */
     hash +=
-      (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
+        (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
     hash = hash ^ s[i];
   }
   return hash;
 }
 
-static unsigned int
-murmur_hash2(const char* str, unsigned long len)
-{
+static unsigned int murmur_hash2(const char *str, unsigned long len) {
   unsigned int hash, key;
 
   hash = 0 ^ len;
@@ -118,16 +108,16 @@ murmur_hash2(const char* str, unsigned long len)
   }
 
   switch (len) {
-    case 3:
-      hash ^= str[2] << 16;
-      /* fall through */
-    case 2:
-      hash ^= str[1] << 8;
-      /* fall through */
-    case 1:
-      hash ^= str[0];
-      hash *= 0x5bd1e995;
-    default:;
+  case 3:
+    hash ^= str[2] << 16;
+    /* fall through */
+  case 2:
+    hash ^= str[1] << 8;
+    /* fall through */
+  case 1:
+    hash ^= str[0];
+    hash *= 0x5bd1e995;
+  default:;
   }
 
   hash ^= hash >> 13;
@@ -137,9 +127,7 @@ murmur_hash2(const char* str, unsigned long len)
   return hash;
 }
 
-static unsigned int
-djb2(const char* str, unsigned long len)
-{
+static unsigned int djb2(const char *str, unsigned long len) {
   unsigned int hash = 5381;
   for (unsigned long i = 0; i < len; i++) {
     hash = ((hash << 5) + hash) + str[i];
@@ -157,9 +145,7 @@ PyDoc_STRVAR(strhash__doc__, "strhash(s, method='fnv1a') -> int:\n\n\
     Returns:\n\n\
         int: hash number");
 
-static PyObject*
-Ctools__strhash(PyObject* m, PyObject* args)
-{
+static PyObject *Ctools__strhash(PyObject *m, PyObject *args) {
   const char *s, *method = NULL;
   Py_ssize_t len = 0, m_len = 0;
   if (!PyArg_ParseTuple(args, "s#|s#", &s, &len, &method, &m_len))
@@ -167,26 +153,24 @@ Ctools__strhash(PyObject* m, PyObject* args)
   if (method == NULL)
     return Py_BuildValue("I", fnv1a(s, len));
   switch (method[0]) {
-    case 'f': {
-      if (m_len == 5)
-        return Py_BuildValue("I", fnv1a(s, len));
-      else
-        return Py_BuildValue("I", fnv1(s, len));
-    }
-    case 'd':
-      return Py_BuildValue("I", djb2(s, len));
-    case 'm':
-      return Py_BuildValue("I", murmur_hash2(s, len));
-    default: {
-      PyErr_SetString(PyExc_ValueError, "invalid method");
-      return NULL;
-    }
+  case 'f': {
+    if (m_len == 5)
+      return Py_BuildValue("I", fnv1a(s, len));
+    else
+      return Py_BuildValue("I", fnv1(s, len));
+  }
+  case 'd':
+    return Py_BuildValue("I", djb2(s, len));
+  case 'm':
+    return Py_BuildValue("I", murmur_hash2(s, len));
+  default: {
+    PyErr_SetString(PyExc_ValueError, "invalid method");
+    return NULL;
+  }
   }
 }
 
-static PyObject*
-build_with_debug(PyObject* self, PyObject* unused)
-{
+static PyObject *build_with_debug(PyObject *self, PyObject *unused) {
 #ifndef NDEBUG
   Py_RETURN_TRUE;
 #else
@@ -195,35 +179,29 @@ build_with_debug(PyObject* self, PyObject* unused)
 }
 
 static PyMethodDef _methods[] = {
-  { "jump_consistent_hash",
-    Ctools__jump_hash,
-    METH_VARARGS,
-    jump_consistent_hash__doc__ },
-  { "strhash", Ctools__strhash, METH_VARARGS, strhash__doc__ },
-  { "int8_to_datetime",
-    Ctools__int8_to_datetime,
-    METH_O,
-    int8_to_datetime__doc__ },
-  { "build_with_debug", (PyCFunction)build_with_debug, METH_NOARGS, NULL },
-  { NULL, NULL, 0, NULL },
+    {"jump_consistent_hash", Ctools__jump_hash, METH_VARARGS,
+     jump_consistent_hash__doc__},
+    {"strhash", Ctools__strhash, METH_VARARGS, strhash__doc__},
+    {"int8_to_datetime", Ctools__int8_to_datetime, METH_O,
+     int8_to_datetime__doc__},
+    {"build_with_debug", (PyCFunction)build_with_debug, METH_NOARGS, NULL},
+    {NULL, NULL, 0, NULL},
 };
 
 static struct PyModuleDef _module = {
-  PyModuleDef_HEAD_INIT,
-  "_funcs", /* m_name */
-  NULL,     /* m_doc */
-  -1,       /* m_size */
-  _methods, /* m_methods */
-  NULL,     /* m_reload */
-  NULL,     /* m_traverse */
-  NULL,     /* m_clear */
-  NULL,     /* m_free */
+    PyModuleDef_HEAD_INIT,
+    "_funcs", /* m_name */
+    NULL,     /* m_doc */
+    -1,       /* m_size */
+    _methods, /* m_methods */
+    NULL,     /* m_reload */
+    NULL,     /* m_traverse */
+    NULL,     /* m_clear */
+    NULL,     /* m_free */
 };
 
-PyMODINIT_FUNC
-PyInit__funcs(void)
-{
-  PyObject* module;
+PyMODINIT_FUNC PyInit__funcs(void) {
+  PyObject *module;
   module = PyModule_Create(&_module);
   if (module == NULL)
     return NULL;

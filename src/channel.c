@@ -18,8 +18,7 @@ limitations under the License.
 
 #include "util.h"
 
-typedef struct
-{
+typedef struct {
   /* clang-format off */
     PyObject_VAR_HEAD
     PyObject **ob_item;
@@ -38,14 +37,13 @@ typedef struct
 
 static PyTypeObject Channel_Type;
 
-Channel*
-Channel_New(int size)
-{
-  Channel* op;
+Channel *Channel_New(int size) {
+  Channel *op;
   int i;
   assert(size > 0);
   /* check for overflow. */
-  if (size > (PY_SSIZE_T_MAX - sizeof(Channel)) / sizeof(PyObject*)) {
+  if ((Py_ssize_t)size >
+      (Py_ssize_t)((PY_SSIZE_T_MAX - sizeof(Channel)) / sizeof(PyObject *))) {
     PyErr_NoMemory();
     return NULL;
   }
@@ -53,7 +51,7 @@ Channel_New(int size)
   op = PyObject_GC_New(Channel, &Channel_Type);
   RETURN_IF_NULL(op, NULL);
 
-  op->ob_item = (PyObject**)PyMem_Calloc(size, sizeof(PyObject*));
+  op->ob_item = (PyObject **)PyMem_Calloc(size, sizeof(PyObject *));
   if (op->ob_item == NULL) {
     Py_DECREF(op);
     PyErr_NoMemory();
@@ -78,9 +76,7 @@ Channel_New(int size)
   return op;
 }
 
-static void
-Channel_tp_dealloc(Channel* ob)
-{
+static void Channel_tp_dealloc(Channel *ob) {
   int i;
   int len = Py_SIZE(ob);
   PyObject_GC_UnTrack(ob);
@@ -100,9 +96,7 @@ Channel_tp_dealloc(Channel* ob)
   /* clang-format on */
 }
 
-static int
-Channel_tp_traverse(Channel* o, visitproc visit, void* arg)
-{
+static int Channel_tp_traverse(Channel *o, visitproc visit, void *arg) {
   int i;
 
   for (i = Py_SIZE(o); --i >= 0;)
@@ -110,11 +104,9 @@ Channel_tp_traverse(Channel* o, visitproc visit, void* arg)
   return 0;
 }
 
-static int
-Channel_tp_clear(Channel* op)
-{
+static int Channel_tp_clear(Channel *op) {
   int i;
-  PyObject** item = op->ob_item;
+  PyObject **item = op->ob_item;
   if (item != NULL) {
     /* Because XDECREF can recursively invoke operations on
        this list, we make it empty first. */
@@ -136,24 +128,21 @@ Channel_tp_clear(Channel* op)
   return 0;
 }
 
-static PyObject*
-Channel_tp_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
-{
+static PyObject *Channel_tp_new(PyTypeObject *type, PyObject *args,
+                                PyObject *kwds) {
   int size;
-  static char* kwlist[] = { "size", NULL };
+  static char *kwlist[] = {"size", NULL};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "i", kwlist, &size))
     return NULL;
   if (size <= 0) {
     PyErr_SetString(PyExc_ValueError, "size should be positive.");
     return NULL;
   }
-  return (PyObject*)Channel_New(size);
+  return (PyObject *)Channel_New(size);
 }
 
-static PyObject*
-Channel_clear(Channel* self, PyObject* unused)
-{
-  PyObject** buffer = self->ob_item;
+static PyObject *Channel_clear(Channel *self, PyObject *unused) {
+  PyObject **buffer = self->ob_item;
   Py_ssize_t size;
   size = Py_SIZE(self);
   for (Py_ssize_t i = 0; i < size; ++i) {
@@ -165,9 +154,7 @@ Channel_clear(Channel* self, PyObject* unused)
   Py_RETURN_NONE;
 }
 
-static void
-Channel_incr_sendx(Channel* self)
-{
+static void Channel_incr_sendx(Channel *self) {
   assert(self->sflag > 0);
   if (self->sflag == 3) {
     self->sendx = (self->sendx + 1) & (2 * Py_SIZE(self) - 1);
@@ -186,9 +173,7 @@ Channel_incr_sendx(Channel* self)
   self->sendx = sendx;
 }
 
-static void
-Channel_incr_recvx(Channel* self)
-{
+static void Channel_incr_recvx(Channel *self) {
   assert(self->rflag > 0);
   if (self->rflag == 3) {
     self->recvx = (self->recvx + 1) & (2 * Py_SIZE(self) - 1);
@@ -207,9 +192,7 @@ Channel_incr_recvx(Channel* self)
   self->recvx = recvx;
 }
 
-static int
-Channel_send_idx(Channel* self)
-{
+static int Channel_send_idx(Channel *self) {
   if (self->sflag < 0) {
     return -2;
   }
@@ -241,9 +224,7 @@ Channel_send_idx(Channel* self)
   return self->sendx % Py_SIZE(self);
 }
 
-static int
-Channel_recv_idx(Channel* self)
-{
+static int Channel_recv_idx(Channel *self) {
   if (self->rflag < 0) {
     return -2;
   }
@@ -275,13 +256,11 @@ Channel_recv_idx(Channel* self)
   return self->recvx % Py_SIZE(self);
 }
 
-static PyObject*
-Channel_recv(PyObject* self, PyObject* unused)
-{
-  PyObject* item;
-  PyObject* rv;
+static PyObject *Channel_recv(PyObject *self, PyObject *unused) {
+  PyObject *item;
+  PyObject *rv;
   int recvx;
-  Channel* ch = (Channel*)self;
+  Channel *ch = (Channel *)self;
 
   recvx = Channel_recv_idx(ch);
   if (recvx == -2) {
@@ -311,11 +290,9 @@ Channel_recv(PyObject* self, PyObject* unused)
   return rv;
 }
 
-static PyObject*
-Channel_send(PyObject* self, PyObject* obj)
-{
-  Channel* ch = (Channel*)self;
-  PyObject* item;
+static PyObject *Channel_send(PyObject *self, PyObject *obj) {
+  Channel *ch = (Channel *)self;
+  PyObject *item;
   int sendx;
 
   sendx = Channel_send_idx(ch);
@@ -335,18 +312,16 @@ Channel_send(PyObject* self, PyObject* obj)
   Py_RETURN_TRUE;
 }
 
-static PyObject*
-Channel_close(PyObject* self, PyObject* args, PyObject* kwds)
-{
-  Channel* ch;
+static PyObject *Channel_close(PyObject *self, PyObject *args, PyObject *kwds) {
+  Channel *ch;
   int write, read;
   write = 1;
   read = 1;
-  static char* kwlist[] = { "send", "recv", NULL };
+  static char *kwlist[] = {"send", "recv", NULL};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|pp", kwlist, &write, &read))
     return NULL;
 
-  ch = (Channel*)self;
+  ch = (Channel *)self;
   if (write) {
     ch->sflag *= -1;
   }
@@ -356,12 +331,10 @@ Channel_close(PyObject* self, PyObject* args, PyObject* kwds)
   Py_RETURN_NONE;
 }
 
-static PyObject*
-Channel_safe_consume(PyObject* self, PyObject* callback)
-{
-  PyObject* item;
-  PyObject* callback_rv;
-  Channel* ch = (Channel*)self;
+static PyObject *Channel_safe_consume(PyObject *self, PyObject *callback) {
+  PyObject *item;
+  PyObject *callback_rv;
+  Channel *ch = (Channel *)self;
   int recvx;
 
   if (!(PyCallable_Check(callback))) {
@@ -400,10 +373,8 @@ Channel_safe_consume(PyObject* self, PyObject* callback)
   return callback_rv;
 }
 
-static PyObject*
-Channel_sendable(PyObject* self, PyObject* unused)
-{
-  Channel* ch = (Channel*)self;
+static PyObject *Channel_sendable(PyObject *self, PyObject *unused) {
+  Channel *ch = (Channel *)self;
   int sendx;
   sendx = Channel_send_idx(ch);
 
@@ -413,10 +384,8 @@ Channel_sendable(PyObject* self, PyObject* unused)
   Py_RETURN_TRUE;
 }
 
-static PyObject*
-Channel_recvable(PyObject* self, PyObject* unused)
-{
-  Channel* ch = (Channel*)self;
+static PyObject *Channel_recvable(PyObject *self, PyObject *unused) {
+  Channel *ch = (Channel *)self;
   int recvx;
   recvx = Channel_recv_idx(ch);
 
@@ -426,84 +395,80 @@ Channel_recvable(PyObject* self, PyObject* unused)
   Py_RETURN_TRUE;
 }
 
-static PyObject*
-Channel_size(PyObject* self, PyObject* unused)
-{
+static PyObject *Channel_size(PyObject *self, PyObject *unused) {
   return PyLong_FromLong(Py_SIZE(self));
 }
 
 static PyMethodDef Channel_methods[] = {
-  { "send", (PyCFunction)Channel_send, METH_O, NULL },
-  { "recv", (PyCFunction)Channel_recv, METH_NOARGS, NULL },
-  { "clear", (PyCFunction)Channel_clear, METH_NOARGS, NULL },
-  { "close", (PyCFunction)Channel_close, METH_VARARGS | METH_KEYWORDS, NULL },
-  { "safe_consume", (PyCFunction)Channel_safe_consume, METH_O, NULL },
-  { "sendable", (PyCFunction)Channel_sendable, METH_NOARGS, NULL },
-  { "recvable", (PyCFunction)Channel_recvable, METH_NOARGS, NULL },
-  { "size", (PyCFunction)Channel_size, METH_NOARGS, NULL },
-  { NULL, NULL, 0, NULL } /* Sentinel */
+    {"send", (PyCFunction)Channel_send, METH_O, NULL},
+    {"recv", (PyCFunction)Channel_recv, METH_NOARGS, NULL},
+    {"clear", (PyCFunction)Channel_clear, METH_NOARGS, NULL},
+    {"close", (PyCFunction)Channel_close, METH_VARARGS | METH_KEYWORDS, NULL},
+    {"safe_consume", (PyCFunction)Channel_safe_consume, METH_O, NULL},
+    {"sendable", (PyCFunction)Channel_sendable, METH_NOARGS, NULL},
+    {"recvable", (PyCFunction)Channel_recvable, METH_NOARGS, NULL},
+    {"size", (PyCFunction)Channel_size, METH_NOARGS, NULL},
+    {NULL, NULL, 0, NULL} /* Sentinel */
 };
 
 static PyTypeObject Channel_Type = {
-  /* clang-format off */
+    /* clang-format off */
     PyVarObject_HEAD_INIT(&PyType_Type, 0)
-  /* clang-format on */
-  "ctools.Channel",                        /* tp_name */
-  sizeof(Channel),                         /* tp_basicsize */
-  0,                                       /* tp_itemsize */
-  (destructor)Channel_tp_dealloc,          /* tp_dealloc */
-  0,                                       /* tp_print */
-  0,                                       /* tp_getattr */
-  0,                                       /* tp_setattr */
-  0,                                       /* tp_compare */
-  0,                                       /* tp_repr */
-  0,                                       /* tp_as_number */
-  0,                                       /* tp_as_sequence */
-  0,                                       /* tp_as_mapping */
-  PyObject_HashNotImplemented,             /* tp_hash */
-  0,                                       /* tp_call */
-  0,                                       /* tp_str */
-  0,                                       /* tp_getattro */
-  0,                                       /* tp_setattro */
-  0,                                       /* tp_as_buffer */
-  Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC, /* tp_flags */
-  NULL,                                    /* tp_doc */
-  (traverseproc)Channel_tp_traverse,       /* tp_traverse */
-  (inquiry)Channel_tp_clear,               /* tp_clear */
-  0,                                       /* tp_richcompare */
-  0,                                       /* tp_weaklistoffset */
-  0,                                       /* tp_iter */
-  0,                                       /* tp_iternext */
-  Channel_methods,                         /* tp_methods */
-  0,                                       /* tp_members */
-  0,                                       /* tp_getset */
-  0,                                       /* tp_base */
-  0,                                       /* tp_dict */
-  0,                                       /* tp_descr_get */
-  0,                                       /* tp_descr_set */
-  0,                                       /* tp_dictoffset */
-  0,                                       /* tp_init */
-  0,                                       /* tp_alloc */
-  (newfunc)Channel_tp_new,                 /* tp_new */
-  PyObject_GC_Del                          /* tp_free */
+    /* clang-format on */
+    "ctools.Channel",                        /* tp_name */
+    sizeof(Channel),                         /* tp_basicsize */
+    0,                                       /* tp_itemsize */
+    (destructor)Channel_tp_dealloc,          /* tp_dealloc */
+    0,                                       /* tp_print */
+    0,                                       /* tp_getattr */
+    0,                                       /* tp_setattr */
+    0,                                       /* tp_compare */
+    0,                                       /* tp_repr */
+    0,                                       /* tp_as_number */
+    0,                                       /* tp_as_sequence */
+    0,                                       /* tp_as_mapping */
+    PyObject_HashNotImplemented,             /* tp_hash */
+    0,                                       /* tp_call */
+    0,                                       /* tp_str */
+    0,                                       /* tp_getattro */
+    0,                                       /* tp_setattro */
+    0,                                       /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC, /* tp_flags */
+    NULL,                                    /* tp_doc */
+    (traverseproc)Channel_tp_traverse,       /* tp_traverse */
+    (inquiry)Channel_tp_clear,               /* tp_clear */
+    0,                                       /* tp_richcompare */
+    0,                                       /* tp_weaklistoffset */
+    0,                                       /* tp_iter */
+    0,                                       /* tp_iternext */
+    Channel_methods,                         /* tp_methods */
+    0,                                       /* tp_members */
+    0,                                       /* tp_getset */
+    0,                                       /* tp_base */
+    0,                                       /* tp_dict */
+    0,                                       /* tp_descr_get */
+    0,                                       /* tp_descr_set */
+    0,                                       /* tp_dictoffset */
+    0,                                       /* tp_init */
+    0,                                       /* tp_alloc */
+    (newfunc)Channel_tp_new,                 /* tp_new */
+    PyObject_GC_Del                          /* tp_free */
 };
 
 static struct PyModuleDef _module = {
-  PyModuleDef_HEAD_INIT,
-  "_channel", /* m_name */
-  NULL,       /* m_doc */
-  -1,         /* m_size */
-  NULL,       /* m_methods */
-  NULL,       /* m_reload */
-  NULL,       /* m_traverse */
-  NULL,       /* m_clear */
-  NULL,       /* m_free */
+    PyModuleDef_HEAD_INIT,
+    "_channel", /* m_name */
+    NULL,       /* m_doc */
+    -1,         /* m_size */
+    NULL,       /* m_methods */
+    NULL,       /* m_reload */
+    NULL,       /* m_traverse */
+    NULL,       /* m_clear */
+    NULL,       /* m_free */
 };
 
-PyMODINIT_FUNC
-PyInit__channel(void)
-{
-  PyObject* module;
+PyMODINIT_FUNC PyInit__channel(void) {
+  PyObject *module;
   if (PyType_Ready(&Channel_Type) < 0)
     return NULL;
 
@@ -512,7 +477,7 @@ PyInit__channel(void)
     return NULL;
 
   Py_INCREF(&Channel_Type);
-  PyModule_AddObject(module, "Channel", (PyObject*)&Channel_Type);
+  PyModule_AddObject(module, "Channel", (PyObject *)&Channel_Type);
 
   return module;
 }
