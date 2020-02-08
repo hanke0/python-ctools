@@ -25,7 +25,7 @@ def source(*args):
     return [os.path.join("src", *args)]
 
 
-DEBUG = os.getenv("CTOOLS_DEBUG", "").upper() == "ON"
+DEBUG = os.getenv("CTOOLS_DEBUG", "").upper() == "TRUE"
 
 if DEBUG:
     extra_extension_args = dict(undef_macros=["NDEBUG"])
@@ -82,6 +82,7 @@ setup(
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: Implementation :: CPython",
         "Operating System :: OS Independent",
         "Operating System :: MacOS",
