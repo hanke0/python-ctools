@@ -48,8 +48,8 @@ limitations under the License.
 struct _rbtree_node
 {
   /* clang-format off */
-  PyObject_HEAD
-  PyObject* key;
+    PyObject_HEAD
+    PyObject *key;
   /* clang-format on */
   PyObject* value;
   struct _rbtree_node* left;
@@ -63,9 +63,9 @@ typedef struct _rbtree_node RBTreeNode;
 typedef struct _rbtree
 {
   /* clang-format off */
-  PyObject_HEAD
-  struct _rbtree_node* root;
-  struct _rbtree_node* sentinel;
+    PyObject_HEAD
+    struct _rbtree_node *root;
+    struct _rbtree_node *sentinel;
   /* clang-format on */
 } RBTree;
 
@@ -133,8 +133,8 @@ RBTreeNode_tp_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
 
 static PyTypeObject RBTreeNode_Type = {
   /* clang-format off */
-  PyVarObject_HEAD_INIT(&PyType_Type, 0)
-  .tp_name = "RBTreeNone",
+        PyVarObject_HEAD_INIT(&PyType_Type, 0)
+        .tp_name = "RBTreeNone",
   /* clang-format on */
   .tp_basicsize = sizeof(RBTreeNode),
   .tp_dealloc = (destructor)RBTreeNode_tp_dealloc,
@@ -195,18 +195,19 @@ left_rotate(RBTree* tree, RBTreeNode* x)
   RBTreeNode* sentinel = tree->sentinel;
   /* First step */
   x->right = y->left;
-  if (y->left != sentinel)
+  if (y->left != sentinel) {
     y->left->parent = x;
+  }
 
   /* Second step */
   y->parent = x->parent;
-  if (x->parent == sentinel)
+  if (x->parent == sentinel) {
     tree->root = y;
-  else if (x == x->parent->left)
+  } else if (x == x->parent->left) {
     x->parent->left = y;
-  else
+  } else {
     x->parent->right = y;
-
+  }
   /* Third step */
   y->left = x;
   x->parent = y;
@@ -223,13 +224,13 @@ right_rotate(RBTree* tree, RBTreeNode* y)
     tmp->right->parent = y;
 
   tmp->parent = y->parent;
-  if (tmp->right == sentinel)
+  if (tmp->right == sentinel) {
     tree->root = tmp;
-  else if (y == y->parent->left)
+  } else if (y == y->parent->left) {
     y->parent->left = tmp;
-  else
+  } else {
     y->parent->right = tmp;
-
+  }
   tmp->right = y;
   y->parent = tmp;
 }
