@@ -666,8 +666,8 @@ static PyObject *CacheMap_tp_iter(CacheMap *self) {
 
 PyDoc_STRVAR(CacheMap__doc__,
              "A fast CacheMap behaving much like dict.\n\n"
-             "Args\n"
-             "    capacity: (int) max items cache would hold.");
+             "Args:\n\n"
+             "    capacity (int): max items cache would hold.");
 
 static PyTypeObject CacheMap_Type = {
     /* clang-format off */
