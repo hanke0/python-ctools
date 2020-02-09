@@ -434,7 +434,7 @@ static PyTypeObject Channel_Type = {
     0,                                       /* tp_setattro */
     0,                                       /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC, /* tp_flags */
-    NULL,                                    /* tp_doc */
+    "A channel support send and safe resume.\n\nArgs:\n\n    size (int): max size of channel.",                                    /* tp_doc */
     (traverseproc)Channel_tp_traverse,       /* tp_traverse */
     (inquiry)Channel_tp_clear,               /* tp_clear */
     0,                                       /* tp_richcompare */
