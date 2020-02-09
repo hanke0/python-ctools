@@ -516,11 +516,16 @@ static PyObject *TTLCache_clear(TTLCache *self) {
 
 /* tp_methods */
 static PyMethodDef TTLCache_methods[] = {
-    {"set_default_ttl", (PyCFunction)TTLCache_set_default_ttl, METH_O, "Reset default ttl"},
-    {"get", (PyCFunction)TTLCache_get, METH_VARARGS | METH_KEYWORDS, "Get item from cache"},
+    {"set_default_ttl", (PyCFunction)TTLCache_set_default_ttl, METH_O,
+     "Reset default ttl"},
+    {"get", (PyCFunction)TTLCache_get, METH_VARARGS | METH_KEYWORDS,
+     "Get item from cache"},
     {"setdefault", (PyCFunction)TTLCache_setdefault,
-     METH_VARARGS | METH_KEYWORDS, "Get item in cache, if key not exists, set default to cache and return it."},
-    {"pop", (PyCFunction)TTLCache_pop, METH_VARARGS | METH_KEYWORDS, "Pop item from cache"},
+     METH_VARARGS | METH_KEYWORDS,
+     "Get item in cache, if key not exists, set default to cache and return "
+     "it."},
+    {"pop", (PyCFunction)TTLCache_pop, METH_VARARGS | METH_KEYWORDS,
+     "Pop item from cache"},
     {"keys", (PyCFunction)TTLCache_keys, METH_NOARGS, "Iter keys"},
     {"values", (PyCFunction)TTLCache_values, METH_NOARGS, "Iter values"},
     {"items", (PyCFunction)TTLCache_items, METH_NOARGS, "iter items"},
@@ -550,8 +555,9 @@ static PyObject *TTLCache_tp_iter(TTLCache *self) {
   return it;
 }
 
-PyDoc_STRVAR(TTLCache__doc__, "A fast TTLCache behaving much like dict.\n\n"
-                              "Args:\n\n    ttl (int): max seconds a items stores.");
+PyDoc_STRVAR(TTLCache__doc__,
+             "A fast TTLCache behaving much like dict.\n\n"
+             "Args:\n\n    ttl (int): max seconds a items stores.");
 
 static PyTypeObject TTLCache_Type = {
     /* clang-format off */

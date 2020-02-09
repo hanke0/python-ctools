@@ -434,25 +434,26 @@ static PyTypeObject Channel_Type = {
     0,                                       /* tp_setattro */
     0,                                       /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC, /* tp_flags */
-    "A channel support send and safe resume.\n\nArgs:\n\n    size (int): max size of channel.",                                    /* tp_doc */
-    (traverseproc)Channel_tp_traverse,       /* tp_traverse */
-    (inquiry)Channel_tp_clear,               /* tp_clear */
-    0,                                       /* tp_richcompare */
-    0,                                       /* tp_weaklistoffset */
-    0,                                       /* tp_iter */
-    0,                                       /* tp_iternext */
-    Channel_methods,                         /* tp_methods */
-    0,                                       /* tp_members */
-    0,                                       /* tp_getset */
-    0,                                       /* tp_base */
-    0,                                       /* tp_dict */
-    0,                                       /* tp_descr_get */
-    0,                                       /* tp_descr_set */
-    0,                                       /* tp_dictoffset */
-    0,                                       /* tp_init */
-    0,                                       /* tp_alloc */
-    (newfunc)Channel_tp_new,                 /* tp_new */
-    PyObject_GC_Del                          /* tp_free */
+    "A channel support send and safe resume.\n\nArgs:\n\n    size (int): max "
+    "size of channel.",                /* tp_doc */
+    (traverseproc)Channel_tp_traverse, /* tp_traverse */
+    (inquiry)Channel_tp_clear,         /* tp_clear */
+    0,                                 /* tp_richcompare */
+    0,                                 /* tp_weaklistoffset */
+    0,                                 /* tp_iter */
+    0,                                 /* tp_iternext */
+    Channel_methods,                   /* tp_methods */
+    0,                                 /* tp_members */
+    0,                                 /* tp_getset */
+    0,                                 /* tp_base */
+    0,                                 /* tp_dict */
+    0,                                 /* tp_descr_get */
+    0,                                 /* tp_descr_set */
+    0,                                 /* tp_dictoffset */
+    0,                                 /* tp_init */
+    0,                                 /* tp_alloc */
+    (newfunc)Channel_tp_new,           /* tp_new */
+    PyObject_GC_Del                    /* tp_free */
 };
 
 static struct PyModuleDef _module = {
