@@ -413,7 +413,7 @@ static PyMethodDef Channel_methods[] = {
 
 static PyTypeObject Channel_Type = {
     /* clang-format off */
-    PyVarObject_HEAD_INIT(&PyType_Type, 0)
+    PyVarObject_HEAD_INIT(NULL, 0)
     /* clang-format on */
     "ctools.Channel",                        /* tp_name */
     sizeof(Channel),                         /* tp_basicsize */
