@@ -19,7 +19,9 @@ limitations under the License.
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 #include <stdio.h>
+
 #ifdef _MSC_VER
 #ifndef int8_t
 typedef signed __int8 int8_t;
@@ -68,8 +70,10 @@ typedef unsigned __int64 uint64_t;
   } while (0)
 
 #define RETURN_IF_NULL(o, r)                                                   \
-  if (o == NULL)                                                               \
-  return r
+  do {                                                                         \
+    if (o == NULL)                                                             \
+      return r;                                                                \
+  } while (0)
 
 #define IS_POW_OF_2(x) ((x) != 0 && (((x) & ((x)-1)) == 0))
 
