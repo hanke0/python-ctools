@@ -33,6 +33,8 @@ def _show_info():
         )
     )
     print(separate)
+    sys.stdout.flush()
+    sys.stderr.flush()
 
 
 parser = argparse.ArgumentParser()
