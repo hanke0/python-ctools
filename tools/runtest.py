@@ -61,7 +61,7 @@ def main():
     args = parser.parse_args()
     if args.python_path:
         for i in args.python_path:
-            sys.path.insert(-2, i)
+            sys.path.insert(0, i)
 
     argv = [sys.argv[0], "discover", "-s", args.start_directory]
     if args.verbose:
