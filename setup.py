@@ -47,7 +47,7 @@ def find_version():
 extensions = [
     Extension(
         "ctools._ctools",
-        source("cachemap.c", "channel.c", "ttlcache.c", "functions.c", "module.c"),
+        source("cachemap.c", "channel.c", "ttlcache.c", "functions.c", "module.c", "rbtree.c"),
         **extra_extension_args
     ),
 ]
