@@ -65,6 +65,7 @@ typedef struct _rbtree {
   PyObject_HEAD
   struct _rbtree_node *root;
   struct _rbtree_node *sentinel;
+  PyObject *cmpfunc;
   /* clang-format on */
 } RBTree;
 
@@ -74,7 +75,7 @@ static RBTreeNode *RBSentinel;
 
 static RBTreeNode *RBTreeNode_New(PyObject *key, PyObject *value) {
   RBTreeNode *node;
-  node = PyObject_GC_New(RBTreeNode, &RBTree_Type);
+  node = PyObject_GC_New(RBTreeNode, &RBTreeNode_Type);
   ReturnIfNULL(node, NULL);
   Py_XINCREF(key);
   Py_XINCREF(value);
@@ -118,15 +119,16 @@ static PyObject *RBTreeNode_tp_new(PyTypeObject *type, PyObject *args,
   PyObject *key;
   PyObject *value;
   static char *kwlist[] = {"key", "value", NULL};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO", kwlist, &key, &value))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO", kwlist, &key, &value)) {
     return NULL;
+  }
   return PyObjectCast(RBTreeNode_New(key, value));
 }
 
 static PyTypeObject RBTreeNode_Type = {
     /* clang-format off */
     PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "RBTreeNone",
+    .tp_name = "ctools.SortedMapNode",
     /* clang-format on */
     .tp_basicsize = sizeof(RBTreeNode),
     .tp_dealloc = (destructor)RBTreeNode_tp_dealloc,
@@ -146,8 +148,9 @@ static void rbsentinel_dealloc(PyObject *ignore) {
 #define RBSentinel_SET(v)                                                      \
   do {                                                                         \
     Py_INCREF(RBSentinel);                                                     \
-    assert(Py_REFCNT(RBSentinel) > 0)(v) = RBSentinel;                         \
-    while (0)
+    assert(Py_REFCNT(RBSentinel) > 0);                                         \
+    (v) = RBSentinel;                                                          \
+  } while (0)
 #define RBSentinel_DEC(sentinel)                                               \
   do {                                                                         \
     Py_DECREF(sentinel);                                                       \
@@ -193,8 +196,9 @@ static void right_rotate(RBTree *tree, RBTreeNode *y) {
   RBTreeNode *sentinel = tree->sentinel;
 
   y->left = tmp->right;
-  if (tmp->right != sentinel)
+  if (tmp->right != sentinel) {
     tmp->right->parent = y;
+  }
 
   tmp->parent = y->parent;
   if (tmp->right == sentinel) {
@@ -249,6 +253,60 @@ static int rbtree_insert_fix(RBTree *tree, RBTreeNode *z) {
   return 0;
 }
 
+#define RBTree_EQ 0
+#define RBTree_LT 1
+#define RBTree_GT 2
+
+static int rbtree_node_compare(RBTree *tree, RBTreeNode *a, RBTreeNode *b) {
+  int flag;
+  long long cmp;
+  PyObject *cmp_o = NULL;
+  RBTreeNode *sentinel = tree->sentinel;
+  assert(sentinel != a);
+  assert(sentinel != b);
+  if (tree->cmpfunc == NULL) {
+    flag = PyObject_RichCompareBool(a->key, b->key, Py_LT);
+    if (flag < 0) {
+      return -1;
+    } else if (flag > 0) {
+      return RBTree_LT;
+    } else {
+      flag = PyObject_RichCompareBool(a->key, b->key, Py_GT);
+      if (flag < 0) {
+        return -1;
+      } else if (flag > 0) {
+        return RBTree_GT;
+      } else {
+        return RBTree_EQ;
+      }
+    }
+  }
+
+  cmp_o = PyObject_CallFunctionObjArgs(tree->cmpfunc, a->key, b->key, a->value,
+                                       b->value, NULL);
+  if (!cmp_o) {
+    flag = -1;
+    goto finish;
+  }
+  cmp = PyLong_AsLongLong(cmp_o);
+  if (cmp == -1 && PyErr_Occurred()) {
+    flag = -1;
+    goto finish;
+  }
+  if (cmp > 0) {
+    flag = RBTree_GT;
+  } else if (cmp < 0) {
+    flag = RBTree_LT;
+  } else {
+    flag = RBTree_EQ;
+  }
+
+finish:
+  Py_XDECREF(cmp_o);
+  return flag;
+}
+
+/* steal the reference of z */
 static int rbtree_insert(RBTree *tree, RBTreeNode *z) {
   RBTreeNode **root = &tree->root;
   RBTreeNode *sentinel = tree->sentinel;
@@ -257,6 +315,8 @@ static int rbtree_insert(RBTree *tree, RBTreeNode *z) {
   int flag;
 
   if (*root == sentinel) {
+    Py_XINCREF(sentinel);
+    Py_XINCREF(sentinel);
     z->parent = sentinel;
     z->left = sentinel;
     z->right = sentinel;
@@ -267,35 +327,101 @@ static int rbtree_insert(RBTree *tree, RBTreeNode *z) {
 
   while (x != sentinel) {
     y = x;
-    flag = PyObject_RichCompareBool(z->key, x->key, Py_LT);
-    if (flag == -1) {
-      return -1;
+    flag = rbtree_node_compare(tree, z, x);
+    if (flag < 0) {
+      goto fail;
     }
-    if (flag) {
+    if (flag == RBTree_LT) {
       x = RBTreeNode_Left(x);
-    } else
+    } else {
       x = RBTreeNode_Right(x);
+    }
   }
+  Py_INCREF(y);
   z->parent = y;
   if (y == sentinel) {
+    Py_DECREF(tree->root);
     tree->root = z;
     goto success;
   }
-  flag = PyObject_RichCompareBool(z->key, x->key, Py_LT);
-  if (flag == -1) {
-    return -1;
-  }
-  if (flag) {
+  flag = rbtree_node_compare(tree, z, y);
+  if (flag < 0) {
+    Py_DECREF(y);
+    goto fail;
+  } else if (flag == RBTree_LT) {
+    Py_DECREF(y->left);
     y->left = z;
   } else {
+    Py_DECREF(y->right);
     y->right = z;
   }
 success:
-  z->right = sentinel;
-  z->left = sentinel;
-  z->color = RBRED;
+  RBSentinel_SET(z->right);
+  RBSentinel_SET(z->left);
+  RBTreeNode_SetRed(z);
+  Py_INCREF(z->parent);
   return rbtree_insert_fix(tree, z);
+fail:
+  Py_DECREF(z);
+  return -1;
 }
+
+static RBTree *RBTree_New(PyObject *cmp) {
+  RBTree *tree;
+  if (!PyCallable_Check(cmp)) {
+    PyErr_SetString(PyExc_TypeError, "cmp must be a callable object");
+    return NULL;
+  }
+
+  tree = PyObject_GC_New(RBTree, &RBTree_Type);
+  ReturnIfNULL(tree, NULL);
+  Py_XINCREF(cmp);
+  tree->root = RBSentinel;
+  tree->sentinel = RBSentinel;
+  tree->cmpfunc = cmp;
+  PyObject_GC_Track(tree);
+  return tree;
+}
+
+static PyObject *RBTree_tp_new(PyTypeObject *type, PyObject *args,
+                               PyObject *kwds) {
+  PyObject *cmp;
+  static char *kwlist[] = {"cmp", NULL};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &cmp)) {
+    return NULL;
+  }
+  return PyObjectCast(RBTree_New(cmp));
+}
+
+static int RBTree_tp_traverse(RBTree *self, visitproc visit, void *arg) {
+  Py_VISIT(self->root);
+  /* No need to visit sentinel  */
+  return 0;
+}
+
+static int RBTree_tp_clear(RBTree *self) {
+  Py_CLEAR(self->root);
+  return 0;
+}
+
+static void RBTree_tp_dealloc(RBTree *self) {
+  PyObject_GC_UnTrack(self);
+  RBTree_tp_clear(self);
+  PyObject_GC_Del(self);
+}
+
+static PyTypeObject RBTree_Type = {
+    /* clang-format off */
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "ctools.SortedMap",
+    /* clang-format on */
+    .tp_basicsize = sizeof(RBTree),
+    .tp_dealloc = (destructor)RBTree_tp_dealloc,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,
+    .tp_traverse = (traverseproc)RBTree_tp_traverse,
+    .tp_clear = (inquiry)RBTree_tp_clear,
+    .tp_new = (newfunc)RBTree_New,
+};
 
 int ctools_init_rbtree(PyObject *module) {
   if (PyType_Ready(&RBTreeNode_Type) < 0) {
@@ -306,11 +432,21 @@ int ctools_init_rbtree(PyObject *module) {
     return -1;
   }
   RBTreeNode_SetBlack(RBSentinel); /* sentinel's color is always black */
+  RBSentinel->ob_base.ob_type->tp_dealloc = rbsentinel_dealloc;
 
   Py_INCREF(&RBTreeNode_Type);
-  if (PyModule_AddObject(module, "RBTreeNode", (PyObject *)&RBTreeNode_Type) <
-      0) {
+  if (PyModule_AddObject(module, "SortedMapNode",
+                         (PyObject *)&RBTreeNode_Type) < 0) {
     Py_DECREF(&RBTreeNode_Type);
+    return -1;
+  }
+
+  if (PyType_Ready(&RBTree_Type) < 0) {
+    return -1;
+  }
+  Py_INCREF(&RBTree_Type);
+  if (PyModule_AddObject(module, "SortedMap", (PyObject *)&RBTree_Type) < 0) {
+    Py_DECREF(&RBTree_Type);
     return -1;
   }
   return 0;

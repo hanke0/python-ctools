@@ -19,14 +19,14 @@ limitations under the License.
 
 static struct PyModuleDef _ctools = {
     PyModuleDef_HEAD_INIT,
-    "_ctools", /* m_name */
-    NULL,      /* m_doc */
-    -1,        /* m_size */
-    NULL,      /* m_methods */
-    NULL,      /* m_reload */
-    NULL,      /* m_traverse */
-    NULL,      /* m_clear */
-    NULL,      /* m_free */
+    "_ctools",                       /* m_name */
+    "A collection of useful tools.", /* m_doc */
+    -1,                              /* m_size */
+    NULL,                            /* m_methods */
+    NULL,                            /* m_reload */
+    NULL,                            /* m_traverse */
+    NULL,                            /* m_clear */
+    NULL,                            /* m_free */
 };
 
 #define CtoolsModuleInitOne(name)                                              \
@@ -40,13 +40,12 @@ static struct PyModuleDef _ctools = {
 PyMODINIT_FUNC PyInit__ctools(void) {
   PyObject *module;
   module = PyModule_Create(&_ctools);
-  if (module == NULL)
-    return NULL;
+  ReturnIfNULL(module, NULL);
 
   CtoolsModuleInitOne(ctools_init_cachemap);
   CtoolsModuleInitOne(ctools_init_funcs);
   CtoolsModuleInitOne(ctools_init_channel);
   CtoolsModuleInitOne(ctools_init_ttlcache);
-
+  CtoolsModuleInitOne(ctools_init_rbtree);
   return module;
 }

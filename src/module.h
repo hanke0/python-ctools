@@ -28,4 +28,6 @@ int ctools_init_funcs(PyObject *module);
 
 int ctools_init_ttlcache(PyObject *module);
 
+int ctools_init_rbtree(PyObject *module);
+
 #endif // CTOOLS_MODULE_H
