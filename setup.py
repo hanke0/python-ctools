@@ -22,7 +22,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 
 def source(*args):
-    return [os.path.join("src", *args)]
+    return [os.path.join("src", arg) for arg in args]
 
 
 DEBUG = os.getenv("CTOOLS_DEBUG", "").upper() == "TRUE"
@@ -45,10 +45,11 @@ def find_version():
 
 
 extensions = [
-    Extension("ctools._cachemap", source("cachemap.c"), **extra_extension_args),
-    Extension("ctools._channel", source("channel.c"), **extra_extension_args),
-    Extension("ctools._ttlcache", source("ttlcache.c"), **extra_extension_args),
-    Extension("ctools._funcs", source("functions.c"), **extra_extension_args),
+    Extension(
+        "ctools._ctools",
+        source("cachemap.c", "channel.c", "ttlcache.c", "functions.c", "module.c"),
+        **extra_extension_args
+    ),
 ]
 
 with io.open("README.rst", "rt", encoding="utf8") as f:

@@ -3,10 +3,20 @@
 API
 ---
 
-.. autofunction:: ctools.strhash
-.. autofunction:: ctools.jump_consistent_hash
-.. autofunction:: ctools.int8_to_datetime
+.. currentmodule:: ctools
+.. autofunction:: strhash
 
-.. automodule:: ctools
-   :members:
-   :undoc-members:
+
+.. autofunction:: jump_consistent_hash
+
+
+.. autofunction:: int8_to_datetime
+
+
+.. autoclass:: Channel
+
+
+.. autoclass:: CacheMap
+
+
+.. autoclass:: TTLCache

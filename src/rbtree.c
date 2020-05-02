@@ -1,10 +1,11 @@
-/* Copyright 2019 ko-han. All Rights Reserved.
+/*
+Copyright (c) 2019 ko han
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-     http://www.apache.org/licenses/LICENSE-2.0
+   http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include <Python.h>
+#include "core.h"
 
-#include "util.h"
+#include <Python.h>
 
 #define RBRED 1
 #define RBBLACK 0
@@ -30,15 +31,15 @@ limitations under the License.
 
 #define RBTreeNode_SetColor(node, v) (RBTreeNode_CAST(node)->color = (v))
 #define RBTreeNode_SetKey(node, v)                                             \
-  (RBTreeNode_CAST(node)->key = PYOBJECT_CAST(v))
+  (RBTreeNode_CAST(node)->key = PyObjectCast(v))
 #define RBTreeNode_SetValue(node, v)                                           \
-  (RBTreeNode_CAST(node)->value = PYOBJECT_CAST(v))
+  (RBTreeNode_CAST(node)->value = PyObjectCast(v))
 #define RBTreeNode_SetParent(node, v)                                          \
-  (RBTreeNode_CAST(node)->parent = PYOBJECT_CAST(v))
+  (RBTreeNode_CAST(node)->parent = PyObjectCast(v))
 #define RBTreeNode_SetLeft(node, v)                                            \
-  (RBTreeNode_CAST(node)->left = PYOBJECT_CAST(v))
+  (RBTreeNode_CAST(node)->left = PyObjectCast(v))
 #define RBTreeNode_SetRight(node, v)                                           \
-  (RBTreeNode_CAST(node)->right = PYOBJECT_CAST(v))
+  (RBTreeNode_CAST(node)->right = PyObjectCast(v))
 
 #define RBTreeNode_SetRed(node) (RBTreeNode_Color(node) = RBRED)
 #define RBTreeNode_SetBlack(node) (RBTreeNode_Color(node) = RBBLACK)
@@ -47,8 +48,8 @@ limitations under the License.
 
 struct _rbtree_node {
   /* clang-format off */
-  PyObject_HEAD
-  PyObject *key;
+    PyObject_HEAD
+    PyObject *key;
   /* clang-format on */
   PyObject *value;
   struct _rbtree_node *left;
@@ -61,9 +62,9 @@ typedef struct _rbtree_node RBTreeNode;
 
 typedef struct _rbtree {
   /* clang-format off */
-  PyObject_HEAD
-  struct _rbtree_node *root;
-  struct _rbtree_node *sentinel;
+    PyObject_HEAD
+    struct _rbtree_node *root;
+    struct _rbtree_node *sentinel;
   /* clang-format on */
 } RBTree;
 
@@ -73,7 +74,7 @@ static PyTypeObject RBTree_Type;
 static RBTreeNode *RBTreeNode_New(PyObject *key, PyObject *value) {
   RBTreeNode *node;
   node = PyObject_GC_New(RBTreeNode, &RBTree_Type);
-  RETURN_IF_NULL(node, NULL);
+  ReturnIfNULL(node, NULL);
   Py_INCREF(key);
   Py_INCREF(value);
   node->key = key;
@@ -118,13 +119,13 @@ static PyObject *RBTreeNode_tp_new(PyTypeObject *type, PyObject *args,
   static char *kwlist[] = {"key", "value", NULL};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO", kwlist, &key, &value))
     return NULL;
-  return PYOBJECT_CAST(RBTreeNode_New(key, value));
+  return PyObjectCast(RBTreeNode_New(key, value));
 }
 
 static PyTypeObject RBTreeNode_Type = {
     /* clang-format off */
-    PyVarObject_HEAD_INIT(&PyType_Type, 0)
-    .tp_name = "RBTreeNone",
+        PyVarObject_HEAD_INIT(&PyType_Type, 0)
+        .tp_name = "RBTreeNone",
     /* clang-format on */
     .tp_basicsize = sizeof(RBTreeNode),
     .tp_dealloc = (destructor)RBTreeNode_tp_dealloc,
@@ -308,30 +309,15 @@ success:
   return rbtree_insert_fix(tree, z);
 }
 
-static struct PyModuleDef _ctools_rbtree_module = {
-    PyModuleDef_HEAD_INIT,
-    "_ctools_rbtree", /* m_name */
-    NULL,             /* m_doc */
-    -1,               /* m_size */
-    NULL,             /* m_methods */
-    NULL,             /* m_reload */
-    NULL,             /* m_traverse */
-    NULL,             /* m_clear */
-    NULL,             /* m_free */
-};
+int ctools_init_rbtree(PyObject *module) {
+  if (PyType_Ready(&RBTreeNode_Type) < 0) {
+    return -1;
+  }
 
-PyMODINIT_FUNC PyInit__ctools_rbtree(void) {
-  if (PyType_Ready(&RBTreeNode_Type) < 0)
-    return NULL;
-
-  PyObject *m = PyModule_Create(&_ctools_rbtree_module);
-  if (m == NULL)
-    return NULL;
-
+  if (PyModule_AddObject(module, "RBTreeNode", (PyObject *)&RBTreeNode_Type) <
+      0) {
+    return -1;
+  }
   Py_INCREF(&RBTreeNode_Type);
-
-  if (PyModule_AddObject(m, "RBTreeNode", (PyObject *)&RBTreeNode_Type) == -1)
-    return NULL;
-
-  return m;
+  return 0;
 }

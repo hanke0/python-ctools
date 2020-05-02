@@ -1,10 +1,11 @@
-/* Copyright 2019 ko-han. All Rights Reserved.
+/*
+Copyright (c) 2019 ko han
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-     http://www.apache.org/licenses/LICENSE-2.0
+   http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,15 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+#include "core.h"
+
 #include <Python.h>
 #include <time.h>
 
-#include "util.h"
-
 typedef struct {
   /* clang-format off */
-    PyObject_VAR_HEAD
-    PyObject **ob_item;
+  PyObject_VAR_HEAD
+  PyObject **ob_item;
   /* clang-format on */
   /* cursor between [0, 2 * size), if cursor >= size, set flag to 1
    * if flag <= 0; channel is closed
@@ -49,7 +50,7 @@ Channel *Channel_New(int size) {
   }
 
   op = PyObject_GC_New(Channel, &Channel_Type);
-  RETURN_IF_NULL(op, NULL);
+  ReturnIfNULL(op, NULL);
 
   op->ob_item = (PyObject **)PyMem_Calloc(size, sizeof(PyObject *));
   if (op->ob_item == NULL) {
@@ -63,7 +64,7 @@ Channel *Channel_New(int size) {
 
   op->sendx = 0;
   op->recvx = 0;
-  if (IS_POW_OF_2(size)) {
+  if (IsPowerOf2(size)) {
     op->sflag = 3;
     op->rflag = 3;
   } else {
@@ -81,8 +82,8 @@ static void Channel_tp_dealloc(Channel *ob) {
   int len = Py_SIZE(ob);
   PyObject_GC_UnTrack(ob);
   /* clang-format off */
-    Py_TRASHCAN_SAFE_BEGIN(ob)
-            if (len > 0)
+  Py_TRASHCAN_SAFE_BEGIN(ob)
+      if (len > 0)
   /* clang-format on */
   {
     i = len;
@@ -92,7 +93,7 @@ static void Channel_tp_dealloc(Channel *ob) {
   PyMem_FREE(ob->ob_item);
   PyObject_GC_Del(ob);
   /* clang-format off */
-        Py_TRASHCAN_SAFE_END(ob)
+      Py_TRASHCAN_SAFE_END(ob)
   /* clang-format on */
 }
 
@@ -292,7 +293,6 @@ static PyObject *Channel_recv(PyObject *self, PyObject *unused) {
 
 static PyObject *Channel_send(PyObject *self, PyObject *obj) {
   Channel *ch = (Channel *)self;
-  PyObject *item;
   int sendx;
 
   sendx = Channel_send_idx(ch);
@@ -304,8 +304,7 @@ static PyObject *Channel_send(PyObject *self, PyObject *obj) {
   if (sendx == -1) {
     Py_RETURN_FALSE;
   }
-  item = ch->ob_item[sendx];
-  assert(item == NULL);
+  assert(ch->ob_item[sendx] == NULL);
   Py_INCREF(obj);
   ch->ob_item[sendx] = obj;
   Channel_incr_sendx(ch);
@@ -400,16 +399,26 @@ static PyObject *Channel_size(PyObject *self, PyObject *unused) {
 }
 
 static PyMethodDef Channel_methods[] = {
-    {"send", (PyCFunction)Channel_send, METH_O, NULL},
-    {"recv", (PyCFunction)Channel_recv, METH_NOARGS, NULL},
-    {"clear", (PyCFunction)Channel_clear, METH_NOARGS, NULL},
-    {"close", (PyCFunction)Channel_close, METH_VARARGS | METH_KEYWORDS, NULL},
-    {"safe_consume", (PyCFunction)Channel_safe_consume, METH_O, NULL},
-    {"sendable", (PyCFunction)Channel_sendable, METH_NOARGS, NULL},
-    {"recvable", (PyCFunction)Channel_recvable, METH_NOARGS, NULL},
-    {"size", (PyCFunction)Channel_size, METH_NOARGS, NULL},
+    {"send", (PyCFunction)Channel_send, METH_O,
+     "send(obj, /)\n--\n\nsend an object to channel."},
+    {"recv", (PyCFunction)Channel_recv, METH_NOARGS,
+     "recv()\n--\n\nreceive an object from channel."},
+    {"clear", (PyCFunction)Channel_clear, METH_NOARGS,
+     "clear()\n--\n\nclear channel"},
+    {"close", (PyCFunction)Channel_close, METH_VARARGS | METH_KEYWORDS,
+     "close()\n--\n\nclose channle."},
+    {"safe_consume", (PyCFunction)Channel_safe_consume, METH_O,
+     "safe_consume(callback)\n--\n\nsafe consume with callback"},
+    {"sendable", (PyCFunction)Channel_sendable, METH_NOARGS,
+     "sendable()\n--\n\nchannel is sendable?"},
+    {"recvable", (PyCFunction)Channel_recvable, METH_NOARGS,
+     "recvable()\n--\n\nchannel is recvable"},
+    {"size", (PyCFunction)Channel_size, METH_NOARGS,
+     "size()\n--\n\ncurrent items length in channel."},
     {NULL, NULL, 0, NULL} /* Sentinel */
 };
+
+PyDoc_STRVAR(Channel_Doc, "A channel support send and safe resume.\n\n");
 
 static PyTypeObject Channel_Type = {
     /* clang-format off */
@@ -434,51 +443,37 @@ static PyTypeObject Channel_Type = {
     0,                                       /* tp_setattro */
     0,                                       /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC, /* tp_flags */
-    "A channel support send and safe resume.\n\nArgs:\n\n    size (int): max "
-    "size of channel.",                /* tp_doc */
-    (traverseproc)Channel_tp_traverse, /* tp_traverse */
-    (inquiry)Channel_tp_clear,         /* tp_clear */
-    0,                                 /* tp_richcompare */
-    0,                                 /* tp_weaklistoffset */
-    0,                                 /* tp_iter */
-    0,                                 /* tp_iternext */
-    Channel_methods,                   /* tp_methods */
-    0,                                 /* tp_members */
-    0,                                 /* tp_getset */
-    0,                                 /* tp_base */
-    0,                                 /* tp_dict */
-    0,                                 /* tp_descr_get */
-    0,                                 /* tp_descr_set */
-    0,                                 /* tp_dictoffset */
-    0,                                 /* tp_init */
-    0,                                 /* tp_alloc */
-    (newfunc)Channel_tp_new,           /* tp_new */
-    PyObject_GC_Del                    /* tp_free */
+    Channel_Doc,                             /* tp_doc */
+    (traverseproc)Channel_tp_traverse,       /* tp_traverse */
+    (inquiry)Channel_tp_clear,               /* tp_clear */
+    0,                                       /* tp_richcompare */
+    0,                                       /* tp_weaklistoffset */
+    0,                                       /* tp_iter */
+    0,                                       /* tp_iternext */
+    Channel_methods,                         /* tp_methods */
+    0,                                       /* tp_members */
+    0,                                       /* tp_getset */
+    0,                                       /* tp_base */
+    0,                                       /* tp_dict */
+    0,                                       /* tp_descr_get */
+    0,                                       /* tp_descr_set */
+    0,                                       /* tp_dictoffset */
+    0,                                       /* tp_init */
+    0,                                       /* tp_alloc */
+    (newfunc)Channel_tp_new,                 /* tp_new */
+    PyObject_GC_Del                          /* tp_free */
 };
 
-static struct PyModuleDef _module = {
-    PyModuleDef_HEAD_INIT,
-    "_channel", /* m_name */
-    NULL,       /* m_doc */
-    -1,         /* m_size */
-    NULL,       /* m_methods */
-    NULL,       /* m_reload */
-    NULL,       /* m_traverse */
-    NULL,       /* m_clear */
-    NULL,       /* m_free */
-};
-
-PyMODINIT_FUNC PyInit__channel(void) {
-  PyObject *module;
-  if (PyType_Ready(&Channel_Type) < 0)
-    return NULL;
-
-  module = PyModule_Create(&_module);
-  if (module == NULL)
-    return NULL;
+int ctools_init_channel(PyObject *module) {
+  if (PyType_Ready(&Channel_Type) < 0) {
+    return -1;
+  }
 
   Py_INCREF(&Channel_Type);
-  PyModule_AddObject(module, "Channel", (PyObject *)&Channel_Type);
+  if (PyModule_AddObject(module, "Channel", (PyObject *)&Channel_Type)) {
+    Py_DECREF(&Channel_Type);
+    return -1;
+  }
 
-  return module;
+  return 0;
 }

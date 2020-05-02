@@ -1,10 +1,11 @@
-/* Copyright 2019 ko-han. All Rights Reserved.
+/*
+Copyright (c) 2019 ko han
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-     http://www.apache.org/licenses/LICENSE-2.0
+   http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,19 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+#include "core.h"
+
 #include <Python.h>
 #include <datetime.h>
 
 PyDoc_STRVAR(jump_consistent_hash__doc__,
-             "jump_consistent_hash(key: int, num_buckets: int) -> int:\n\n\
-    Generate a number in the range [0, num_buckets).\n\
-    This function uses C bindings for speed.\n\n\
-    :param key: The key to hash.\n\n\
-    :type key: int\n\n\
-    :param num_buckets: Number of buckets to use.\n\n\
-    :type num_buckets: int\n\n\
-    :return: hash number\n\n\
-    :rtype: int\n");
+             "jump_consistent_hash(key, num_buckets, /)\n"
+             "--\n\n"
+             "Generate a number in the range [0, num_buckets).\n\n"
+             "Parameters\n"
+             "----------\n"
+             "key : int\n"
+             "  The key to hash.\n"
+             "num_buckets : int\n"
+             "  Number of buckets to use.\n"
+             "Returns\n"
+             "--------\n"
+             "int\n"
+             "  hash number.\n");
 
 static PyObject *Ctools__jump_hash(PyObject *m, PyObject *args) {
   uint64_t key;
@@ -47,13 +54,17 @@ static PyObject *Ctools__jump_hash(PyObject *m, PyObject *args) {
   PyDateTime_FromDateAndTime(year, month, day, 0, 0, 0, 0)
 
 PyDoc_STRVAR(int8_to_datetime__doc__,
-             "int8_to_datetime(date_integer: int) -> datetime.datetime:\n\n\
-    Convert int like 20180101 to datetime.datetime(2018, 1, 1)).\n\n\
-    This function uses C bindings for speed.\n\n\
-    :param date_integer: The string to hash.\n\n\
-    :type date_integer: int\n\n\
-    :return: parsed datetime\n\n\
-    :rtype: datetime.datetime\n\n");
+             "int8_to_datetime(date_integer, /)\n"
+             "--\n\n"
+             "Convert int like 20180101 to datetime.datetime(2018, 1, 1)).\n\n"
+             "Parameters\n"
+             "-----------\n"
+             "date_integer : int\n"
+             "  The string to hash.\n"
+             "Returns\n"
+             "--------\n"
+             "datetime.datetime\n"
+             "  parsed datetime\n");
 
 static PyObject *Ctools__int8_to_datetime(PyObject *m, PyObject *date_integer) {
   register long date = PyLong_AsLong(date_integer);
@@ -64,6 +75,7 @@ static PyObject *Ctools__int8_to_datetime(PyObject *m, PyObject *date_integer) {
   }
   return PyDateTime_FromDate(date / 10000, date % 10000 / 100, date % 100);
 }
+
 static unsigned int fnv1a(const char *s, unsigned long len) {
   unsigned int hash = 2166136261U;
   for (unsigned long i = 0; i < len; i++) {
@@ -136,14 +148,20 @@ static unsigned int djb2(const char *str, unsigned long len) {
   return hash;
 }
 
-PyDoc_STRVAR(strhash__doc__, "strhash(s, method='fnv1a') -> int:\n\n\
-    hash str with consistent value.\n\n\
-    This function uses C bindings for speed.\n\n\
-    Args:\n\n\
-        s (str): The string to hash.\n\n\
-        method (str): fnv1a | fnv1 | djb2 | murmur\n\n\
-    Returns:\n\n\
-        int: hash number");
+PyDoc_STRVAR(strhash__doc__, "strhash(s, method='fnv1a', /)\n"
+                             "--\n\n"
+                             "hash str with consistent value.\n"
+                             "This function uses C bindings for speed.\n\n"
+                             "Parameters\n"
+                             "----------\n"
+                             "s : str\n"
+                             "  The string to hash.\n"
+                             "method : str\n"
+                             "  fnv1a | fnv1 | djb2 | murmur\n"
+                             "Returns\n"
+                             "--------\n"
+                             "int\n"
+                             "  hash number");
 
 static PyObject *Ctools__strhash(PyObject *m, PyObject *args) {
   const char *s, *method = NULL;
@@ -178,7 +196,7 @@ static PyObject *build_with_debug(PyObject *self, PyObject *unused) {
 #endif
 }
 
-static PyMethodDef _methods[] = {
+static PyMethodDef methods[] = {
     {"jump_consistent_hash", Ctools__jump_hash, METH_VARARGS,
      jump_consistent_hash__doc__},
     {"strhash", Ctools__strhash, METH_VARARGS, strhash__doc__},
@@ -188,23 +206,10 @@ static PyMethodDef _methods[] = {
     {NULL, NULL, 0, NULL},
 };
 
-static struct PyModuleDef _module = {
-    PyModuleDef_HEAD_INIT,
-    "_funcs", /* m_name */
-    NULL,     /* m_doc */
-    -1,       /* m_size */
-    _methods, /* m_methods */
-    NULL,     /* m_reload */
-    NULL,     /* m_traverse */
-    NULL,     /* m_clear */
-    NULL,     /* m_free */
-};
-
-PyMODINIT_FUNC PyInit__funcs(void) {
-  PyObject *module;
-  module = PyModule_Create(&_module);
-  if (module == NULL)
-    return NULL;
+int ctools_init_funcs(PyObject *module) {
   PyDateTime_IMPORT;
-  return module;
+  if (PyModule_AddFunctions(module, methods)) {
+    return -1;
+  }
+  return 0;
 }

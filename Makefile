@@ -20,8 +20,8 @@ clean:  ## Clean cache, include dist
 	rm -rf dist
 	rm -rf build
 
-.PHONY: format
-format:  ## Format code
+.PHONY: format fmt
+format fmt:  ## Format code
 	@clang-format --verbose -style=LLVM -i src/*
 	@black **/*.py
 

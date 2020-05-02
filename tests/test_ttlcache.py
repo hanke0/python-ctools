@@ -28,7 +28,7 @@ class TestTTLCacheEntry(unittest.TestCase):
         self.assertEqual(sys.getrefcount(a), sys.getrefcount(b), msg=msg)
 
     def create_entry(self):
-        return ctools._ttlcache.TTLCacheEntry(uuid.uuid1(), 1024)
+        return ctools.TTLCacheEntry(uuid.uuid1(), 1024)
 
     def test_normal_ref(self):
         entry = self.create_entry()

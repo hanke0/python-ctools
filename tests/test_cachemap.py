@@ -40,7 +40,7 @@ class BaseTestEntry(unittest.TestCase):
         self.assertRefEqual(v1, v2)
 
     def create_entry(self):
-        return ctools._cachemap.CacheMapEntry(uuid.uuid1())
+        return ctools.CacheMapEntry(uuid.uuid1())
 
 
 def map_set_random(mp):

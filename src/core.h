@@ -1,10 +1,11 @@
-/* Copyright 2019 ko-han. All Rights Reserved.
+/*
+Copyright (c) 2019 ko han
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-     http://www.apache.org/licenses/LICENSE-2.0
+   http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,6 +20,12 @@ limitations under the License.
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#ifndef PY_SSIZE_T_CLEAN
+#define PY_SSIZE_T_CLEAN
+#endif
+
+#include "Python.h"
 
 #include <stdio.h>
 
@@ -48,20 +55,18 @@ typedef unsigned __int64 uint64_t;
 #endif /* _MSC_VER */
 
 #ifdef NDEBUG
-#define DEBUG_PRINTF(FORMAT, ...) ((void)0)
+#define DebugMsg(FORMAT, ...) ((void)0)
 #else
-#define DEBUG_PRINTF(FORMAT, ...)                                              \
+#define DebugMsg(FORMAT, ...)                                                  \
   printf("%s() in %s, line %i: " FORMAT "\n", __func__, __FILE__, __LINE__,    \
          __VA_ARGS__)
 #endif
 
-#define PyObject_HASHABLE(o) (PyObject_Hash((o)) == -1)
-
-#define RETURN_IF_ERROR_SET(r)                                                 \
+#define ReturnIfErrorSet(r)                                                    \
   if (PyErr_Occurred())                                                        \
   return r
 
-#define RETURN_KEY_ERROR_IF_ERROR_NOT_SET(key, r)                              \
+#define ReturnKeyErrorIfErrorNotSet(key, r)                                    \
   do {                                                                         \
     if (!PyErr_Occurred()) {                                                   \
       if (!PyErr_Format(PyExc_KeyError, "%S", key))                            \
@@ -69,15 +74,15 @@ typedef unsigned __int64 uint64_t;
     }                                                                          \
   } while (0)
 
-#define RETURN_IF_NULL(o, r)                                                   \
+#define ReturnIfNULL(o, r)                                                     \
   do {                                                                         \
     if (o == NULL)                                                             \
       return r;                                                                \
   } while (0)
 
-#define IS_POW_OF_2(x) ((x) != 0 && (((x) & ((x)-1)) == 0))
+#define IsPowerOf2(x) ((x) != 0 && (((x) & ((x)-1)) == 0))
 
-#define PYOBJECT_CAST(x) ((PyObject *)(x))
+#define PyObjectCast(x) ((PyObject *)(x))
 
 #ifdef __cplusplus
 }

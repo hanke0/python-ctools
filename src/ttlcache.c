@@ -1,10 +1,11 @@
-/* Copyright 2019 ko-han. All Rights Reserved.
+/*
+Copyright (c) 2019 ko han
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-     http://www.apache.org/licenses/LICENSE-2.0
+   http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+#include "core.h"
+
 #include <Python.h>
 #include <time.h>
-
-#include "util.h"
 
 #define DEFAULT_TTL 60
 
@@ -24,8 +25,8 @@ limitations under the License.
 
 typedef struct {
   /* clang-format off */
-    PyObject_HEAD
-    PyObject *ma_value;
+  PyObject_HEAD
+  PyObject *ma_value;
   /* clang-format on */
   int64_t expire;
 } TTLCacheEntry;
@@ -37,7 +38,7 @@ static TTLCacheEntry *TTLCacheEntry_New(PyObject *ma_value, int64_t ttl) {
   assert(ma_value);
   assert(ttl > 0);
   self = (TTLCacheEntry *)PyObject_GC_New(TTLCacheEntry, &TTLCacheEntry_Type);
-  RETURN_IF_NULL(self, NULL);
+  ReturnIfNULL(self, NULL);
   self->ma_value = ma_value;
   self->expire = NOW() + ttl;
   Py_INCREF(ma_value);
@@ -136,8 +137,8 @@ static PyTypeObject TTLCacheEntry_Type = {
 
 typedef struct {
   /* clang-format off */
-    PyObject_HEAD
-    PyObject *dict;
+  PyObject_HEAD
+  PyObject *dict;
   /* clang-format on */
   int64_t default_ttl;
 } TTLCache;
@@ -153,7 +154,7 @@ typedef struct {
 static int TTLCache_DelItem(TTLCache *self, PyObject *key) {
   TTLCacheEntry *entry = TTLCache_GetItemWithError(self, key);
   if (!entry) {
-    RETURN_KEY_ERROR_IF_ERROR_NOT_SET(key, -1);
+    ReturnKeyErrorIfErrorNotSet(key, -1);
     return -1;
   }
   if (PyDict_DelItem(self->dict, key) != 0) {
@@ -170,7 +171,7 @@ static TTLCacheEntry *TTLCache_GetTTLItemWithError(TTLCache *self,
   int i;
   int64_t t;
   entry = TTLCache_GetItemWithError(self, key);
-  RETURN_IF_NULL(entry, NULL);
+  ReturnIfNULL(entry, NULL);
 
   t = NOW();
   if (entry->expire < t) {
@@ -195,7 +196,7 @@ static int TTLCache_SetItem(TTLCache *self, PyObject *key, PyObject *value) {
     return 0;
   }
 
-  RETURN_IF_ERROR_SET(-1);
+  ReturnIfErrorSet(-1);
   entry = TTLCacheEntry_New(value, self->default_ttl);
   if (!entry) {
     return -1;
@@ -220,7 +221,7 @@ static TTLCache *TTLCache_New(int64_t ttl) {
   TTLCache *self;
   assert(ttl > 0);
   self = (TTLCache *)PyObject_GC_New(TTLCache, &TTLCache_Type);
-  RETURN_IF_NULL(self, NULL);
+  ReturnIfNULL(self, NULL);
 
   if (!(self->dict = PyDict_New())) {
     Py_DECREF(self);
@@ -278,7 +279,7 @@ static PyObject *TTLCache_repr(TTLCache *self) {
 static PyObject *TTLCache_mp_subscript(TTLCache *self, PyObject *key) {
   TTLCacheEntry *wrapper = TTLCache_GetTTLItemWithError(self, key);
   if (!wrapper) {
-    RETURN_KEY_ERROR_IF_ERROR_NOT_SET(key, NULL);
+    ReturnKeyErrorIfErrorNotSet(key, NULL);
     return NULL;
   }
   return TTLCacheEntry_get_ma_value(wrapper);
@@ -304,7 +305,7 @@ static int TTLCache_Contains(PyObject *self, PyObject *key) {
 
   entry = TTLCache_GetTTLItemWithError((TTLCache *)self, key);
   if (!entry) {
-    RETURN_IF_ERROR_SET(-1);
+    ReturnIfErrorSet(-1);
     return 0;
   }
   return 1;
@@ -330,7 +331,7 @@ static PyObject *TTLCache_keys(TTLCache *self) {
 
 static PyObject *TTLCache_values(TTLCache *self) {
   PyObject *values = PyDict_Values(self->dict);
-  RETURN_IF_NULL(values, NULL);
+  ReturnIfNULL(values, NULL);
 
   Py_ssize_t size = PyList_GET_SIZE(values);
   if (size == 0)
@@ -376,7 +377,7 @@ static PyObject *TTLCache_get(TTLCache *self, PyObject *args, PyObject *kw) {
     return NULL;
   result = TTLCache_GetTTLItemWithError((TTLCache *)self, key);
   if (!result) {
-    RETURN_IF_ERROR_SET(NULL);
+    ReturnIfErrorSet(NULL);
     if (!_default)
       Py_RETURN_NONE;
     Py_INCREF(_default);
@@ -396,7 +397,7 @@ static PyObject *TTLCache_pop(TTLCache *self, PyObject *args, PyObject *kw) {
     return NULL;
   result = TTLCache_GetTTLItemWithError((TTLCache *)self, key);
   if (!result) {
-    RETURN_IF_ERROR_SET(NULL);
+    ReturnIfErrorSet(NULL);
     if (!_default)
       Py_RETURN_NONE;
     Py_INCREF(_default);
@@ -423,7 +424,7 @@ static PyObject *TTLCache_setdefault(TTLCache *self, PyObject *args,
   if (result) {
     return TTLCacheEntry_get_ma_value(result);
   }
-  RETURN_IF_ERROR_SET(NULL);
+  ReturnIfErrorSet(NULL);
   if (!_default)
     _default = Py_None;
   Py_INCREF(_default);
@@ -439,7 +440,7 @@ static PyObject *TTLCache_setnx(TTLCache *self, PyObject *args, PyObject *kw) {
   PyObject *_default = NULL, *callback = NULL;
   TTLCacheEntry *result;
 
-  static char *kwlist[] = {"key", "callback", NULL};
+  static char *kwlist[] = {"key", "fn", NULL};
   if (!PyArg_ParseTupleAndKeywords(args, kw, "OO", kwlist, &key, &callback))
     return NULL;
 
@@ -452,9 +453,9 @@ static PyObject *TTLCache_setnx(TTLCache *self, PyObject *args, PyObject *kw) {
   if (result) {
     return TTLCacheEntry_get_ma_value(result);
   }
-  RETURN_IF_ERROR_SET(NULL);
+  ReturnIfErrorSet(NULL);
   _default = PyObject_CallFunction(callback, NULL);
-  RETURN_IF_NULL(_default, NULL);
+  ReturnIfNULL(_default, NULL);
   if (TTLCache_SetItem(self, key, _default)) {
     Py_XDECREF(_default);
     return NULL;
@@ -517,33 +518,36 @@ static PyObject *TTLCache_clear(TTLCache *self) {
 /* tp_methods */
 static PyMethodDef TTLCache_methods[] = {
     {"set_default_ttl", (PyCFunction)TTLCache_set_default_ttl, METH_O,
-     "Reset default ttl"},
+     "set_default_ttl(ttl, /)\n--\n\nReset default ttl"},
     {"get", (PyCFunction)TTLCache_get, METH_VARARGS | METH_KEYWORDS,
-     "Get item from cache"},
+     "get(key, default=None, /)\n--\n\nGet item from cache"},
     {"setdefault", (PyCFunction)TTLCache_setdefault,
      METH_VARARGS | METH_KEYWORDS,
-     "Get item in cache, if key not exists, set default to cache and return "
+     "setdefault(key, default=None, /)\n--\n\nGet item in cache, if key not "
+     "exists, set default to cache and return "
      "it."},
     {"pop", (PyCFunction)TTLCache_pop, METH_VARARGS | METH_KEYWORDS,
-     "Pop item from cache"},
+     "pop(key, default=None)\n--\n\nPop item from cache"},
     {"keys", (PyCFunction)TTLCache_keys, METH_NOARGS, "Iter keys"},
     {"values", (PyCFunction)TTLCache_values, METH_NOARGS, "Iter values"},
     {"items", (PyCFunction)TTLCache_items, METH_NOARGS, "iter items"},
     {"update", (PyCFunction)TTLCache_update, METH_VARARGS | METH_KEYWORDS,
-     "Update item to cache. Unlike dict.update, only accept a dict object."},
+     "update(mp, **kwargs)\n--\n\nUpdate item to cache. Unlike dict.update, "
+     "only accept a dict object."},
     {"clear", (PyCFunction)TTLCache_clear, METH_NOARGS, "Clear cache"},
     {"setnx", (PyCFunction)TTLCache_setnx, METH_VARARGS | METH_KEYWORDS,
-     "like setdefault but accept a callable obejct with no argument."},
+     "setnx(key, fn, /)\n--\n\nlike setdefault but accept a callable "
+     "obejct with no argument."},
     {"_storage", (PyCFunction)TTLCache__storage, METH_NOARGS, NULL},
     {"get_default_ttl", (PyCFunction)TTLCache_get_default_ttl, METH_NOARGS,
-     "Return default ttl"},
+     "get_default_ttl()\n--\n\nReturn default ttl"},
     {NULL, NULL, 0, NULL} /* Sentinel */
 };
 
 static PyObject *TTLCache_tp_iter(TTLCache *self) {
   PyObject *keys, *it;
   keys = TTLCache_keys(self);
-  RETURN_IF_NULL(keys, NULL);
+  ReturnIfNULL(keys, NULL);
   it = PySeqIter_New(keys);
   if (it == NULL) {
     Py_DECREF(keys);
@@ -555,9 +559,9 @@ static PyObject *TTLCache_tp_iter(TTLCache *self) {
   return it;
 }
 
-PyDoc_STRVAR(TTLCache__doc__,
-             "A fast TTLCache behaving much like dict.\n\n"
-             "Args:\n\n    ttl (int): max seconds a items stores.");
+PyDoc_STRVAR(TTLCache__doc__, "TTLCache([ttl]) -> TTLCache\n\n"
+                              "A fast TTLCache behaving much like dict.\n"
+                              "Default ttl is setting to never out of date.");
 
 static PyTypeObject TTLCache_Type = {
     /* clang-format off */
@@ -602,35 +606,27 @@ static PyTypeObject TTLCache_Type = {
     (newfunc)TTLCache_tp_new,                /* tp_new */
 };
 
-static struct PyModuleDef _module = {
-    PyModuleDef_HEAD_INIT,
-    "_ttlcache", /* m_name */
-    NULL,        /* m_doc */
-    -1,          /* m_size */
-    NULL,        /* m_methods */
-    NULL,        /* m_reload */
-    NULL,        /* m_traverse */
-    NULL,        /* m_clear */
-    NULL,        /* m_free */
-};
+int ctools_init_ttlcache(PyObject *module) {
+  if (PyType_Ready(&TTLCacheEntry_Type) < 0) {
+    return -1;
+  }
 
-PyMODINIT_FUNC PyInit__ttlcache(void) {
-  PyObject *module;
-  if (PyType_Ready(&TTLCacheEntry_Type) < 0)
-    return NULL;
-
-  if (PyType_Ready(&TTLCache_Type) < 0)
-    return NULL;
-
-  module = PyModule_Create(&_module);
-  if (module == NULL)
-    return NULL;
-
+  if (PyType_Ready(&TTLCache_Type) < 0) {
+    return -1;
+  }
   Py_INCREF(&TTLCacheEntry_Type);
   Py_INCREF(&TTLCache_Type);
+  if (PyModule_AddObject(module, "TTLCacheEntry",
+                         (PyObject *)&TTLCacheEntry_Type)) {
+    goto FAIL;
+  }
+  if (PyModule_AddObject(module, "TTLCache", (PyObject *)&TTLCache_Type)) {
+    goto FAIL;
+  }
 
-  PyModule_AddObject(module, "TTLCacheEntry", (PyObject *)&TTLCacheEntry_Type);
-  PyModule_AddObject(module, "TTLCache", (PyObject *)&TTLCache_Type);
-
-  return module;
+  return 0;
+FAIL:
+  Py_DECREF(&TTLCacheEntry_Type);
+  Py_DECREF(&TTLCache_Type);
+  return -1;
 }

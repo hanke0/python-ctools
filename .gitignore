@@ -209,7 +209,6 @@ $RECYCLE.BIN/
 
 # Shared objects (inc. Windows DLLs)
 *.dll
-*.so
 *.so.*
 *.dylib
 
@@ -240,7 +239,6 @@ CMakeCache.txt
 CMakeFiles
 CMakeScripts
 Testing
-CMakeLists.txt
 cmake_install.cmake
 install_manifest.txt
 compile_commands.json
@@ -248,4 +246,8 @@ CTestTestfile.cmake
 _deps
 cmake-build-debug
 ignoreme*
+build*/
 .vs
+docs/api/
+out/
+tmp/
