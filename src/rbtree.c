@@ -48,8 +48,8 @@ limitations under the License.
 
 struct _rbtree_node {
   /* clang-format off */
-    PyObject_HEAD
-    PyObject *key;
+  PyObject_HEAD
+  PyObject *key;
   /* clang-format on */
   PyObject *value;
   struct _rbtree_node *left;
@@ -62,21 +62,22 @@ typedef struct _rbtree_node RBTreeNode;
 
 typedef struct _rbtree {
   /* clang-format off */
-    PyObject_HEAD
-    struct _rbtree_node *root;
-    struct _rbtree_node *sentinel;
+  PyObject_HEAD
+  struct _rbtree_node *root;
+  struct _rbtree_node *sentinel;
   /* clang-format on */
 } RBTree;
 
 static PyTypeObject RBTreeNode_Type;
 static PyTypeObject RBTree_Type;
+static RBTreeNode *RBSentinel;
 
 static RBTreeNode *RBTreeNode_New(PyObject *key, PyObject *value) {
   RBTreeNode *node;
   node = PyObject_GC_New(RBTreeNode, &RBTree_Type);
   ReturnIfNULL(node, NULL);
-  Py_INCREF(key);
-  Py_INCREF(value);
+  Py_XINCREF(key);
+  Py_XINCREF(value);
   node->key = key;
   node->value = value;
   node->parent = NULL;
@@ -124,8 +125,8 @@ static PyObject *RBTreeNode_tp_new(PyTypeObject *type, PyObject *args,
 
 static PyTypeObject RBTreeNode_Type = {
     /* clang-format off */
-        PyVarObject_HEAD_INIT(&PyType_Type, 0)
-        .tp_name = "RBTreeNone",
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name = "RBTreeNone",
     /* clang-format on */
     .tp_basicsize = sizeof(RBTreeNode),
     .tp_dealloc = (destructor)RBTreeNode_tp_dealloc,
@@ -141,19 +142,6 @@ static void rbsentinel_dealloc(PyObject *ignore) {
    */
   Py_FatalError("deallocating RBSentinel");
 }
-
-static RBTreeNode _RBSentinelStruct = {
-    .ob_base.ob_type = &PyType_Type,
-    .ob_base.ob_refcnt = 1,
-    .key = NULL,
-    .value = NULL,
-    .left = NULL,
-    .right = NULL,
-    .parent = NULL,
-    .color = RBBLACK, /* sentinel's color is always black */
-};
-
-#define RBSentinel (&_RBSentinelStruct)
 
 #define RBSentinel_SET(v)                                                      \
   do {                                                                         \
@@ -313,11 +301,17 @@ int ctools_init_rbtree(PyObject *module) {
   if (PyType_Ready(&RBTreeNode_Type) < 0) {
     return -1;
   }
-
-  if (PyModule_AddObject(module, "RBTreeNode", (PyObject *)&RBTreeNode_Type) <
-      0) {
+  RBSentinel = RBTreeNode_New(NULL, NULL);
+  if (RBSentinel == NULL) {
     return -1;
   }
+  RBTreeNode_SetBlack(RBSentinel); /* sentinel's color is always black */
+
   Py_INCREF(&RBTreeNode_Type);
+  if (PyModule_AddObject(module, "RBTreeNode", (PyObject *)&RBTreeNode_Type) <
+      0) {
+    Py_DECREF(&RBTreeNode_Type);
+    return -1;
+  }
   return 0;
 }
