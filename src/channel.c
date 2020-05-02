@@ -83,25 +83,22 @@ static void Channel_tp_dealloc(Channel *ob) {
   PyObject_GC_UnTrack(ob);
   /* clang-format off */
   Py_TRASHCAN_SAFE_BEGIN(ob)
-      if (len > 0)
-  /* clang-format on */
-  {
-    i = len;
-    while (--i >= 0)
-      Py_XDECREF(ob->ob_item[i]);
-  }
-  PyMem_FREE(ob->ob_item);
-  PyObject_GC_Del(ob);
-  /* clang-format off */
-      Py_TRASHCAN_SAFE_END(ob)
+      if (len > 0) {
+        i = len;
+        while (--i >= 0)
+          Py_XDECREF(ob->ob_item[i]);
+      }
+      PyMem_FREE(ob->ob_item);
+      PyObject_GC_Del(ob);
+  Py_TRASHCAN_SAFE_END(ob)
   /* clang-format on */
 }
 
 static int Channel_tp_traverse(Channel *o, visitproc visit, void *arg) {
   int i;
-
-  for (i = Py_SIZE(o); --i >= 0;)
+  for (i = Py_SIZE(o); --i >= 0;) {
     Py_VISIT(o->ob_item[i]);
+  }
   return 0;
 }
 
@@ -133,8 +130,9 @@ static PyObject *Channel_tp_new(PyTypeObject *type, PyObject *args,
                                 PyObject *kwds) {
   int size;
   static char *kwlist[] = {"size", NULL};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "i", kwlist, &size))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "i", kwlist, &size)) {
     return NULL;
+  }
   if (size <= 0) {
     PyErr_SetString(PyExc_ValueError, "size should be positive.");
     return NULL;
@@ -199,10 +197,11 @@ static int Channel_send_idx(Channel *self) {
   }
 
   if (Py_SIZE(self) == 1) {
-    if (self->ob_item[0] == NULL)
+    if (self->ob_item[0] == NULL) {
       return 0;
-    else
+    } else {
       return -1;
+    }
   }
 
   /* size is 2**n */
@@ -231,10 +230,11 @@ static int Channel_recv_idx(Channel *self) {
   }
 
   if (Py_SIZE(self) == 1) {
-    if (self->ob_item[0] == NULL)
+    if (self->ob_item[0] == NULL) {
       return -1;
-    else
+    } else {
       return 0;
+    }
   }
 
   /* size is 2**n */
@@ -317,8 +317,9 @@ static PyObject *Channel_close(PyObject *self, PyObject *args, PyObject *kwds) {
   write = 1;
   read = 1;
   static char *kwlist[] = {"send", "recv", NULL};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|pp", kwlist, &write, &read))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|pp", kwlist, &write, &read)) {
     return NULL;
+  }
 
   ch = (Channel *)self;
   if (write) {

@@ -55,8 +55,9 @@ static PyObject *CacheEntry_new(PyTypeObject *type, PyObject *args,
                                 PyObject *kwds) {
   PyObject *ma_value;
   static char *kwlist[] = {"obj", NULL};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &ma_value))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &ma_value)) {
     return NULL;
+  }
   return (PyObject *)CacheEntry_New(ma_value);
 }
 
@@ -440,8 +441,9 @@ static PyObject *CacheMap_values(CacheMap *self) {
   ReturnIfNULL(values, NULL);
 
   size = PyList_GET_SIZE(values);
-  if (size == 0)
+  if (size == 0) {
     return values;
+  }
 
   for (Py_ssize_t i = 0; i < size; i++) {
     entry = (CacheMapEntry *)PyList_GET_ITEM(values, i);
@@ -460,8 +462,9 @@ static PyObject *CacheMap_items(CacheMap *self) {
   items = PyDict_Items(self->dict);
   ReturnIfNULL(items, NULL);
   size = PyList_GET_SIZE(items);
-  if (size == 0)
+  if (size == 0) {
     return items;
+  }
 
   for (Py_ssize_t i = 0; i < size; i++) {
     kv = PyList_GET_ITEM(items, i);
@@ -484,8 +487,9 @@ static PyObject *CacheMap_get(CacheMap *self, PyObject *args, PyObject *kw) {
   result = CacheMap_GetItemWithError(self, key);
   if (!result) {
     ReturnIfErrorSet(NULL);
-    if (!_default)
+    if (!_default) {
       Py_RETURN_NONE;
+    }
     Py_INCREF(_default);
     return _default;
   }
@@ -504,8 +508,9 @@ static PyObject *CacheMap_pop(CacheMap *self, PyObject *args, PyObject *kw) {
   result = CacheMap_GetItemWithError(self, key);
   if (!result) {
     ReturnIfErrorSet(NULL);
-    if (!_default)
+    if (!_default) {
       Py_RETURN_NONE;
+    }
     Py_INCREF(_default);
     return _default;
   }
@@ -531,8 +536,9 @@ static PyObject *CacheMap_setdefault(CacheMap *self, PyObject *args,
     return CacheEntry_get_ma_value(result);
   }
   ReturnIfErrorSet(NULL);
-  if (!_default)
+  if (!_default) {
     Py_RETURN_NONE;
+  }
 
   Py_INCREF(_default);
   if (CacheMap_SetItem(self, key, _default)) {
@@ -549,8 +555,9 @@ static PyObject *CacheMap_setnx(CacheMap *self, PyObject *args, PyObject *kw) {
   CacheMapEntry *result;
 
   static char *kwlist[] = {"key", "fn", NULL};
-  if (!PyArg_ParseTupleAndKeywords(args, kw, "OO", kwlist, &key, &callback))
+  if (!PyArg_ParseTupleAndKeywords(args, kw, "OO", kwlist, &key, &callback)) {
     return NULL;
+  }
 
   result = CacheMap_GetItemWithError(self, key);
   if (result) {
@@ -575,15 +582,17 @@ static PyObject *CacheMap_update(CacheMap *self, PyObject *args,
   if ((PyArg_ParseTuple(args, "|O", &arg))) {
     if (arg && PyDict_Check(arg)) {
       while (PyDict_Next(arg, &pos, &key, &value))
-        if (CacheMap_SetItem(self, key, value))
+        if (CacheMap_SetItem(self, key, value)) {
           return NULL;
+        }
     }
   }
 
   if (kwargs != NULL && PyArg_ValidateKeywordArguments(kwargs)) {
     while (PyDict_Next(kwargs, &pos, &key, &value))
-      if (CacheMap_SetItem(self, key, value))
+      if (CacheMap_SetItem(self, key, value)) {
         return NULL;
+      }
   }
 
   Py_RETURN_NONE;
@@ -601,8 +610,7 @@ static PyObject *CacheMap_set_capacity(CacheMap *self, PyObject *capacity) {
   if (cap < self->capacity && CacheMap_Size(self) > cap) {
     int r = CacheMap_Size(self) - cap;
     for (int i = 0; i < r; ++i) {
-      if (CacheMap_evict(self) == NULL)
-        return NULL;
+      ReturnIfNULL(CacheMap_evict(self), NULL);
     }
   }
   self->capacity = cap;
@@ -660,11 +668,9 @@ static PyMethodDef CacheMap_methods[] = {
 static PyObject *CacheMap_tp_iter(CacheMap *self) {
   PyObject *keys, *it;
   keys = CacheMap_keys(self);
-  if (keys == NULL)
-    return NULL;
+  ReturnIfNULL(keys, NULL);
   it = PySeqIter_New(keys);
-  if (it == NULL)
-    return NULL;
+  ReturnIfNULL(it, NULL);
   assert(keys);
   Py_DECREF(keys);
   return it;

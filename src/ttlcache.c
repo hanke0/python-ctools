@@ -334,8 +334,9 @@ static PyObject *TTLCache_values(TTLCache *self) {
   ReturnIfNULL(values, NULL);
 
   Py_ssize_t size = PyList_GET_SIZE(values);
-  if (size == 0)
+  if (size == 0) {
     return values;
+  }
 
   TTLCacheEntry *entry;
   for (Py_ssize_t i = 0; i < size; i++) {
@@ -354,8 +355,9 @@ static PyObject *TTLCache_items(TTLCache *self) {
     return NULL;
   }
   Py_ssize_t size = PyList_GET_SIZE(items);
-  if (size == 0)
+  if (size == 0) {
     return items;
+  }
 
   for (Py_ssize_t i = 0; i < size; i++) {
     kv = PyList_GET_ITEM(items, i);
@@ -378,8 +380,9 @@ static PyObject *TTLCache_get(TTLCache *self, PyObject *args, PyObject *kw) {
   result = TTLCache_GetTTLItemWithError((TTLCache *)self, key);
   if (!result) {
     ReturnIfErrorSet(NULL);
-    if (!_default)
+    if (!_default) {
       Py_RETURN_NONE;
+    }
     Py_INCREF(_default);
     return _default;
   }
@@ -398,8 +401,9 @@ static PyObject *TTLCache_pop(TTLCache *self, PyObject *args, PyObject *kw) {
   result = TTLCache_GetTTLItemWithError((TTLCache *)self, key);
   if (!result) {
     ReturnIfErrorSet(NULL);
-    if (!_default)
+    if (!_default) {
       Py_RETURN_NONE;
+    }
     Py_INCREF(_default);
     return _default;
   }
@@ -425,8 +429,9 @@ static PyObject *TTLCache_setdefault(TTLCache *self, PyObject *args,
     return TTLCacheEntry_get_ma_value(result);
   }
   ReturnIfErrorSet(NULL);
-  if (!_default)
+  if (!_default) {
     _default = Py_None;
+  }
   Py_INCREF(_default);
   if (TTLCache_SetItem(self, key, _default)) {
     Py_DECREF(_default);
@@ -472,15 +477,17 @@ static PyObject *TTLCache_update(TTLCache *self, PyObject *args,
   if ((PyArg_ParseTuple(args, "|O", &arg))) {
     if (arg && PyDict_Check(arg)) {
       while (PyDict_Next(arg, &pos, &key, &value))
-        if (TTLCache_SetItem(self, key, value))
+        if (TTLCache_SetItem(self, key, value)) {
           return NULL;
+        }
     }
   }
 
   if (kwargs != NULL && PyArg_ValidateKeywordArguments(kwargs)) {
     while (PyDict_Next(kwargs, &pos, &key, &value))
-      if (TTLCache_SetItem(self, key, value))
+      if (TTLCache_SetItem(self, key, value)) {
         return NULL;
+      }
   }
 
   Py_RETURN_NONE;

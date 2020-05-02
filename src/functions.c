@@ -171,20 +171,19 @@ static PyObject *Ctools__strhash(PyObject *m, PyObject *args) {
   if (method == NULL)
     return Py_BuildValue("I", fnv1a(s, len));
   switch (method[0]) {
-  case 'f': {
-    if (m_len == 5)
+  case 'f':
+    if (m_len == 5) {
       return Py_BuildValue("I", fnv1a(s, len));
-    else
+    } else {
       return Py_BuildValue("I", fnv1(s, len));
-  }
+    }
   case 'd':
     return Py_BuildValue("I", djb2(s, len));
   case 'm':
     return Py_BuildValue("I", murmur_hash2(s, len));
-  default: {
+  default:
     PyErr_SetString(PyExc_ValueError, "invalid method");
     return NULL;
-  }
   }
 }
 
