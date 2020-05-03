@@ -1,0 +1,7 @@
+---
+BasedOnStyle: LLVM
+IncludeBlocks: Regroup
+SpaceAfterCStyleCast: false
+UseTab: Never
+AllowShortFunctionsOnASingleLine: All
+IndentCaseLabels: false

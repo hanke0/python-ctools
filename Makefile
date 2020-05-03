@@ -22,7 +22,7 @@ clean:  ## Clean cache, include dist
 
 .PHONY: format fmt
 format fmt:  ## Format code
-	@clang-format --verbose -style=LLVM -i src/*
+	@clang-format --verbose -i src/*
 	@black **/*.py
 
 .PHONY: benchmark

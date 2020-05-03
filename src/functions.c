@@ -64,7 +64,12 @@ PyDoc_STRVAR(int8_to_datetime__doc__,
              "Returns\n"
              "--------\n"
              "datetime.datetime\n"
-             "  parsed datetime\n");
+             "  parsed datetime\n\n"
+             "Examples\n"
+             "--------\n"
+             ">>> import ctools\n"
+             ">>> ctools.int8_to_datetime(20010101)\n"
+             "datetime.datetime(2001, 1, 1, 0, 0)\n");
 
 static PyObject *Ctools__int8_to_datetime(PyObject *m, PyObject *date_integer) {
   register long date = PyLong_AsLong(date_integer);

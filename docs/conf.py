@@ -84,6 +84,7 @@ numpydoc_class_members_toctree = True
 autodoc_default_flags = ["members"]
 autosummary_generate = True
 
+intersphinx_cache_limit = 6
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3/", None),
 }

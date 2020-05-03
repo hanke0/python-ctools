@@ -29,7 +29,7 @@ static inline unsigned int time_in_minutes(void) {
   return (unsigned int)(((uint64_t)time(NULL) / 60) & UINT32_MAX);
 }
 
-typedef struct _cacheentry {
+typedef struct {
   /* clang-format off */
   PyObject_HEAD
   PyObject *ma_value;
@@ -53,6 +53,7 @@ static CacheMapEntry *CacheEntry_New(PyObject *ma_value) {
 
 static PyObject *CacheEntry_new(PyTypeObject *type, PyObject *args,
                                 PyObject *kwds) {
+  SUPPRESS_UNUSED(type);
   PyObject *ma_value;
   static char *kwlist[] = {"obj", NULL};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &ma_value)) {
@@ -69,6 +70,8 @@ static PyObject *CacheEntry_new(PyTypeObject *type, PyObject *args,
 
 static int CacheEntry_init(CacheMapEntry *self, PyObject *unused,
                            PyObject *unused1) {
+  SUPPRESS_UNUSED(unused);
+  SUPPRESS_UNUSED(unused1);
   CacheEntry_Init(self);
   return 0;
 }
@@ -341,30 +344,32 @@ static CacheMap *CacheMap_New(void) {
     return NULL;
   }
   PyObject_GC_Track(self);
+  self->hits = 0;
+  self->misses = 0;
+  self->capacity = INT64_MAX;
   return self;
 }
 
 static PyObject *CacheMap_tp_new(PyTypeObject *type, PyObject *args,
                                  PyObject *kwds) {
+  SUPPRESS_UNUSED(type);
+  SUPPRESS_UNUSED(args);
+  SUPPRESS_UNUSED(kwds);
   return (PyObject *)CacheMap_New();
 }
 
-#define CacheMap_Init(self)                                                    \
-  do {                                                                         \
-    (self)->hits = 0;                                                          \
-    (self)->misses = 0;                                                        \
-  } while (0)
-
 static int CacheMap_tp_init(CacheMap *self, PyObject *args, PyObject *kwds) {
-  static char *kwlist[] = {"capacity", NULL};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "n", kwlist, &self->capacity)) {
+  Py_ssize_t capacity = 0;
+  if (!PyArg_ParseTuple(args, "|n", &capacity)) {
     return -1;
   }
-  if (self->capacity <= 0) {
+  if (capacity < 0) {
     PyErr_SetString(PyExc_ValueError, "Capacity should be a positive number");
     return -1;
   }
-  CacheMap_Init(self);
+  if (capacity > 0) {
+    self->capacity = capacity;
+  }
   return 0;
 }
 
@@ -676,9 +681,19 @@ static PyObject *CacheMap_tp_iter(CacheMap *self) {
   return it;
 }
 
-PyDoc_STRVAR(CacheMap__doc__, "CacheMap([maxsize])\n\n"
+PyDoc_STRVAR(CacheMap__doc__, "CacheMap(maxsize=None, /)\n\n"
                               "A fast CacheMap behaving much like dict.\n\n"
-                              "Default max size is infinity.");
+                              "Default max size is C INT32_MAX.\n\n"
+                              "Examples\n"
+                              "--------\n"
+                              ">>> import ctools\n"
+                              ">>> cache = ctools.CacheMap(1)\n"
+                              ">>> cache['foo'] = 'bar'\n"
+                              ">>> cache['foo']\n"
+                              "'bar'\n"
+                              ">>> cache['bar'] = 'foo'\n"
+                              ">>> 'foo' in cache\n"
+                              "False\n");
 
 static PyTypeObject CacheMap_Type = {
     /* clang-format off */

@@ -15,6 +15,7 @@ limitations under the License.
 */
 
 #include "module.h"
+
 #include "Python.h"
 
 static struct PyModuleDef _ctools = {

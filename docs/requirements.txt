@@ -1,2 +1,3 @@
 sphinx>=2.2.0
 sphinxcontrib-napoleon
+numpydoc

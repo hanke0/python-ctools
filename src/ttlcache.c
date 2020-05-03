@@ -234,12 +234,15 @@ static TTLCache *TTLCache_New(int64_t ttl) {
 
 static PyObject *TTLCache_tp_new(PyTypeObject *type, PyObject *args,
                                  PyObject *kwds) {
-  int64_t ttl = 0;
-  static char *kwlist[] = {"ttl", NULL};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|L", kwlist, &ttl))
+  SUPPRESS_UNUSED(type);
+  SUPPRESS_UNUSED(kwds);
+  int64_t ttl = DEFAULT_TTL;
+  if (!PyArg_ParseTuple(args, "|L", &ttl))
     return NULL;
   if (ttl <= 0) {
-    ttl = DEFAULT_TTL;
+    PyErr_SetString(PyExc_ValueError,
+                    "ttl should be a positive integer in seconds.");
+    return NULL;
   }
   return (PyObject *)TTLCache_New(ttl);
 }
@@ -566,9 +569,20 @@ static PyObject *TTLCache_tp_iter(TTLCache *self) {
   return it;
 }
 
-PyDoc_STRVAR(TTLCache__doc__, "TTLCache([ttl]) -> TTLCache\n\n"
+PyDoc_STRVAR(TTLCache__doc__, "TTLCache(ttl=None)\n\n"
                               "A fast TTLCache behaving much like dict.\n"
-                              "Default ttl is setting to never out of date.");
+                              "Default ttl is 1 minute.\n\n"
+                              "Examples\n"
+                              "--------\n"
+                              ">>> import ctools\n"
+                              ">>> import time\n"
+                              ">>> cache = ctools.TTLCache(5)\n"
+                              ">>> cache['foo'] = 'bar'\n"
+                              ">>> cache['foo']\n"
+                              "'bar'\n"
+                              ">>> time.sleep(5)\n"
+                              ">>> 'foo' in cache\n"
+                              "False\n");
 
 static PyTypeObject TTLCache_Type = {
     /* clang-format off */

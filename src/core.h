@@ -84,6 +84,8 @@ typedef unsigned __int64 uint64_t;
 
 #define PyObjectCast(x) ((PyObject *)(x))
 
+#define SUPPRESS_UNUSED(x) ((void)(x))
+
 #ifdef __cplusplus
 }
 #endif

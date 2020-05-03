@@ -17,8 +17,9 @@ limitations under the License.
 #ifndef CTOOLS_MODULE_H
 #define CTOOLS_MODULE_H
 
-#include "Python.h"
 #include "core.h"
+
+#include <Python.h>
 
 int ctools_init_cachemap(PyObject *module);
 

@@ -90,7 +90,7 @@ static void Channel_tp_dealloc(Channel *ob) {
       }
       PyMem_FREE(ob->ob_item);
       PyObject_GC_Del(ob);
-  Py_TRASHCAN_SAFE_END(ob)
+      Py_TRASHCAN_SAFE_END(ob)
   /* clang-format on */
 }
 
@@ -128,9 +128,10 @@ static int Channel_tp_clear(Channel *op) {
 
 static PyObject *Channel_tp_new(PyTypeObject *type, PyObject *args,
                                 PyObject *kwds) {
-  int size;
-  static char *kwlist[] = {"size", NULL};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "i", kwlist, &size)) {
+  SUPPRESS_UNUSED(type);
+  SUPPRESS_UNUSED(kwds);
+  int size = INT32_MAX;
+  if (!PyArg_ParseTuple(args, "|i", &size)) {
     return NULL;
   }
   if (size <= 0) {
@@ -141,6 +142,7 @@ static PyObject *Channel_tp_new(PyTypeObject *type, PyObject *args,
 }
 
 static PyObject *Channel_clear(Channel *self, PyObject *unused) {
+  SUPPRESS_UNUSED(unused);
   PyObject **buffer = self->ob_item;
   Py_ssize_t size;
   size = Py_SIZE(self);
@@ -149,7 +151,7 @@ static PyObject *Channel_clear(Channel *self, PyObject *unused) {
       Py_DECREF(buffer[i]);
       buffer[i] = NULL;
     }
-  };
+  }
   Py_RETURN_NONE;
 }
 
@@ -258,6 +260,7 @@ static int Channel_recv_idx(Channel *self) {
 }
 
 static PyObject *Channel_recv(PyObject *self, PyObject *unused) {
+  SUPPRESS_UNUSED(unused);
   PyObject *item;
   PyObject *rv;
   int recvx;
@@ -374,6 +377,7 @@ static PyObject *Channel_safe_consume(PyObject *self, PyObject *callback) {
 }
 
 static PyObject *Channel_sendable(PyObject *self, PyObject *unused) {
+  SUPPRESS_UNUSED(unused);
   Channel *ch = (Channel *)self;
   int sendx;
   sendx = Channel_send_idx(ch);
@@ -385,6 +389,7 @@ static PyObject *Channel_sendable(PyObject *self, PyObject *unused) {
 }
 
 static PyObject *Channel_recvable(PyObject *self, PyObject *unused) {
+  SUPPRESS_UNUSED(unused);
   Channel *ch = (Channel *)self;
   int recvx;
   recvx = Channel_recv_idx(ch);
@@ -396,30 +401,47 @@ static PyObject *Channel_recvable(PyObject *self, PyObject *unused) {
 }
 
 static PyObject *Channel_size(PyObject *self, PyObject *unused) {
+  SUPPRESS_UNUSED(unused);
   return PyLong_FromLong(Py_SIZE(self));
 }
 
 static PyMethodDef Channel_methods[] = {
     {"send", (PyCFunction)Channel_send, METH_O,
-     "send(obj, /)\n--\n\nsend an object to channel."},
+     "send(obj, /)\n--\n\nSend an object to channel. Return False if channel "
+     "is full."},
     {"recv", (PyCFunction)Channel_recv, METH_NOARGS,
-     "recv()\n--\n\nreceive an object from channel."},
+     "recv()\n--\n\nReceive an object from channel. If nothing in channel, "
+     "return None and False, else return received and True"},
     {"clear", (PyCFunction)Channel_clear, METH_NOARGS,
-     "clear()\n--\n\nclear channel"},
+     "clear()\n--\n\nClear channel"},
     {"close", (PyCFunction)Channel_close, METH_VARARGS | METH_KEYWORDS,
-     "close()\n--\n\nclose channle."},
+     "close()\n--\n\nclose channel."},
     {"safe_consume", (PyCFunction)Channel_safe_consume, METH_O,
      "safe_consume(callback)\n--\n\nsafe consume with callback"},
     {"sendable", (PyCFunction)Channel_sendable, METH_NOARGS,
-     "sendable()\n--\n\nchannel is sendable?"},
+     "sendable()\n--\n\nchannel is available to send?"},
     {"recvable", (PyCFunction)Channel_recvable, METH_NOARGS,
-     "recvable()\n--\n\nchannel is recvable"},
+     "recvable()\n--\n\nchannel is available to receive?"},
     {"size", (PyCFunction)Channel_size, METH_NOARGS,
-     "size()\n--\n\ncurrent items length in channel."},
+     "size()\n--\n\nreturn how many items in channel."},
     {NULL, NULL, 0, NULL} /* Sentinel */
 };
 
-PyDoc_STRVAR(Channel_Doc, "A channel support send and safe resume.\n\n");
+PyDoc_STRVAR(Channel_Doc, "Channel(size=None, /)\n\n"
+                          "A channel support send and safe resume.\n"
+                          "Default size is C MAX_INT32\n\n"
+                          "Examples\n"
+                          "--------\n"
+                          ">>> import ctools\n"
+                          ">>> ch = ctools.Channel(1)\n"
+                          ">>> ch.send('foo')\n"
+                          "True\n"
+                          ">>> ch.send('bar')\n"
+                          "False\n"
+                          ">>> ch.recv()\n"
+                          "('foo', True)\n"
+                          ">>> ch.recv()\n"
+                          "(None, False)");
 
 static PyTypeObject Channel_Type = {
     /* clang-format off */
