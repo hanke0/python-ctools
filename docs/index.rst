@@ -6,17 +6,27 @@
 Welcome to ctools's documentation!
 ==================================
 
+
+Install
+-------
+Install and update using `pip`
+
+.. code-block:: shell
+
+    pip install -U ctools
+
+
+Table of contents
+-----------------
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
    api
    changelog
 
 
 Indices and tables
-==================
+------------------
 
 * :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`
