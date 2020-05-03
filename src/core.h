@@ -27,17 +27,17 @@ extern "C" {
 
 #include "Python.h"
 
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #ifdef NDEBUG
 #define DebugPrintf(fmt, ...) ((void)0)
 #define DebugPrint(msg) ((void)0)
 #else
-#define DebugPrintf(fmt, ...)                                                    \
+#define DebugPrintf(fmt, ...)                                                  \
   fprintf(stderr, "%s:%d:%s: " fmt "\n", __FILE__, __LINE__, __func__,         \
           __VA_ARGS__)
-#define DebugPrint(msg)                                                          \
+#define DebugPrint(msg)                                                        \
   fprintf(stderr, "%s:%d:%s: " msg "\n", __FILE__, __LINE__, __func__)
 #endif
 
