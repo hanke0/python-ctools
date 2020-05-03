@@ -162,7 +162,7 @@ static RBTreeNode RBTree_SentinelNode = {
 };
 /* clang-format on */
 
-#define RBTreeNode_SetSentinel(v)                                              \
+#define RBTree_SetSentinel(v)                                                  \
   do {                                                                         \
     Py_INCREF(RBTree_Sentinel);                                                \
     (v) = RBTree_Sentinel;                                                     \
@@ -326,23 +326,10 @@ static int rbtree_node_compare(RBTree *tree, RBTreeNode *a, RBTreeNode *b) {
 
 /* steal the reference of z */
 static int RBTree_PutNode(RBTree *tree, RBTreeNode *z) {
-  RBTreeNode **root = &tree->root;
   RBTreeNode *sentinel = tree->sentinel;
-  RBTreeNode *x = *root;
+  RBTreeNode *x = tree->root;
   RBTreeNode *y = sentinel;
   int flag;
-
-  if (*root == sentinel) {
-    Py_XINCREF(sentinel);
-    Py_XINCREF(sentinel);
-    z->parent = sentinel;
-    z->left = sentinel;
-    z->right = sentinel;
-    RBTreeNode_SetBlack(z);
-    *root = z;
-    tree->length++;
-    return 0;
-  }
 
   while (x != sentinel) {
     y = x;
@@ -354,7 +341,7 @@ static int RBTree_PutNode(RBTree *tree, RBTreeNode *z) {
       x = x->left;
     } else if (flag == RBTree_GT) {
       x = x->right;
-    } else {
+    } else { /* already has key, replace value */
       Py_INCREF(z->value);
       Py_SETREF(x->value, z->value);
       Py_DECREF(z);
@@ -362,21 +349,17 @@ static int RBTree_PutNode(RBTree *tree, RBTreeNode *z) {
     }
   }
   z->parent = y;
-  if (y == sentinel) {
+  if (y == sentinel) { /* tree is empty */
+    RBTreeNode_SetBlack(z);
     tree->root = z;
     goto success;
   }
   flag = rbtree_node_compare(tree, z, y);
   if (flag < 0) {
-    Py_DECREF(y);
     goto fail;
   } else if (flag == RBTree_LT) {
-    Py_INCREF(y);
-    z->parent = y;
     Py_SETREF(y->left, z);
   } else if (flag == RBTree_GT) {
-    Py_INCREF(y);
-    z->parent = y;
     Py_SETREF(y->right, z);
   } else {
     assert(0);
@@ -385,9 +368,10 @@ static int RBTree_PutNode(RBTree *tree, RBTreeNode *z) {
   }
 
 success:
-  RBTreeNode_SetSentinel(z->right);
-  RBTreeNode_SetSentinel(z->left);
+  RBTree_SetSentinel(z->right);
+  RBTree_SetSentinel(z->left);
   RBTreeNode_SetRed(z);
+  tree->length++;
   return rbtree_insert_fix(tree, z);
 fail:
   Py_DECREF(z);
@@ -434,9 +418,10 @@ static RBTree *RBTree_New(PyObject *cmp) {
   tree = PyObject_GC_New(RBTree, &RBTree_Type);
   ReturnIfNULL(tree, NULL);
   Py_XINCREF(cmp);
-  tree->root = RBTree_Sentinel;
-  tree->sentinel = RBTree_Sentinel;
+  RBTree_SetSentinel(tree->root);
+  RBTree_SetSentinel(tree->sentinel);
   tree->cmpfunc = cmp;
+  tree->length = 0;
   PyObject_GC_Track(tree);
   return tree;
 }
@@ -444,9 +429,9 @@ static RBTree *RBTree_New(PyObject *cmp) {
 static PyObject *RBTree_tp_new(PyTypeObject *type, PyObject *args,
                                PyObject *kwds) {
   SUPPRESS_UNUSED(type);
+  SUPPRESS_UNUSED(kwds);
   PyObject *cmp = NULL;
-  static char *kwlist[] = {"cmp", NULL};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &cmp)) {
+  if (!PyArg_ParseTuple(args, "|O", &cmp)) {
     return NULL;
   }
   return PyObjectCast(RBTree_New(cmp));
@@ -454,7 +439,7 @@ static PyObject *RBTree_tp_new(PyTypeObject *type, PyObject *args,
 
 static int RBTree_tp_traverse(RBTree *self, visitproc visit, void *arg) {
   Py_VISIT(self->root);
-  /* No need to visit sentinel  */
+  Py_VISIT(self->sentinel);
   return 0;
 }
 
@@ -486,16 +471,13 @@ static PyObject *RBTree_mp_subscript(RBTree *tree, PyObject *key) {
 }
 
 /* __setitem__, __delitem__ */
-static PyObject *RBTree_mp_ass_sub(RBTree *tree, PyObject *key,
-                                   PyObject *value) {
+static int RBTree_mp_ass_sub(RBTree *tree, PyObject *key, PyObject *value) {
   if (!value) {
     /* TODO */
-    Py_RETURN_NOTIMPLEMENTED;
+    PyErr_SetString(PyExc_NotImplementedError, "");
+    return -1;
   }
-  if (RBTree_Put(tree, key, value)) {
-    return NULL;
-  }
-  Py_RETURN_NONE;
+  return RBTree_Put(tree, key, value);
 }
 
 static PyMappingMethods RBTree_as_mapping = {
