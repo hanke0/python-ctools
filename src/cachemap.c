@@ -682,6 +682,20 @@ static PyObject *CacheMap_tp_iter(CtsCacheMap *self) {
   return it;
 }
 
+static PyObject *CacheMap_tp_richcompare(PyObject *self, PyObject *other,
+                                         int opid) {
+  switch (opid) {
+  case Py_EQ:
+    if (self == other) {
+      Py_RETURN_TRUE;
+    } else {
+      Py_RETURN_FALSE;
+    }
+  default:
+    Py_RETURN_FALSE;
+  }
+}
+
 PyDoc_STRVAR(CacheMap__doc__, "CacheMap(maxsize=None, /)\n\n"
                               "A fast CacheMap behaving much like dict.\n\n"
                               "Default max size is C INT32_MAX.\n\n"
@@ -722,7 +736,7 @@ static PyTypeObject CacheMap_Type = {
     CacheMap__doc__,                         /* tp_doc */
     (traverseproc)CacheMap_tp_traverse,      /* tp_traverse */
     (inquiry)CacheMap_tp_clear,              /* tp_clear */
-    0,                                       /* tp_richcompare */
+    (richcmpfunc)CacheMap_tp_richcompare,    /* tp_richcompare */
     0,                                       /* tp_weaklistoffset */
     (getiterfunc)CacheMap_tp_iter,           /* tp_iter */
     0,                                       /* tp_iternext */
