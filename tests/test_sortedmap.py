@@ -42,6 +42,7 @@ class TestSortedMap(unittest.TestCase):
 
     def _test_setgetitem_list(self, seq):
         keys1, keys2, sorted_map, mapping = self._build_v(seq)
+
         for i in range(len(seq)):
             key1 = keys1[i]
             key2 = keys2[i]
@@ -51,6 +52,12 @@ class TestSortedMap(unittest.TestCase):
             key1 = keys1[i]
             key2 = keys2[i]
             self.assertEqual(mapping[key2], sorted_map[key1])
+            self.assert_ref(key1, key2, msg=seq)
+
+        del sorted_map, mapping
+        for i in range(len(seq)):
+            key1 = keys1[i]
+            key2 = keys2[i]
             self.assert_ref(key1, key2, msg=seq)
 
     def test_setgetitem(self):
