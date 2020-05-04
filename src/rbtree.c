@@ -739,6 +739,19 @@ static PyObject *RBTree_update(CtsRBTree *tree, PyObject *args,
   Py_RETURN_NONE;
 }
 
+static PyObject *RBTree_clear(CtsRBTree *tree, PyObject *Py_UNUSED(ignore)) {
+  CtsRBTreeNode *root;
+  if (tree->length == 0) {
+    Py_RETURN_NONE;
+  }
+  root = tree->root;
+  Py_INCREF(tree->sentinel);
+  tree->root = tree->sentinel;
+  Py_DECREF(root);
+  tree->length = 0;
+  Py_RETURN_NONE;
+}
+
 PyMethodDef RBTree_methods[] = {
     {"keys", (PyCFunction)RBTree_keys, METH_NOARGS, "keys()\n--\n\nIter keys"},
     {"values", (PyCFunction)RBTree_values, METH_NOARGS,
@@ -771,6 +784,12 @@ PyMethodDef RBTree_methods[] = {
         (PyCFunction)RBTree_update,
         METH_VARARGS | METH_KEYWORDS,
         "update(mp, **kwargs)\n--\n\nLiking dict.update, but only accept dict.",
+    },
+    {
+        "clear",
+        (PyCFunction)RBTree_clear,
+        METH_NOARGS,
+        "clear()\n--\n\nclear mapping.",
     },
     {NULL, NULL, 0, NULL},
 };

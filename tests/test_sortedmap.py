@@ -270,6 +270,27 @@ class TestSortedMap(unittest.TestCase):
             k2 = s2[i]
             self.assert_ref(k2, k1)
 
+    def test_clear(self):
+        seq = list(range(1024))
+        random.shuffle(seq)
+        keys1, keys2, sorted_map, mapping = self._build_v(seq)
+
+        sorted_map.clear()
+        mapping.clear()
+        self.assertEqual(len(mapping), len(sorted_map))
+
+        for i in range(len(seq)):
+            k1 = keys1[i]
+            k2 = keys2[i]
+            self.assert_ref(k2, k1)
+            self.assertNotIn(k1, sorted_map)
+
+        del sorted_map, mapping
+        for i in range(len(keys1)):
+            k1 = keys1[i]
+            k2 = keys2[i]
+            self.assert_ref(k2, k1)
+
 
 if __name__ == "__main__":
     unittest.main()
