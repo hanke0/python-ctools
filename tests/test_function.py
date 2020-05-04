@@ -4,6 +4,7 @@ import string
 from datetime import datetime, timedelta
 
 import ctools
+from ctools import _ctools
 
 
 class TestFunction(unittest.TestCase):

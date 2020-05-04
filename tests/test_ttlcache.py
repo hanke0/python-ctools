@@ -5,6 +5,7 @@ from contextlib import contextmanager
 from time import sleep
 
 import ctools
+from ctools import _ctools
 
 
 class DefaultEntry:
@@ -28,7 +29,7 @@ class TestTTLCacheEntry(unittest.TestCase):
         self.assertEqual(sys.getrefcount(a), sys.getrefcount(b), msg=msg)
 
     def create_entry(self):
-        return ctools.TTLCacheEntry(uuid.uuid1(), 1024)
+        return _ctools.TTLCacheEntry(uuid.uuid1(), 1024)
 
     def test_normal_ref(self):
         entry = self.create_entry()

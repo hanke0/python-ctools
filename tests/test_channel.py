@@ -3,6 +3,7 @@ import uuid
 import sys
 
 import ctools
+from ctools import _ctools
 
 
 class TestChannel(unittest.TestCase):

@@ -16,4 +16,16 @@ limitations under the License.
 
 __version__ = "0.1.0"
 
-from ctools._ctools import *
+from ctools import _ctools
+
+build_with_debug = _ctools.build_with_debug
+strhash = _ctools.strhash
+int8_to_datetime = _ctools.int8_to_datetime
+jump_consistent_hash = _ctools.jump_consistent_hash
+
+CacheMap = _ctools.CacheMap
+TTLCache = _ctools.TTLCache
+Channel = _ctools.Channel
+SortedMap = _ctools.SortedMap
+
+del _ctools

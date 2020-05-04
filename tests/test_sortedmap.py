@@ -1,7 +1,9 @@
 import unittest
 import sys
 import random
+
 import ctools
+from ctools import _ctools
 
 
 class A:
