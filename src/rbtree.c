@@ -627,12 +627,121 @@ static PyObject *RBTree_items(CtsRBTree *tree, PyObject *Py_UNUSED(ignore)) {
   return RBtree_iter(tree, RBTreeItems);
 }
 
+static PyObject *RBTree_get(CtsRBTree *tree, PyObject *args, PyObject *kwds) {
+  PyObject *key = NULL;
+  PyObject *_default = NULL;
+  PyObject *value = NULL;
+  int find;
+
+  static char *kwlist[] = {"key", "default", NULL};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O", kwlist, &key,
+                                   &_default)) {
+    return NULL;
+  }
+  find = RBTree_Get(tree, key, &value);
+  if (find < 0) {
+    return NULL;
+  }
+  if (!find) {
+    if (!_default) {
+      Py_RETURN_NONE;
+    }
+    Py_INCREF(_default);
+    return _default;
+  }
+  return value;
+}
+
+static PyObject *RBTree_setdefault(CtsRBTree *tree, PyObject *args,
+                                   PyObject *kwds) {
+  PyObject *key = NULL;
+  PyObject *_default = NULL;
+  PyObject *value = NULL;
+  int find;
+
+  static char *kwlist[] = {"key", "default", NULL};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O", kwlist, &key,
+                                   &_default)) {
+    return NULL;
+  }
+  find = RBTree_Get(tree, key, &value);
+  if (find < 0) {
+    return NULL;
+  }
+  if (!find) {
+    if (!_default) {
+      _default = Py_None;
+    }
+    Py_INCREF(_default);
+    if (RBTree_Put(tree, key, _default)) {
+      Py_DECREF(_default);
+      return NULL;
+    }
+    value = _default;
+  }
+  return value;
+}
+
+static PyObject *RBTree_setnx(CtsRBTree *tree, PyObject *args, PyObject *kwds) {
+  PyObject *key = NULL;
+  PyObject *_default = NULL;
+  PyObject *value = NULL;
+  int find;
+
+  static char *kwlist[] = {"key", "fn", NULL};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O", kwlist, &key,
+                                   &_default)) {
+    return NULL;
+  }
+  find = RBTree_Get(tree, key, &value);
+  if (find < 0) {
+    return NULL;
+  }
+  if (!find) {
+    if (!_default) {
+      _default = Py_None;
+    } else {
+      _default = PyObject_CallFunctionObjArgs(_default, key, NULL);
+      ReturnIfNULL(_default, NULL);
+    }
+
+    Py_INCREF(_default);
+    if (RBTree_Put(tree, key, _default)) {
+      Py_DECREF(_default);
+      return NULL;
+    }
+    value = _default;
+  }
+  return value;
+}
+
 PyMethodDef RBTree_methods[] = {
     {"keys", (PyCFunction)RBTree_keys, METH_NOARGS, "keys()\n--\n\nIter keys"},
     {"values", (PyCFunction)RBTree_values, METH_NOARGS,
      "values()\n--\n\nIter values"},
     {"items", (PyCFunction)RBTree_items, METH_NOARGS,
      "items()\n--\n\nIter items"},
+    {
+        "get",
+        (PyCFunction)RBTree_get,
+        METH_VARARGS | METH_KEYWORDS,
+        "get(key, default=None)\n--\n\nReturn value if find else default",
+    },
+    {
+        "setdefault",
+        (PyCFunction)RBTree_setdefault,
+        METH_VARARGS | METH_KEYWORDS,
+        "setdefault(key, default=None)\n--\n\nReturn value if find else "
+        "default and put default to mapping",
+    },
+    {
+        "setnx",
+        (PyCFunction)RBTree_setnx,
+        METH_VARARGS | METH_KEYWORDS,
+        "setnx(key, fn=None)\n--\n\nMuch like setdefault. Except if not find, "
+        "call fn.\n"
+        "fn is a callable that accept key as only one argument.",
+    },
     {NULL, NULL, 0, NULL},
 };
 

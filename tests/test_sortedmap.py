@@ -9,10 +9,14 @@ class A:
         self.a = a
 
     def __lt__(self, other):
-        return self.a < other.a
+        if isinstance(other, A):
+            return self.a < other.a
+        return self.a < other
 
     def __eq__(self, other):
-        return self.a == other.a
+        if isinstance(other, A):
+            return self.a == other.a
+        return self.a == other
 
     def __hash__(self):
         return id(self)
@@ -122,6 +126,60 @@ class TestSortedMap(unittest.TestCase):
 
     def test_items(self):
         self._test_iter("items")
+
+    def test_get(self):
+        seq = list(range(1024))
+        random.shuffle(seq)
+        keys1, keys2, sorted_map, mapping = self._build_v(seq)
+        for i in range(2096):
+            if i < len(keys1):
+                k1 = keys1[i]
+                k2 = keys2[i]
+            else:
+                k1 = A(i)
+                k2 = A(i)
+
+            v1 = sorted_map.get(k1, k1)
+            v2 = mapping.get(k2, k2)
+            self.assertEqual(v2, v1)
+
+    def test_setdefault(self):
+        seq = list(range(1024))
+        random.shuffle(seq)
+        keys1, keys2, sorted_map, mapping = self._build_v(seq)
+        for i in range(2096):
+            if i < len(keys1):
+                k1 = keys1[i]
+                k2 = keys2[i]
+            else:
+                k1 = A(i)
+                k2 = A(i)
+
+            v1 = sorted_map.setdefault(k1, k1)
+            v2 = mapping.setdefault(k2, k2)
+            self.assertEqual(v2, v1)
+
+        for k in mapping.keys():
+            self.assertTrue(k in sorted_map, msg=k)
+
+    def test_setnx(self):
+        seq = list(range(1024))
+        random.shuffle(seq)
+        keys1, keys2, sorted_map, mapping = self._build_v(seq)
+        for i in range(2096):
+            if i < len(keys1):
+                k1 = keys1[i]
+                k2 = keys2[i]
+            else:
+                k1 = A(i)
+                k2 = A(i)
+
+            v1 = sorted_map.setnx(k1, lambda x: k1)
+            v2 = mapping.setdefault(k2, k2)
+            self.assertEqual(v2, v1)
+
+        for k in mapping.keys():
+            self.assertTrue(k in sorted_map, msg=k)
 
 
 if __name__ == "__main__":
