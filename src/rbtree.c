@@ -376,6 +376,7 @@ fail:
   return -1;
 }
 
+/* Don't steal references of key and value */
 static int RBTree_Put(CtsRBTree *tree, PyObject *key, PyObject *value) {
   CtsRBTreeNode *node;
   node = RBTreeNode_New(key, value);
@@ -383,6 +384,7 @@ static int RBTree_Put(CtsRBTree *tree, PyObject *key, PyObject *value) {
   return RBTree_PutNode(tree, node);
 }
 
+/* Return new reference */
 static int RBTree_Get(CtsRBTree *tree, PyObject *key, PyObject **value) {
   CtsRBTreeNode *x = tree->root;
   CtsRBTreeNode *sentinel = tree->sentinel;
