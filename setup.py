@@ -29,6 +29,9 @@ DEBUG = os.getenv("CTOOLS_DEBUG", "").upper() == "TRUE"
 
 if DEBUG:
     extra_extension_args = dict(undef_macros=["NDEBUG"])
+    print("-" * 80)
+    print("Ctools enable DEBUG")
+    print("-" * 80)
 else:
     extra_extension_args = dict(define_macros=[("NDEBUG", "1")])
 
