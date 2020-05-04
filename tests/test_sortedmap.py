@@ -82,6 +82,11 @@ class TestSortedMap(unittest.TestCase):
             self.assertTrue(key2 in mapping)
             self.assert_ref(key2, key1)
 
+    def test_len(self):
+        seq = list(range(1024))
+        keys1, keys2, sorted_map, mapping = self._build_v(seq)
+        self.assertEqual(len(keys1), len(sorted_map))
+
 
 if __name__ == "__main__":
     unittest.main()
