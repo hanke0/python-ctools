@@ -796,6 +796,31 @@ PyMethodDef RBTree_methods[] = {
     {NULL, NULL, 0, NULL},
 };
 
+static PyObject *RBTree_tp_richcompare(PyObject *self, PyObject *other,
+                                       int opid) {
+  switch (opid) {
+  case Py_EQ:
+    if (self == other) {
+      Py_RETURN_TRUE;
+    } else {
+      Py_RETURN_FALSE;
+    }
+  default:
+    Py_RETURN_FALSE;
+  }
+}
+
+static PyObject *RBTree_tp_iter(CtsRBTree *tree) {
+  PyObject *list;
+  PyObject *it;
+
+  list = RBTree_keys(tree, NULL);
+  ReturnIfNULL(list, NULL);
+  it = PySeqIter_New(list);
+  Py_DECREF(list);
+  return it;
+}
+
 static PyTypeObject RBTree_Type = {
     /* clang-format off */
     PyVarObject_HEAD_INIT(NULL, 0)
@@ -810,6 +835,8 @@ static PyTypeObject RBTree_Type = {
     .tp_as_mapping = &RBTree_as_mapping,
     .tp_as_sequence = &RBTree_as_sequence,
     .tp_methods = RBTree_methods,
+    .tp_richcompare = (richcmpfunc)RBTree_tp_richcompare,
+    .tp_iter = (getiterfunc)RBTree_tp_iter,
 };
 
 EXTERN_C_START
