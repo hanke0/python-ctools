@@ -561,14 +561,22 @@ static PyObject *TTLCache_tp_iter(CtsTTLCache *self) {
   keys = TTLCache_keys(self);
   ReturnIfNULL(keys, NULL);
   it = PySeqIter_New(keys);
-  if (it == NULL) {
-    Py_DECREF(keys);
-    return NULL;
-  }
-
-  assert(keys);
   Py_DECREF(keys);
   return it;
+}
+
+static PyObject *TTLCache_tp_richcompare(PyObject *self, PyObject *other,
+                                         int opid) {
+  switch (opid) {
+  case Py_EQ:
+    if (self == other) {
+      Py_RETURN_TRUE;
+    } else {
+      Py_RETURN_FALSE;
+    }
+  default:
+    Py_RETURN_FALSE;
+  }
 }
 
 PyDoc_STRVAR(TTLCache__doc__, "TTLCache(ttl=None)\n\n"
@@ -612,7 +620,7 @@ static PyTypeObject TTLCache_Type = {
     TTLCache__doc__,                         /* tp_doc */
     (traverseproc)TTLCache_tp_traverse,      /* tp_traverse */
     (inquiry)TTLCache_tp_clear,              /* tp_clear */
-    0,                                       /* tp_richcompare */
+    (richcmpfunc)TTLCache_tp_richcompare,    /* tp_richcompare */
     0,                                       /* tp_weaklistoffset */
     (getiterfunc)TTLCache_tp_iter,           /* tp_iter */
     0,                                       /* tp_iternext */
