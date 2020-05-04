@@ -158,10 +158,10 @@ static CtsRBTreeNode RBTree_SentinelNode = {
 };
 /* clang-format on */
 
-#define RBTree_SetSentinel(v)                                                  \
+#define RBTree_SetSentinel(tree, node)                                         \
   do {                                                                         \
-    Py_INCREF(RBTree_Sentinel);                                                \
-    (v) = RBTree_Sentinel;                                                     \
+    Py_INCREF(((CtsRBTree *)(tree))->sentinel);                                \
+    (node) = ((CtsRBTree *)(tree))->sentinel;                                  \
   } while (0)
 
 #define RBTree_EQ 0
@@ -366,8 +366,8 @@ static int RBTree_PutNode(CtsRBTree *tree, CtsRBTreeNode *z) {
     return 0;
   }
 success:
-  RBTree_SetSentinel(z->left);
-  RBTree_SetSentinel(z->right);
+  RBTree_SetSentinel(tree, z->left);
+  RBTree_SetSentinel(tree, z->right);
   RBTreeNode_SetRed(z);
   tree->length++;
   return rbtree_insert_fix(tree, z);
@@ -418,8 +418,10 @@ static CtsRBTree *RBTree_New(PyObject *cmp) {
   tree = PyObject_GC_New(CtsRBTree, &RBTree_Type);
   ReturnIfNULL(tree, NULL);
   Py_XINCREF(cmp);
-  RBTree_SetSentinel(tree->root);
-  RBTree_SetSentinel(tree->sentinel);
+  Py_INCREF(RBTree_Sentinel);
+  tree->sentinel = RBTree_Sentinel;
+  Py_INCREF(tree->sentinel);
+  tree->root = tree->sentinel;
   tree->cmpfunc = cmp;
   tree->length = 0;
   PyObject_GC_Track(tree);
