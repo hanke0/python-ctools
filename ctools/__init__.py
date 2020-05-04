@@ -23,9 +23,21 @@ strhash = _ctools.strhash
 int8_to_datetime = _ctools.int8_to_datetime
 jump_consistent_hash = _ctools.jump_consistent_hash
 
+try:
+    from collections.abc import MutableMapping  # noqa
+except ImportError:
+    from collections import MutableMapping  # noqa
+
 CacheMap = _ctools.CacheMap
 TTLCache = _ctools.TTLCache
 Channel = _ctools.Channel
 SortedMap = _ctools.SortedMap
 
-del _ctools
+try:
+    MutableMapping.register(CacheMap)
+    MutableMapping.register(TTLCache)
+    MutableMapping.register(SortedMap)
+except Exception:  # noqa
+    pass
+
+del _ctools, MutableMapping
