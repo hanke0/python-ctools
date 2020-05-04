@@ -52,9 +52,8 @@ static CtsCacheMapEntry *CacheEntry_New(PyObject *ma_value) {
   return self;
 }
 
-static PyObject *CacheEntry_new(PyTypeObject *type, PyObject *args,
+static PyObject *CacheEntry_new(PyTypeObject *Py_UNUSED(type), PyObject *args,
                                 PyObject *kwds) {
-  SUPPRESS_UNUSED(type);
   PyObject *ma_value;
   static char *kwlist[] = {"obj", NULL};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &ma_value)) {
@@ -69,10 +68,8 @@ static PyObject *CacheEntry_new(PyTypeObject *type, PyObject *args,
     (self)->visits = CacheEntry_DEFAULT_VISITS;                                \
   } while (0)
 
-static int CacheEntry_init(CtsCacheMapEntry *self, PyObject *unused,
-                           PyObject *unused1) {
-  SUPPRESS_UNUSED(unused);
-  SUPPRESS_UNUSED(unused1);
+static int CacheEntry_init(CtsCacheMapEntry *self, PyObject *Py_UNUSED(unused1),
+                           PyObject *Py_UNUSED(unused2)) {
   CacheEntry_Init(self);
   return 0;
 }
@@ -349,19 +346,18 @@ static CtsCacheMap *CacheMap_New(void) {
   PyObject_GC_Track(self);
   self->hits = 0;
   self->misses = 0;
-  self->capacity = INT64_MAX;
+  self->capacity = INT32_MAX;
   return self;
 }
 
-static PyObject *CacheMap_tp_new(PyTypeObject *type, PyObject *args,
-                                 PyObject *kwds) {
-  SUPPRESS_UNUSED(type);
-  SUPPRESS_UNUSED(args);
-  SUPPRESS_UNUSED(kwds);
+static PyObject *CacheMap_tp_new(PyTypeObject *Py_UNUSED(type),
+                                 PyObject *Py_UNUSED(args),
+                                 PyObject *Py_UNUSED(kwds)) {
   return (PyObject *)CacheMap_New();
 }
 
-static int CacheMap_tp_init(CtsCacheMap *self, PyObject *args, PyObject *kwds) {
+static int CacheMap_tp_init(CtsCacheMap *self, PyObject *args,
+                            PyObject *Py_UNUSED(kwds)) {
   Py_ssize_t capacity = 0;
   if (!PyArg_ParseTuple(args, "|n", &capacity)) {
     return -1;
@@ -574,7 +570,7 @@ static PyObject *CacheMap_setnx(CtsCacheMap *self, PyObject *args,
     return CacheEntry_get_ma_value(result);
   }
 
-  _default = PyObject_CallFunction(callback, NULL);
+  _default = PyObject_CallFunctionObjArgs(callback, key, NULL);
   ReturnIfNULL(_default, NULL);
   if (CacheMap_SetItem(self, key, _default) != 0) {
     Py_XDECREF(_default);
@@ -670,7 +666,7 @@ static PyMethodDef CacheMap_methods[] = {
     {"clear", (PyCFunction)CacheMap_clear, METH_NOARGS, "clean cache"},
     {"setnx", (PyCFunction)CacheMap_setnx, METH_VARARGS | METH_KEYWORDS,
      "setnx(key, fn, /)\n--\n\nLike setdefault but accept a callable "
-     "object which takes no args"},
+     "object which takes key as only one argument"},
     {"_storage", (PyCFunction)CacheMap__storage, METH_NOARGS, NULL},
     {NULL, NULL, 0, NULL} /* Sentinel */
 };

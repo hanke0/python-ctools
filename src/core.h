@@ -17,10 +17,6 @@ limitations under the License.
 #ifndef _CTOOLS_CORE_H_
 #define _CTOOLS_CORE_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #ifndef PY_SSIZE_T_CLEAN
 #define PY_SSIZE_T_CLEAN
 #endif
@@ -28,7 +24,6 @@ extern "C" {
 #ifdef CTOOLS_DEBUG
 #define NDEBUG
 #endif
-
 #include "Python.h"
 
 #include <stdint.h>
@@ -46,32 +41,31 @@ extern "C" {
 #endif
 
 #define ReturnIfErrorSet(r)                                                    \
-  if (PyErr_Occurred())                                                        \
-  return r
+  do {                                                                         \
+    if (PyErr_Occurred()) {                                                    \
+      return r;                                                                \
+    }                                                                          \
+  } while (0)
 
 #define ReturnKeyErrorIfErrorNotSet(key, r)                                    \
   do {                                                                         \
     if (!PyErr_Occurred()) {                                                   \
-      if (!PyErr_Format(PyExc_KeyError, "%S", key))                            \
+      if (!PyErr_Format(PyExc_KeyError, "%S", key)) {                          \
         return r;                                                              \
+      }                                                                        \
     }                                                                          \
   } while (0)
 
 #define ReturnIfNULL(o, r)                                                     \
   do {                                                                         \
-    if (o == NULL)                                                             \
+    if (o == NULL) {                                                           \
       return r;                                                                \
+    }                                                                          \
   } while (0)
 
 #define IsPowerOf2(x) ((x) != 0 && (((x) & ((x)-1)) == 0))
 
 #define PyObjectCast(x) ((PyObject *)(x))
-
-#define SUPPRESS_UNUSED(x) ((void)(x))
-
-#ifdef __cplusplus
-}
-#endif
 
 #ifdef __clusplus
 #define EXTERN_C_START extern "C" {

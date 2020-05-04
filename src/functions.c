@@ -34,7 +34,8 @@ PyDoc_STRVAR(jump_consistent_hash__doc__,
              "int\n"
              "  hash number.\n");
 
-static PyObject *Ctools__jump_hash(PyObject *m, PyObject *args) {
+static PyObject *Ctools__jump_hash(PyObject *Py_UNUSED(module),
+                                   PyObject *args) {
   uint64_t key;
   int32_t num_buckets;
 
@@ -71,7 +72,8 @@ PyDoc_STRVAR(int8_to_datetime__doc__,
              ">>> ctools.int8_to_datetime(20010101)\n"
              "datetime.datetime(2001, 1, 1, 0, 0)\n");
 
-static PyObject *Ctools__int8_to_datetime(PyObject *m, PyObject *date_integer) {
+static PyObject *Ctools__int8_to_datetime(PyObject *Py_UNUSED(module),
+                                          PyObject *date_integer) {
   register long date = PyLong_AsLong(date_integer);
   if (date > 99990101 || date < 101) {
     PyErr_SetString(PyExc_ValueError,
@@ -168,7 +170,7 @@ PyDoc_STRVAR(strhash__doc__, "strhash(s, method='fnv1a', /)\n"
                              "int\n"
                              "  hash number");
 
-static PyObject *Ctools__strhash(PyObject *m, PyObject *args) {
+static PyObject *Ctools__strhash(PyObject *Py_UNUSED(module), PyObject *args) {
   const char *s, *method = NULL;
   Py_ssize_t len = 0, m_len = 0;
   if (!PyArg_ParseTuple(args, "s#|s#", &s, &len, &method, &m_len))
@@ -192,7 +194,8 @@ static PyObject *Ctools__strhash(PyObject *m, PyObject *args) {
   }
 }
 
-static PyObject *build_with_debug(PyObject *self, PyObject *unused) {
+static PyObject *build_with_debug(PyObject *Py_UNUSED(self),
+                                  PyObject *Py_UNUSED(u)) {
 #ifndef NDEBUG
   Py_RETURN_TRUE;
 #else

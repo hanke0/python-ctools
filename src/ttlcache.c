@@ -178,9 +178,10 @@ static CtsTTLCacheEntry *TTLCache_GetTTLItemWithError(CtsTTLCache *self,
   if (entry->expire < t) {
     /* key is already in cache, error would not raised */
     i = TTLCache_DelItem(self, key);
-    assert(i != -1);
-    /* ignore unused-but-set-variable here */
-    (void)i;
+    assert(i == 0);
+    if (i != 0) {
+      abort();
+    }
     return NULL;
   }
   return entry;
@@ -233,10 +234,8 @@ static CtsTTLCache *TTLCache_New(int64_t ttl) {
   return self;
 }
 
-static PyObject *TTLCache_tp_new(PyTypeObject *type, PyObject *args,
-                                 PyObject *kwds) {
-  SUPPRESS_UNUSED(type);
-  SUPPRESS_UNUSED(kwds);
+static PyObject *TTLCache_tp_new(PyTypeObject *Py_UNUSED(type), PyObject *args,
+                                 PyObject *Py_UNUSED(kwds)) {
   int64_t ttl = DEFAULT_TTL;
   if (!PyArg_ParseTuple(args, "|L", &ttl))
     return NULL;
@@ -465,7 +464,7 @@ static PyObject *TTLCache_setnx(CtsTTLCache *self, PyObject *args,
     return TTLCacheEntry_get_ma_value(result);
   }
   ReturnIfErrorSet(NULL);
-  _default = PyObject_CallFunction(callback, NULL);
+  _default = PyObject_CallFunctionObjArgs(callback, key, NULL);
   ReturnIfNULL(_default, NULL);
   if (TTLCache_SetItem(self, key, _default)) {
     Py_XDECREF(_default);
@@ -550,7 +549,7 @@ static PyMethodDef TTLCache_methods[] = {
     {"clear", (PyCFunction)TTLCache_clear, METH_NOARGS, "Clear cache"},
     {"setnx", (PyCFunction)TTLCache_setnx, METH_VARARGS | METH_KEYWORDS,
      "setnx(key, fn, /)\n--\n\nlike setdefault but accept a callable "
-     "obejct with no argument."},
+     "object which take key as only one argument."},
     {"_storage", (PyCFunction)TTLCache__storage, METH_NOARGS, NULL},
     {"get_default_ttl", (PyCFunction)TTLCache_get_default_ttl, METH_NOARGS,
      "get_default_ttl()\n--\n\nReturn default ttl"},

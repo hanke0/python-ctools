@@ -97,11 +97,10 @@ static void RBTreeNode_tp_dealloc(CtsRBTreeNode *self) {
   PyObject_GC_Del(self);
 }
 
-static PyObject *RBTreeNode_tp_new(PyTypeObject *type, PyObject *args,
-                                   PyObject *kwds) {
+static PyObject *RBTreeNode_tp_new(PyTypeObject *Py_UNUSED(type),
+                                   PyObject *args, PyObject *kwds) {
   PyObject *key;
   PyObject *value;
-  SUPPRESS_UNUSED(type);
   static char *kwlist[] = {"key", "value", NULL};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO", kwlist, &key, &value)) {
     return NULL;
@@ -122,11 +121,10 @@ static PyTypeObject RBTreeNode_Type = {
     .tp_new = (newfunc)RBTreeNode_tp_new,
 };
 
-static void RBTreeSentinel_dealloc(PyObject *ignore) {
+static void RBTreeSentinel_dealloc(PyObject *Py_UNUSED(ignore)) {
   /* This should never get called, but we also don't want to SEGV if
    * we accidentally decref None out of existence.
    */
-  SUPPRESS_UNUSED(ignore);
   Py_FatalError("dealloc SortedMapSentinel");
 }
 
@@ -134,9 +132,8 @@ static PyObject *RBTreeSentinel_tp_repr(PyObject *self) {
   return PyUnicode_FromFormat("<SortedMapSentinel at %p>", self);
 }
 
-static PyObject *RBTreeSentinel_tp_new(PyObject *ignore, PyObject *unused) {
-  SUPPRESS_UNUSED(ignore);
-  SUPPRESS_UNUSED(unused);
+static PyObject *RBTreeSentinel_tp_new(PyObject *Py_UNUSED(ignore),
+                                       PyObject *Py_UNUSED(unused)) {
   Py_INCREF(RBTree_Sentinel);
   return PyObjectCast(RBTree_Sentinel);
 }
@@ -427,10 +424,8 @@ static CtsRBTree *RBTree_New(PyObject *cmp) {
   return tree;
 }
 
-static PyObject *RBTree_tp_new(PyTypeObject *type, PyObject *args,
-                               PyObject *kwds) {
-  SUPPRESS_UNUSED(type);
-  SUPPRESS_UNUSED(kwds);
+static PyObject *RBTree_tp_new(PyTypeObject *Py_UNUSED(type), PyObject *args,
+                               PyObject *Py_UNUSED(kwds)) {
   PyObject *cmp = NULL;
   if (!PyArg_ParseTuple(args, "|O", &cmp)) {
     return NULL;

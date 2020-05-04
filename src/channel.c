@@ -126,10 +126,8 @@ static int Channel_tp_clear(CtsChannel *op) {
   return 0;
 }
 
-static PyObject *Channel_tp_new(PyTypeObject *type, PyObject *args,
-                                PyObject *kwds) {
-  SUPPRESS_UNUSED(type);
-  SUPPRESS_UNUSED(kwds);
+static PyObject *Channel_tp_new(PyTypeObject *Py_UNUSED(type), PyObject *args,
+                                PyObject *Py_UNUSED(kwds)) {
   int size = INT32_MAX;
   if (!PyArg_ParseTuple(args, "|i", &size)) {
     return NULL;
@@ -141,8 +139,7 @@ static PyObject *Channel_tp_new(PyTypeObject *type, PyObject *args,
   return (PyObject *)Channel_New(size);
 }
 
-static PyObject *Channel_clear(CtsChannel *self, PyObject *unused) {
-  SUPPRESS_UNUSED(unused);
+static PyObject *Channel_clear(CtsChannel *self, PyObject *Py_UNUSED(u)) {
   PyObject **buffer = self->ob_item;
   Py_ssize_t size;
   size = Py_SIZE(self);
@@ -259,8 +256,7 @@ static int Channel_recv_idx(CtsChannel *self) {
   return self->recvx % Py_SIZE(self);
 }
 
-static PyObject *Channel_recv(PyObject *self, PyObject *unused) {
-  SUPPRESS_UNUSED(unused);
+static PyObject *Channel_recv(PyObject *self, PyObject *Py_UNUSED(u)) {
   PyObject *item;
   PyObject *rv;
   int recvx;
@@ -376,8 +372,7 @@ static PyObject *Channel_safe_consume(PyObject *self, PyObject *callback) {
   return callback_rv;
 }
 
-static PyObject *Channel_sendable(PyObject *self, PyObject *unused) {
-  SUPPRESS_UNUSED(unused);
+static PyObject *Channel_sendable(PyObject *self, PyObject *Py_UNUSED(unused)) {
   CtsChannel *ch = (CtsChannel *)self;
   int sendx;
   sendx = Channel_send_idx(ch);
@@ -388,8 +383,7 @@ static PyObject *Channel_sendable(PyObject *self, PyObject *unused) {
   Py_RETURN_TRUE;
 }
 
-static PyObject *Channel_recvable(PyObject *self, PyObject *unused) {
-  SUPPRESS_UNUSED(unused);
+static PyObject *Channel_recvable(PyObject *self, PyObject *Py_UNUSED(unused)) {
   CtsChannel *ch = (CtsChannel *)self;
   int recvx;
   recvx = Channel_recv_idx(ch);
@@ -400,8 +394,7 @@ static PyObject *Channel_recvable(PyObject *self, PyObject *unused) {
   Py_RETURN_TRUE;
 }
 
-static PyObject *Channel_size(PyObject *self, PyObject *unused) {
-  SUPPRESS_UNUSED(unused);
+static PyObject *Channel_size(PyObject *self, PyObject *Py_UNUSED(unused)) {
   return PyLong_FromLong(Py_SIZE(self));
 }
 

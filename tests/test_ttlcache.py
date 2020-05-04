@@ -54,7 +54,7 @@ def map_set_random(mp):
 class DefaultMap(dict):
     def setnx(self, k, ca):
         if k not in self:
-            v = ca()
+            v = ca(k)
             self[k] = v
             return v
         return self[k]
@@ -314,14 +314,14 @@ class TestTTLCache(unittest.TestCase):
         self.assertRefEqual(cnkey, dnkey)
 
     def test_normal_setnx(self):
-        c = lambda: str(uuid.uuid1())
+        fn = lambda k: str(uuid.uuid1()) + str(k)
         cache = self.create_map()
         mp = DefaultMap()
 
         ckey, cval = map_set_random(cache)
         dkey, dval = map_set_random(mp)
-        cnval = cache.setnx(ckey, c)
-        dnval = mp.setnx(dkey, c)
+        cnval = cache.setnx(ckey, fn)
+        dnval = mp.setnx(dkey, fn)
         self.assertEqual(cval, cnval)
         self.assertRefEqual(ckey, dkey)
         self.assertRefEqual(cval, dval)
@@ -329,8 +329,8 @@ class TestTTLCache(unittest.TestCase):
 
         dnkey = str(uuid.uuid1())
         cnkey = str(uuid.uuid1())
-        cnval = cache.setnx(cnkey, c)
-        dnval = mp.setnx(dnkey, c)
+        cnval = cache.setnx(cnkey, fn)
+        dnval = mp.setnx(dnkey, fn)
         self.assertEqual(cnval, cache[cnkey])
         self.assertRefEqual(cnkey, dnkey)
         self.assertRefEqual(cnval, dnval)
