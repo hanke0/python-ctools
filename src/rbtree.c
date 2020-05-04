@@ -511,6 +511,131 @@ static PySequenceMethods RBTree_as_sequence = {
     0,                           /* sq_inplace_repeat */
 };
 
+static CtsRBTreeNode *RBTree_min(CtsRBTreeNode *node, CtsRBTreeNode *sentinel) {
+  while (node->left != sentinel) {
+    node = node->left;
+  }
+  return node;
+}
+
+static CtsRBTreeNode *RBTree_next(CtsRBTree *tree, CtsRBTreeNode *node) {
+  CtsRBTreeNode *root, *sentinel, *parent;
+
+  sentinel = tree->sentinel;
+  if (node->right != sentinel) {
+    return RBTree_min(node->right, sentinel);
+  }
+
+  root = tree->root;
+
+  for (;;) {
+    parent = node->parent;
+
+    if (node == root) {
+      return NULL;
+    }
+
+    if (node == parent->left) {
+      return parent;
+    }
+
+    node = parent;
+  }
+}
+#define RBTreeKeys 1
+#define RBTreeValues 2
+#define RBTreeItems 3
+
+static PyObject *RBtree_iter(CtsRBTree *tree, int type) {
+  PyObject *list;
+  PyObject *tuple;
+  CtsRBTreeNode *node;
+  CtsRBTreeNode *sentinel;
+  CtsRBTreeNode *root;
+  Py_ssize_t top;
+
+  list = PyList_New(tree->length);
+  ReturnIfNULL(list, NULL);
+  if (tree->length == 0) {
+    return list;
+  }
+
+  root = tree->root;
+  sentinel = tree->sentinel;
+  top = -1;
+  node = RBTree_min(root, sentinel);
+  for (; node; node = RBTree_next(tree, node)) {
+    switch (type) {
+    case RBTreeKeys:
+      Py_INCREF(node->key);
+      if (PyList_SetItem(list, ++top, node->key)) {
+        Py_DECREF(node->key);
+        Py_DECREF(list);
+        return NULL;
+      }
+      break;
+    case RBTreeValues:
+      Py_INCREF(node->value);
+      if (PyList_SetItem(list, ++top, node->value)) {
+        Py_DECREF(node->value);
+        Py_DECREF(list);
+        return NULL;
+      }
+      break;
+    case RBTreeItems:
+      tuple = PyTuple_New(2);
+      if (!tuple) {
+        Py_DECREF(list);
+        return NULL;
+      }
+      Py_INCREF(node->key);
+      if (PyTuple_SetItem(tuple, 0, node->key)) {
+        Py_DECREF(node->key);
+        Py_DECREF(list);
+        Py_DECREF(tuple);
+        return NULL;
+      }
+      Py_INCREF(node->value);
+      if (PyTuple_SetItem(tuple, 1, node->value)) {
+        Py_DECREF(node->value);
+        Py_DECREF(list);
+        Py_DECREF(tuple);
+        return NULL;
+      }
+      if (PyList_SetItem(list, ++top, tuple)) {
+        Py_DECREF(list);
+        Py_DECREF(tuple);
+        return NULL;
+      }
+      break;
+    default:
+      abort();
+    }
+  }
+  return list;
+}
+
+static PyObject *RBTree_keys(CtsRBTree *tree, PyObject *Py_UNUSED(ignore)) {
+  return RBtree_iter(tree, RBTreeKeys);
+}
+
+static PyObject *RBTree_values(CtsRBTree *tree, PyObject *Py_UNUSED(ignore)) {
+  return RBtree_iter(tree, RBTreeValues);
+}
+
+static PyObject *RBTree_items(CtsRBTree *tree, PyObject *Py_UNUSED(ignore)) {
+  return RBtree_iter(tree, RBTreeItems);
+}
+
+PyMethodDef RBTree_methods[] = {
+    {"keys", (PyCFunction)RBTree_keys, METH_NOARGS, "keys()\n--\n\nIter keys"},
+    {"values", (PyCFunction)RBTree_values, METH_NOARGS,
+     "values()\n--\n\nIter values"},
+    {"items", (PyCFunction)RBTree_items, METH_NOARGS,
+     "items()\n--\n\nIter items"},
+    {NULL, NULL, 0, NULL},
+};
+
 static PyTypeObject RBTree_Type = {
     /* clang-format off */
     PyVarObject_HEAD_INIT(NULL, 0)
@@ -524,6 +649,7 @@ static PyTypeObject RBTree_Type = {
     .tp_new = (newfunc)RBTree_tp_new,
     .tp_as_mapping = &RBTree_as_mapping,
     .tp_as_sequence = &RBTree_as_sequence,
+    .tp_methods = RBTree_methods,
 };
 
 EXTERN_C_START

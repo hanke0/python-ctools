@@ -87,6 +87,35 @@ class TestSortedMap(unittest.TestCase):
         keys1, keys2, sorted_map, mapping = self._build_v(seq)
         self.assertEqual(len(keys1), len(sorted_map))
 
+    def _test_iter(self, name):
+        seq = list(range(1024))
+        random.shuffle(seq)
+        keys1, keys2, sorted_map, mapping = self._build_v(seq)
+        it1 = list(getattr(sorted_map, name)())
+        it2 = list(getattr(mapping, name)())
+        s1 = sorted(it1)
+        s2 = sorted(it2)
+
+        self.assertEqual(len(keys1), len(it1))
+        for i in range(len(it1)):
+            self.assertEqual(s1[i], it1[i], msg=name)
+
+        for i in range(len(keys1)):
+            self.assert_ref(s2[i], s1[i], msg=name)
+
+        del it1, it2, s1, s2
+        for i in range(len(keys1)):
+            self.assert_ref(keys2[i], keys1[i], msg=name)
+
+    def test_keys(self):
+        self._test_iter("keys")
+
+    def test_values(self):
+        self._test_iter("values")
+
+    def test_items(self):
+        self._test_iter("items")
+
 
 if __name__ == "__main__":
     unittest.main()
