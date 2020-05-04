@@ -20,46 +20,45 @@ limitations under the License.
 
 #define RBTree_RED 1
 #define RBTree_BLACK 0
-
-#define RBTreeNode_CAST(x) ((RBTreeNode *)(x))
+#define RBTreeNode_CAST(node) ((CtsRBTreeNode *)(node))
 #define RBTreeNode_Color(node) (RBTreeNode_CAST(node)->color)
 #define RBTreeNode_SetRed(node) (RBTreeNode_Color(node) = RBTree_RED)
 #define RBTreeNode_SetBlack(node) (RBTreeNode_Color(node) = RBTree_BLACK)
 #define RBTreeNode_IsRed(node) (RBTreeNode_Color(node) == RBTree_RED)
-#define RBTreeNode_IsBlack(node) (RBTreeNode_Color(node) != RBTree_RED)
+#define RBTreeNode_IsBlack(node) (!RBTreeNode_IsRed(node))
 
-struct rbtree_node {
-  /* clang-format off */
+/* clang-format off */
+struct cts_rbtree_node {
   PyObject_HEAD
   PyObject *key;
-  /* clang-format on */
   PyObject *value;
-  struct rbtree_node *left;
-  struct rbtree_node *right;
-  struct rbtree_node *parent;
+  struct cts_rbtree_node *left;
+  struct cts_rbtree_node *right;
+  struct cts_rbtree_node *parent;
   char color;
 };
+/* clang-format on */
 
-typedef struct rbtree_node RBTreeNode;
+typedef struct cts_rbtree_node CtsRBTreeNode;
 
+/* clang-format off */
 typedef struct {
-  /* clang-format off */
   PyObject_HEAD
-  RBTreeNode *root;
-  RBTreeNode *sentinel;
+  CtsRBTreeNode *root;
+  CtsRBTreeNode *sentinel;
   PyObject *cmpfunc;
   Py_ssize_t length;
-  /* clang-format on */
-} RBTree;
+} CtsRBTree;
+/* clang-format on */
 
 static PyTypeObject RBTreeNode_Type;
 static PyTypeObject RBTree_Type;
-static RBTreeNode RBTree_SentinelNode;
+static CtsRBTreeNode RBTree_SentinelNode;
 #define RBTree_Sentinel (&RBTree_SentinelNode)
 
-static RBTreeNode *RBTreeNode_New(PyObject *key, PyObject *value) {
-  RBTreeNode *node;
-  node = PyObject_GC_New(RBTreeNode, &RBTreeNode_Type);
+static CtsRBTreeNode *RBTreeNode_New(PyObject *key, PyObject *value) {
+  CtsRBTreeNode *node;
+  node = PyObject_GC_New(CtsRBTreeNode, &RBTreeNode_Type);
   ReturnIfNULL(node, NULL);
   Py_XINCREF(key);
   Py_XINCREF(value);
@@ -73,7 +72,7 @@ static RBTreeNode *RBTreeNode_New(PyObject *key, PyObject *value) {
   return node;
 }
 
-static int RBTreeNode_tp_traverse(RBTreeNode *self, visitproc visit,
+static int RBTreeNode_tp_traverse(CtsRBTreeNode *self, visitproc visit,
                                   void *arg) {
   Py_VISIT(self->key);
   Py_VISIT(self->value);
@@ -83,7 +82,7 @@ static int RBTreeNode_tp_traverse(RBTreeNode *self, visitproc visit,
   return 0;
 }
 
-static int RBTreeNode_tp_clear(RBTreeNode *self) {
+static int RBTreeNode_tp_clear(CtsRBTreeNode *self) {
   Py_CLEAR(self->key);
   Py_CLEAR(self->value);
   Py_CLEAR(self->left);
@@ -92,7 +91,7 @@ static int RBTreeNode_tp_clear(RBTreeNode *self) {
   return 0;
 }
 
-static void RBTreeNode_tp_dealloc(RBTreeNode *self) {
+static void RBTreeNode_tp_dealloc(CtsRBTreeNode *self) {
   PyObject_GC_UnTrack(self);
   RBTreeNode_tp_clear(self);
   PyObject_GC_Del(self);
@@ -115,7 +114,7 @@ static PyTypeObject RBTreeNode_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "ctools.SortedMapNode",
     /* clang-format on */
-    .tp_basicsize = sizeof(RBTreeNode),
+    .tp_basicsize = sizeof(CtsRBTreeNode),
     .tp_dealloc = (destructor)RBTreeNode_tp_dealloc,
     .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,
     .tp_traverse = (traverseproc)RBTreeNode_tp_traverse,
@@ -147,7 +146,7 @@ static PyTypeObject RBTreeSentinel_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "ctools.SortedMapSentinel",
     /* clang-format on */
-    .tp_basicsize = sizeof(RBTreeNode),
+    .tp_basicsize = sizeof(CtsRBTreeNode),
     .tp_dealloc = (destructor)RBTreeSentinel_dealloc,
     .tp_repr = (reprfunc)RBTreeSentinel_tp_repr,
     .tp_str = (reprfunc)RBTreeSentinel_tp_repr,
@@ -156,7 +155,7 @@ static PyTypeObject RBTreeSentinel_Type = {
 };
 
 /* clang-format off */
-static RBTreeNode RBTree_SentinelNode = {
+static CtsRBTreeNode RBTree_SentinelNode = {
     PyObject_HEAD_INIT(&RBTreeSentinel_Type)
     .color = RBTree_BLACK, /* Sentinel should alway be black */
 };
@@ -168,107 +167,11 @@ static RBTreeNode RBTree_SentinelNode = {
     (v) = RBTree_Sentinel;                                                     \
   } while (0)
 
-/*
- *          root          root           root              root
- *          / \           /  \         /  /  \             / \
- *       node  d    ->  node  d  ->  node tmp d   ->     tmp  d
- *        / \           / \ \         /\   \            /  \
- *       a  tmp        a  b tmp      a  b   c         node  c
- *          /\               \                         /\
- *         b  c               c                       a b
- *
- *  Note: [a, b, c d] means any sub tree.
- */
-static void left_rotate(RBTree *tree, RBTreeNode *x) {
-  RBTreeNode *y = x->right;
-  RBTreeNode *sentinel = tree->sentinel;
-  /* First step */
-  x->right = y->left;
-  if (y->left != sentinel) {
-    y->left->parent = x;
-  }
-
-  /* Second step */
-  y->parent = x->parent;
-  if (x->parent == sentinel) {
-    tree->root = y;
-  } else if (x == x->parent->left) {
-    x->parent->left = y;
-  } else {
-    x->parent->right = y;
-  }
-  /* Third step */
-  y->left = x;
-  x->parent = y;
-}
-
-static void right_rotate(RBTree *tree, RBTreeNode *y) {
-  RBTreeNode *tmp = y->left;
-  RBTreeNode *sentinel = tree->sentinel;
-
-  y->left = tmp->right;
-  if (tmp->right != sentinel) {
-    tmp->right->parent = y;
-  }
-
-  tmp->parent = y->parent;
-  if (tmp->right == sentinel) {
-    tree->root = tmp;
-  } else if (y == y->parent->left) {
-    y->parent->left = tmp;
-  } else {
-    y->parent->right = tmp;
-  }
-  tmp->right = y;
-  y->parent = tmp;
-}
-
-static int rbtree_insert_fix(RBTree *tree, RBTreeNode *z) {
-  RBTreeNode *y;
-
-  /* sentinel is always black */
-  while (RBTreeNode_IsRed(z->parent)) {
-    if (z->parent == z->parent->parent->left) {
-      y = z->parent->parent->right;
-      if (RBTreeNode_IsRed(y)) {
-        RBTreeNode_SetBlack(z->parent);       /* case 1 */
-        RBTreeNode_SetBlack(y);               /* case 1 */
-        RBTreeNode_SetRed(z->parent->parent); /* case 1 */
-        z = z->parent->parent;
-      } else if (z == z->parent->right) {
-        z = z->parent;
-        left_rotate(tree, z);
-      }
-      z->parent->color = RBTree_BLACK;
-      z->parent->parent->color = RBTree_RED;
-      right_rotate(tree, z->parent->parent);
-    } else {
-      if (z->parent == z->parent->parent->right) {
-        y = z->parent->parent->left;
-        if (RBTreeNode_IsRed(y)) {
-          RBTreeNode_SetBlack(z->parent);       /* case 1 */
-          RBTreeNode_SetBlack(y);               /* case 1 */
-          RBTreeNode_SetRed(z->parent->parent); /* case 1 */
-          z = z->parent->parent;
-        } else if (z == z->parent->right) {
-          z = z->parent;
-          right_rotate(tree, z);
-        }
-        z->parent->color = RBTree_BLACK;
-        z->parent->parent->color = RBTree_RED;
-        left_rotate(tree, z->parent->parent);
-      }
-    }
-  }
-  tree->root->color = RBTree_BLACK;
-  return 0;
-}
-
 #define RBTree_EQ 0
 #define RBTree_LT 1
 #define RBTree_GT 2
 
-static int rbtree_key_compare(RBTree *tree, PyObject *key1, PyObject *key2) {
+static int rbtree_key_compare(CtsRBTree *tree, PyObject *key1, PyObject *key2) {
   int flag;
   long long cmp;
   PyObject *cmp_o = NULL;
@@ -318,17 +221,117 @@ finish:
   return flag;
 }
 
-static int rbtree_node_compare(RBTree *tree, RBTreeNode *a, RBTreeNode *b) {
+static int rbtree_node_compare(CtsRBTree *tree, CtsRBTreeNode *a,
+                               CtsRBTreeNode *b) {
   assert(tree->sentinel != a);
   assert(tree->sentinel != b);
   return rbtree_key_compare(tree, a->key, b->key);
 }
+/*
+ *          root            root              root            root
+ *          / \             /  \              /  \            /  \
+ *         x   d    ->     x    d   ->    x  y   d    ->     y    d
+ *        / \             /\\            /\ / \             / \
+ *       a   y           a b-y          a  b   c           x   c
+ *          / \               \                           /\
+ *         b   c               c                         a b
+ *
+ *  Note: [a, b, c d] means any sub tree.
+ */
+static void left_rotate(CtsRBTree *tree, CtsRBTreeNode *x) {
+  CtsRBTreeNode *y = x->right;
+  CtsRBTreeNode *sentinel = tree->sentinel;
+  /* First step */
+  x->right = y->left;
+  if (y->left != sentinel) {
+    y->left->parent = x;
+  }
+
+  /* Second step */
+  y->parent = x->parent;
+  if (x->parent == sentinel) {
+    tree->root = y;
+  } else if (x == x->parent->left) {
+    x->parent->left = y;
+  } else {
+    x->parent->right = y;
+  }
+  /* Third step */
+  y->left = x;
+  x->parent = y;
+}
+
+static void right_rotate(CtsRBTree *tree, CtsRBTreeNode *x) {
+  CtsRBTreeNode *y = x->left;
+  CtsRBTreeNode *sentinel = tree->sentinel;
+
+  x->left = y->right;
+  if (y->right != sentinel) {
+    y->right->parent = x;
+  }
+  y->parent = x->parent;
+  if (x->parent == sentinel) {
+    tree->root = y;
+  } else if (x == x->parent->right) {
+    x->parent->right = y;
+  } else {
+    x->parent->left = y;
+  }
+  y->right = x;
+  x->parent = y;
+}
+
+static int rbtree_insert_fix(CtsRBTree *tree, CtsRBTreeNode *z) {
+  CtsRBTreeNode *y;
+  CtsRBTreeNode *root = tree->root;
+  /* sentinel is always black */
+  while (z != root && RBTreeNode_IsRed(z->parent)) {
+    if (z->parent == z->parent->parent->left) {
+      /* z is grandfather's left branch */
+      y = z->parent->parent->right;
+      if (RBTreeNode_IsRed(y)) {
+        RBTreeNode_SetBlack(z->parent);       /* case 1 */
+        RBTreeNode_SetBlack(y);               /* case 1 */
+        RBTreeNode_SetRed(z->parent->parent); /* case 1 */
+        z = z->parent->parent;
+      } else {
+        if (z == z->parent->right) {
+          z = z->parent;
+          left_rotate(tree, z);
+        }
+        z->parent->color = RBTree_BLACK;
+        z->parent->parent->color = RBTree_RED;
+        right_rotate(tree, z->parent->parent);
+      }
+
+    } else {
+      /* z is grandfather's right branch */
+      y = z->parent->parent->left;
+      if (RBTreeNode_IsRed(y)) {
+        RBTreeNode_SetBlack(z->parent);       /* case 1 */
+        RBTreeNode_SetBlack(y);               /* case 1 */
+        RBTreeNode_SetRed(z->parent->parent); /* case 1 */
+        z = z->parent->parent;
+      } else {
+        if (z == z->parent->left) {
+          z = z->parent;
+          right_rotate(tree, z);
+        }
+        RBTreeNode_SetBlack(z->parent);
+        RBTreeNode_SetRed(z->parent->parent);
+        left_rotate(tree, z->parent->parent);
+      }
+    }
+  }
+  RBTreeNode_SetBlack(tree->root);
+  return 0;
+}
 
 /* steal the reference of z */
-static int RBTree_PutNode(RBTree *tree, RBTreeNode *z) {
-  RBTreeNode *sentinel = tree->sentinel;
-  RBTreeNode *x = tree->root;
-  RBTreeNode *y = sentinel;
+static int RBTree_PutNode(CtsRBTree *tree, CtsRBTreeNode *z) {
+  CtsRBTreeNode *sentinel = tree->sentinel;
+  CtsRBTreeNode *x = tree->root;
+  CtsRBTreeNode *y = sentinel;
   int flag;
 
   while (x != sentinel) {
@@ -350,26 +353,24 @@ static int RBTree_PutNode(RBTree *tree, RBTreeNode *z) {
   }
   z->parent = y;
   if (y == sentinel) { /* tree is empty */
-    RBTreeNode_SetBlack(z);
-    tree->root = z;
+    Py_SETREF(tree->root, z);
     goto success;
   }
   flag = rbtree_node_compare(tree, z, y);
   if (flag < 0) {
     goto fail;
   } else if (flag == RBTree_LT) {
-    Py_SETREF(y->left, z);
+    y->left = z;
   } else if (flag == RBTree_GT) {
-    Py_SETREF(y->right, z);
+    y->right = z;
   } else {
     assert(0);
     /* Can't be here. */
     return 0;
   }
-
 success:
-  RBTree_SetSentinel(z->right);
   RBTree_SetSentinel(z->left);
+  RBTree_SetSentinel(z->right);
   RBTreeNode_SetRed(z);
   tree->length++;
   return rbtree_insert_fix(tree, z);
@@ -378,16 +379,16 @@ fail:
   return -1;
 }
 
-static int RBTree_Put(RBTree *tree, PyObject *key, PyObject *value) {
-  RBTreeNode *node;
+static int RBTree_Put(CtsRBTree *tree, PyObject *key, PyObject *value) {
+  CtsRBTreeNode *node;
   node = RBTreeNode_New(key, value);
   ReturnIfNULL(node, -1);
   return RBTree_PutNode(tree, node);
 }
 
-static int RBTree_Get(RBTree *tree, PyObject *key, PyObject **value) {
-  RBTreeNode *x = tree->root;
-  RBTreeNode *sentinel = tree->sentinel;
+static int RBTree_Get(CtsRBTree *tree, PyObject *key, PyObject **value) {
+  CtsRBTreeNode *x = tree->root;
+  CtsRBTreeNode *sentinel = tree->sentinel;
   int flag;
 
   while (x != sentinel) {
@@ -408,14 +409,14 @@ static int RBTree_Get(RBTree *tree, PyObject *key, PyObject **value) {
   return 0;
 }
 
-static RBTree *RBTree_New(PyObject *cmp) {
-  RBTree *tree;
+static CtsRBTree *RBTree_New(PyObject *cmp) {
+  CtsRBTree *tree;
   if (cmp && !PyCallable_Check(cmp)) {
     PyErr_SetString(PyExc_TypeError, "cmp must be a callable object");
     return NULL;
   }
 
-  tree = PyObject_GC_New(RBTree, &RBTree_Type);
+  tree = PyObject_GC_New(CtsRBTree, &RBTree_Type);
   ReturnIfNULL(tree, NULL);
   Py_XINCREF(cmp);
   RBTree_SetSentinel(tree->root);
@@ -437,27 +438,27 @@ static PyObject *RBTree_tp_new(PyTypeObject *type, PyObject *args,
   return PyObjectCast(RBTree_New(cmp));
 }
 
-static int RBTree_tp_traverse(RBTree *self, visitproc visit, void *arg) {
+static int RBTree_tp_traverse(CtsRBTree *self, visitproc visit, void *arg) {
   Py_VISIT(self->root);
   Py_VISIT(self->sentinel);
   return 0;
 }
 
-static int RBTree_tp_clear(RBTree *self) {
+static int RBTree_tp_clear(CtsRBTree *self) {
   Py_CLEAR(self->root);
   return 0;
 }
 
-static void RBTree_tp_dealloc(RBTree *self) {
+static void RBTree_tp_dealloc(CtsRBTree *self) {
   PyObject_GC_UnTrack(self);
   RBTree_tp_clear(self);
   PyObject_GC_Del(self);
 }
 
-static Py_ssize_t RBTree_size(RBTree *tree) { return tree->length; }
+static Py_ssize_t RBTree_size(CtsRBTree *tree) { return tree->length; }
 
 /* __getitem__ */
-static PyObject *RBTree_mp_subscript(RBTree *tree, PyObject *key) {
+static PyObject *RBTree_mp_subscript(CtsRBTree *tree, PyObject *key) {
   PyObject *value;
   int find;
   find = RBTree_Get(tree, key, &value);
@@ -471,7 +472,7 @@ static PyObject *RBTree_mp_subscript(RBTree *tree, PyObject *key) {
 }
 
 /* __setitem__, __delitem__ */
-static int RBTree_mp_ass_sub(RBTree *tree, PyObject *key, PyObject *value) {
+static int RBTree_mp_ass_sub(CtsRBTree *tree, PyObject *key, PyObject *value) {
   if (!value) {
     /* TODO */
     PyErr_SetString(PyExc_NotImplementedError, "");
@@ -491,7 +492,7 @@ static PyTypeObject RBTree_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name = "ctools.SortedMap",
     /* clang-format on */
-    .tp_basicsize = sizeof(RBTree),
+    .tp_basicsize = sizeof(CtsRBTree),
     .tp_dealloc = (destructor)RBTree_tp_dealloc,
     .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,
     .tp_traverse = (traverseproc)RBTree_tp_traverse,
@@ -500,6 +501,7 @@ static PyTypeObject RBTree_Type = {
     .tp_as_mapping = &RBTree_as_mapping,
 };
 
+EXTERN_C_START
 int ctools_init_rbtree(PyObject *module) {
   if (PyType_Ready(&RBTreeNode_Type) < 0) {
     return -1;
@@ -527,3 +529,4 @@ int ctools_init_rbtree(PyObject *module) {
   }
   return 0;
 }
+EXTERN_C_END
