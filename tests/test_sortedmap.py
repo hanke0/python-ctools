@@ -19,7 +19,7 @@ class A:
         return self.a == other
 
     def __hash__(self):
-        return id(self)
+        return hash(self.a)
 
     def __repr__(self):
         return str(self.a)
@@ -70,6 +70,39 @@ class TestSortedMap(unittest.TestCase):
         v = list(range(1024))
         random.shuffle(v)
         self._test_setgetitem_list(v)
+
+    def test_inplace(self):
+        seq = list(range(1024))
+        random.shuffle(seq)
+        keys1, keys2, sorted_map, mapping = self._build_v(seq)
+        u1 = [A(i) for i in range(len(seq))]
+        u2 = [A(i) for i in range(len(seq))]
+        for i in range(len(u1)):
+            k1 = u1[i]
+            k2 = u2[i]
+            sorted_map[k1] = k1
+            mapping[k2] = k2
+
+        for i in range(len(seq)):
+            key1 = u1[i]
+            key2 = u2[i]
+            self.assert_ref(key1, key2, msg=seq)
+
+        for i in range(len(seq)):
+            key1 = keys1[i]
+            key2 = keys2[i]
+            self.assert_ref(key1, key2, msg=seq)
+
+        del sorted_map, mapping
+        for i in range(len(seq)):
+            key1 = u1[i]
+            key2 = u2[i]
+            self.assert_ref(key1, key2, msg=seq)
+
+        for i in range(len(seq)):
+            key1 = keys1[i]
+            key2 = keys2[i]
+            self.assert_ref(key1, key2, msg=seq)
 
     def test_contains(self):
         seq = list(range(1024))
@@ -201,6 +234,41 @@ class TestSortedMap(unittest.TestCase):
             key1 = keys1[i]
             key2 = keys2[i]
             self.assert_ref(key1, key2, msg=seq)
+
+    def test_update(self):
+        seq = list(range(1024))
+        random.shuffle(seq)
+        keys1, keys2, sorted_map, mapping = self._build_v(seq)
+        update1 = {}
+        update2 = {}
+        for i in range(2096):
+            k1 = A(i)
+            k2 = A(i)
+            update1[k1] = k1
+            update2[k2] = k2
+
+        sorted_map.update(update1)
+        mapping.update(update2)
+
+        s1 = sorted(update1.keys())
+        s2 = sorted(update2.keys())
+        for i in range(len(s1)):
+            k1 = s1[i]
+            k2 = s2[i]
+            v1 = sorted_map[k1]
+            v2 = mapping[k2]
+            self.assert_ref(v2, v1)
+
+        del sorted_map, mapping
+        for i in range(len(keys1)):
+            k1 = keys1[i]
+            k2 = keys2[i]
+            self.assert_ref(k2, k1)
+
+        for i in range(len(s1)):
+            k1 = s1[i]
+            k2 = s2[i]
+            self.assert_ref(k2, k1)
 
 
 if __name__ == "__main__":

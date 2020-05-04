@@ -714,6 +714,31 @@ static PyObject *RBTree_setnx(CtsRBTree *tree, PyObject *args, PyObject *kwds) {
   return value;
 }
 
+static PyObject *RBTree_update(CtsRBTree *tree, PyObject *args,
+                               PyObject *kwargs) {
+  PyObject *key, *value;
+  PyObject *arg = NULL;
+  Py_ssize_t pos = 0;
+
+  if ((PyArg_ParseTuple(args, "|O", &arg))) {
+    if (arg && PyDict_Check(arg)) {
+      while (PyDict_Next(arg, &pos, &key, &value))
+        if (RBTree_Put(tree, key, value)) {
+          return NULL;
+        }
+    }
+  }
+
+  if (kwargs != NULL && PyArg_ValidateKeywordArguments(kwargs)) {
+    while (PyDict_Next(kwargs, &pos, &key, &value))
+      if (RBTree_Put(tree, key, value)) {
+        return NULL;
+      }
+  }
+
+  Py_RETURN_NONE;
+}
+
 PyMethodDef RBTree_methods[] = {
     {"keys", (PyCFunction)RBTree_keys, METH_NOARGS, "keys()\n--\n\nIter keys"},
     {"values", (PyCFunction)RBTree_values, METH_NOARGS,
@@ -740,6 +765,12 @@ PyMethodDef RBTree_methods[] = {
         "setnx(key, fn=None)\n--\n\nMuch like setdefault. Except if not find, "
         "call fn.\n"
         "fn is a callable that accept key as only one argument.",
+    },
+    {
+        "update",
+        (PyCFunction)RBTree_update,
+        METH_VARARGS | METH_KEYWORDS,
+        "update(mp, **kwargs)\n--\n\nLiking dict.update, but only accept dict.",
     },
     {NULL, NULL, 0, NULL},
 };
