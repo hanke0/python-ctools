@@ -487,6 +487,33 @@ static PyMappingMethods RBTree_as_mapping = {
     (objobjargproc)RBTree_mp_ass_sub, /*mp_ass_subscript*/
 };
 
+static int RBTree_Contains(CtsRBTree *tree, PyObject *key) {
+  PyObject *value;
+  int find;
+  find = RBTree_Get(tree, key, &value);
+  if (find < 0) {
+    return -1;
+  } else if (find == 0) {
+    return 0;
+  } else {
+    Py_DECREF(value);
+    return 1;
+  }
+}
+
+static PySequenceMethods RBTree_as_sequence = {
+    0,                           /* sq_length */
+    0,                           /* sq_concat */
+    0,                           /* sq_repeat */
+    0,                           /* sq_item */
+    0,                           /* sq_slice */
+    0,                           /* sq_ass_item */
+    0,                           /* sq_ass_slice */
+    (objobjproc)RBTree_Contains, /* sq_contains */
+    0,                           /* sq_inplace_concat */
+    0,                           /* sq_inplace_repeat */
+};
+
 static PyTypeObject RBTree_Type = {
     /* clang-format off */
     PyVarObject_HEAD_INIT(NULL, 0)
@@ -499,6 +526,7 @@ static PyTypeObject RBTree_Type = {
     .tp_clear = (inquiry)RBTree_tp_clear,
     .tp_new = (newfunc)RBTree_tp_new,
     .tp_as_mapping = &RBTree_as_mapping,
+    .tp_as_sequence = &RBTree_as_sequence,
 };
 
 EXTERN_C_START
