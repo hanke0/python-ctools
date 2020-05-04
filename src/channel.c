@@ -34,22 +34,22 @@ typedef struct {
   int recvx;
   char sflag;
   char rflag;
-} Channel;
+} CtsChannel;
 
 static PyTypeObject Channel_Type;
 
-Channel *Channel_New(int size) {
-  Channel *op;
+static CtsChannel *Channel_New(int size) {
+  CtsChannel *op;
   int i;
   assert(size > 0);
   /* check for overflow. */
-  if ((Py_ssize_t)size >
-      (Py_ssize_t)((PY_SSIZE_T_MAX - sizeof(Channel)) / sizeof(PyObject *))) {
+  if ((Py_ssize_t)size > (Py_ssize_t)((PY_SSIZE_T_MAX - sizeof(CtsChannel)) /
+                                      sizeof(PyObject *))) {
     PyErr_NoMemory();
     return NULL;
   }
 
-  op = PyObject_GC_New(Channel, &Channel_Type);
+  op = PyObject_GC_New(CtsChannel, &Channel_Type);
   ReturnIfNULL(op, NULL);
 
   op->ob_item = (PyObject **)PyMem_Calloc(size, sizeof(PyObject *));
@@ -77,7 +77,7 @@ Channel *Channel_New(int size) {
   return op;
 }
 
-static void Channel_tp_dealloc(Channel *ob) {
+static void Channel_tp_dealloc(CtsChannel *ob) {
   int i;
   int len = Py_SIZE(ob);
   PyObject_GC_UnTrack(ob);
@@ -94,7 +94,7 @@ static void Channel_tp_dealloc(Channel *ob) {
   /* clang-format on */
 }
 
-static int Channel_tp_traverse(Channel *o, visitproc visit, void *arg) {
+static int Channel_tp_traverse(CtsChannel *o, visitproc visit, void *arg) {
   int i;
   for (i = Py_SIZE(o); --i >= 0;) {
     Py_VISIT(o->ob_item[i]);
@@ -102,7 +102,7 @@ static int Channel_tp_traverse(Channel *o, visitproc visit, void *arg) {
   return 0;
 }
 
-static int Channel_tp_clear(Channel *op) {
+static int Channel_tp_clear(CtsChannel *op) {
   int i;
   PyObject **item = op->ob_item;
   if (item != NULL) {
@@ -141,7 +141,7 @@ static PyObject *Channel_tp_new(PyTypeObject *type, PyObject *args,
   return (PyObject *)Channel_New(size);
 }
 
-static PyObject *Channel_clear(Channel *self, PyObject *unused) {
+static PyObject *Channel_clear(CtsChannel *self, PyObject *unused) {
   SUPPRESS_UNUSED(unused);
   PyObject **buffer = self->ob_item;
   Py_ssize_t size;
@@ -155,7 +155,7 @@ static PyObject *Channel_clear(Channel *self, PyObject *unused) {
   Py_RETURN_NONE;
 }
 
-static void Channel_incr_sendx(Channel *self) {
+static void Channel_incr_sendx(CtsChannel *self) {
   assert(self->sflag > 0);
   if (self->sflag == 3) {
     self->sendx = (self->sendx + 1) & (2 * Py_SIZE(self) - 1);
@@ -174,7 +174,7 @@ static void Channel_incr_sendx(Channel *self) {
   self->sendx = sendx;
 }
 
-static void Channel_incr_recvx(Channel *self) {
+static void Channel_incr_recvx(CtsChannel *self) {
   assert(self->rflag > 0);
   if (self->rflag == 3) {
     self->recvx = (self->recvx + 1) & (2 * Py_SIZE(self) - 1);
@@ -193,7 +193,7 @@ static void Channel_incr_recvx(Channel *self) {
   self->recvx = recvx;
 }
 
-static int Channel_send_idx(Channel *self) {
+static int Channel_send_idx(CtsChannel *self) {
   if (self->sflag < 0) {
     return -2;
   }
@@ -226,7 +226,7 @@ static int Channel_send_idx(Channel *self) {
   return self->sendx % Py_SIZE(self);
 }
 
-static int Channel_recv_idx(Channel *self) {
+static int Channel_recv_idx(CtsChannel *self) {
   if (self->rflag < 0) {
     return -2;
   }
@@ -264,7 +264,7 @@ static PyObject *Channel_recv(PyObject *self, PyObject *unused) {
   PyObject *item;
   PyObject *rv;
   int recvx;
-  Channel *ch = (Channel *)self;
+  CtsChannel *ch = (CtsChannel *)self;
 
   recvx = Channel_recv_idx(ch);
   if (recvx == -2) {
@@ -295,7 +295,7 @@ static PyObject *Channel_recv(PyObject *self, PyObject *unused) {
 }
 
 static PyObject *Channel_send(PyObject *self, PyObject *obj) {
-  Channel *ch = (Channel *)self;
+  CtsChannel *ch = (CtsChannel *)self;
   int sendx;
 
   sendx = Channel_send_idx(ch);
@@ -315,7 +315,7 @@ static PyObject *Channel_send(PyObject *self, PyObject *obj) {
 }
 
 static PyObject *Channel_close(PyObject *self, PyObject *args, PyObject *kwds) {
-  Channel *ch;
+  CtsChannel *ch;
   int write, read;
   write = 1;
   read = 1;
@@ -324,7 +324,7 @@ static PyObject *Channel_close(PyObject *self, PyObject *args, PyObject *kwds) {
     return NULL;
   }
 
-  ch = (Channel *)self;
+  ch = (CtsChannel *)self;
   if (write) {
     ch->sflag *= -1;
   }
@@ -337,7 +337,7 @@ static PyObject *Channel_close(PyObject *self, PyObject *args, PyObject *kwds) {
 static PyObject *Channel_safe_consume(PyObject *self, PyObject *callback) {
   PyObject *item;
   PyObject *callback_rv;
-  Channel *ch = (Channel *)self;
+  CtsChannel *ch = (CtsChannel *)self;
   int recvx;
 
   if (!(PyCallable_Check(callback))) {
@@ -378,7 +378,7 @@ static PyObject *Channel_safe_consume(PyObject *self, PyObject *callback) {
 
 static PyObject *Channel_sendable(PyObject *self, PyObject *unused) {
   SUPPRESS_UNUSED(unused);
-  Channel *ch = (Channel *)self;
+  CtsChannel *ch = (CtsChannel *)self;
   int sendx;
   sendx = Channel_send_idx(ch);
 
@@ -390,7 +390,7 @@ static PyObject *Channel_sendable(PyObject *self, PyObject *unused) {
 
 static PyObject *Channel_recvable(PyObject *self, PyObject *unused) {
   SUPPRESS_UNUSED(unused);
-  Channel *ch = (Channel *)self;
+  CtsChannel *ch = (CtsChannel *)self;
   int recvx;
   recvx = Channel_recv_idx(ch);
 
@@ -448,7 +448,7 @@ static PyTypeObject Channel_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
     /* clang-format on */
     "ctools.Channel",                        /* tp_name */
-    sizeof(Channel),                         /* tp_basicsize */
+    sizeof(CtsChannel),                      /* tp_basicsize */
     0,                                       /* tp_itemsize */
     (destructor)Channel_tp_dealloc,          /* tp_dealloc */
     0,                                       /* tp_print */
@@ -487,6 +487,7 @@ static PyTypeObject Channel_Type = {
     PyObject_GC_Del                          /* tp_free */
 };
 
+EXTERN_C_START
 int ctools_init_channel(PyObject *module) {
   if (PyType_Ready(&Channel_Type) < 0) {
     return -1;
@@ -500,3 +501,4 @@ int ctools_init_channel(PyObject *module) {
 
   return 0;
 }
+EXTERN_C_END

@@ -20,7 +20,7 @@ limitations under the License.
 
 static struct PyModuleDef _ctools = {
     PyModuleDef_HEAD_INIT,
-    "_ctools",                       /* m_name */
+    "ctools._ctools",                /* m_name */
     "A collection of useful tools.", /* m_doc */
     -1,                              /* m_size */
     NULL,                            /* m_methods */

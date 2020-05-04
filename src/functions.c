@@ -210,6 +210,7 @@ static PyMethodDef methods[] = {
     {NULL, NULL, 0, NULL},
 };
 
+EXTERN_C_START
 int ctools_init_funcs(PyObject *module) {
   PyDateTime_IMPORT;
   if (PyModule_AddFunctions(module, methods)) {
@@ -217,3 +218,4 @@ int ctools_init_funcs(PyObject *module) {
   }
   return 0;
 }
+EXTERN_C_END

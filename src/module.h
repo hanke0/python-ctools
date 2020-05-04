@@ -14,12 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef CTOOLS_MODULE_H
-#define CTOOLS_MODULE_H
+#ifndef _CTOOLS_MODULE_H_
+#define _CTOOLS_MODULE_H_
 
 #include "core.h"
 
 #include <Python.h>
+
+EXTERN_C_START
 
 int ctools_init_cachemap(PyObject *module);
 
@@ -31,4 +33,6 @@ int ctools_init_ttlcache(PyObject *module);
 
 int ctools_init_rbtree(PyObject *module);
 
-#endif // CTOOLS_MODULE_H
+EXTERN_C_END
+
+#endif // _CTOOLS_MODULE_H_

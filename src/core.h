@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef _CTOOLS_MACROS_H_
-#define _CTOOLS_MACROS_H_
+#ifndef _CTOOLS_CORE_H_
+#define _CTOOLS_CORE_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,12 +25,16 @@ extern "C" {
 #define PY_SSIZE_T_CLEAN
 #endif
 
+#ifdef CTOOLS_DEBUG
+#define NDEBUG
+#endif
+
 #include "Python.h"
 
 #include <stdint.h>
 #include <stdio.h>
 
-#ifdef NDEBUG
+#ifdef CTOOLS_DEBUG
 #define DebugPrintf(fmt, ...) ((void)0)
 #define DebugPrint(msg) ((void)0)
 #else
@@ -69,4 +73,12 @@ extern "C" {
 }
 #endif
 
-#endif /* _CTOOLS_MACROS_H_ */
+#ifdef __clusplus
+#define EXTERN_C_START extern "C" {
+#define EXTERN_C_END }
+#else
+#define EXTERN_C_START
+#define EXTERN_C_END
+#endif
+
+#endif /* _CTOOLS_CORE_H_ */
