@@ -676,8 +676,6 @@ static PyObject *CacheMap_tp_iter(CtsCacheMap *self) {
   keys = CacheMap_keys(self);
   ReturnIfNULL(keys, NULL);
   it = PySeqIter_New(keys);
-  ReturnIfNULL(it, NULL);
-  assert(keys);
   Py_DECREF(keys);
   return it;
 }
