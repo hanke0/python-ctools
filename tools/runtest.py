@@ -65,7 +65,7 @@ def main():
         for i in args.python_path:
             sys.path.insert(0, i)
 
-    argv = [sys.argv[0], "discover", "-s", args.start_directory]
+    argv = [sys.argv[0], "discover", "-s", args.start_directory, "-c"]
     if args.verbose:
         argv.append("-v")
     if args.quiet:
