@@ -534,6 +534,9 @@ int ctools_init_rbtree(PyObject *module) {
   if (PyType_Ready(&RBTreeNode_Type) < 0) {
     return -1;
   }
+  if (PyType_Ready(&RBTreeSentinel_Type)) {
+    return -1;
+  }
   Py_INCREF(&RBTreeNode_Type);
   if (PyModule_AddObject(module, "SortedMapNode",
                          (PyObject *)&RBTreeNode_Type) < 0) {
