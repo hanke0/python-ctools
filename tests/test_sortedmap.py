@@ -142,6 +142,13 @@ class TestSortedMap(unittest.TestCase):
             v1 = sorted_map.get(k1, k1)
             v2 = mapping.get(k2, k2)
             self.assertEqual(v2, v1)
+            self.assert_ref(v2, v1)
+
+        del sorted_map, mapping
+        for i in range(len(seq)):
+            key1 = keys1[i]
+            key2 = keys2[i]
+            self.assert_ref(key1, key2, msg=seq)
 
     def test_setdefault(self):
         seq = list(range(1024))
@@ -158,9 +165,16 @@ class TestSortedMap(unittest.TestCase):
             v1 = sorted_map.setdefault(k1, k1)
             v2 = mapping.setdefault(k2, k2)
             self.assertEqual(v2, v1)
+            self.assert_ref(v2, v1)
 
         for k in mapping.keys():
             self.assertTrue(k in sorted_map, msg=k)
+
+        del sorted_map, mapping
+        for i in range(len(seq)):
+            key1 = keys1[i]
+            key2 = keys2[i]
+            self.assert_ref(key1, key2, msg=seq)
 
     def test_setnx(self):
         seq = list(range(1024))
@@ -177,9 +191,16 @@ class TestSortedMap(unittest.TestCase):
             v1 = sorted_map.setnx(k1, lambda x: k1)
             v2 = mapping.setdefault(k2, k2)
             self.assertEqual(v2, v1)
+            self.assert_ref(v2, v1)
 
         for k in mapping.keys():
             self.assertTrue(k in sorted_map, msg=k)
+
+        del sorted_map, mapping
+        for i in range(len(seq)):
+            key1 = keys1[i]
+            key2 = keys2[i]
+            self.assert_ref(key1, key2, msg=seq)
 
 
 if __name__ == "__main__":

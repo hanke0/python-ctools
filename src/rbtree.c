@@ -700,12 +700,11 @@ static PyObject *RBTree_setnx(CtsRBTree *tree, PyObject *args, PyObject *kwds) {
   if (!find) {
     if (!_default) {
       _default = Py_None;
+      Py_INCREF(_default);
     } else {
       _default = PyObject_CallFunctionObjArgs(_default, key, NULL);
       ReturnIfNULL(_default, NULL);
     }
-
-    Py_INCREF(_default);
     if (RBTree_Put(tree, key, _default)) {
       Py_DECREF(_default);
       return NULL;
