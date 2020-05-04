@@ -7,6 +7,30 @@ import ctools
 from ctools import _ctools
 
 
+class A:
+    def __init__(self, a):
+        self.a = a
+
+    def __lt__(self, other):
+        if isinstance(other, A):
+            return self.a < other.a
+        return self.a < other
+
+    def __eq__(self, other):
+        if isinstance(other, A):
+            return self.a == other.a
+        return self.a == other
+
+    def __hash__(self):
+        return hash(self.a)
+
+    def __repr__(self):
+        return str(self.a)
+
+    def __str__(self):
+        return self.__repr__()
+
+
 class DefaultEntry:
     def __init__(self, o):
         self.o = o
@@ -76,10 +100,10 @@ class DefaultMap(dict):
 
 
 class TestCacheMap(unittest.TestCase):
-    def create_map(self):
-        return ctools.CacheMap(257)
+    def create_map(self, maxsize=257):
+        return ctools.CacheMap(maxsize)
 
-    def assertRefEqual(self, a, b, msg=None):
+    def assert_ref(self, a, b, msg=None):
         self.assertEqual(sys.getrefcount(a), sys.getrefcount(b), msg=msg)
 
     def test_normal_set_item(self):
@@ -89,8 +113,8 @@ class TestCacheMap(unittest.TestCase):
         ckey, cval = map_set_random(cache)
         dkey, dval = map_set_random(mp)
 
-        self.assertRefEqual(ckey, dkey)
-        self.assertRefEqual(cval, dval)
+        self.assert_ref(ckey, dkey)
+        self.assert_ref(cval, dval)
 
     def test_normal_contains(self):
         cache = self.create_map()
@@ -100,8 +124,8 @@ class TestCacheMap(unittest.TestCase):
         dkey, dval = map_set_random(mp)
         self.assertIn(ckey, cache)
         a = ckey in cache
-        self.assertRefEqual(ckey, dkey)
-        self.assertRefEqual(cval, dval)
+        self.assert_ref(ckey, dkey)
+        self.assert_ref(cval, dval)
 
     def test_normal_del_item(self):
         cache = self.create_map()
@@ -111,8 +135,8 @@ class TestCacheMap(unittest.TestCase):
         dkey, dval = map_set_random(mp)
         del cache[ckey]
         del mp[dkey]
-        self.assertRefEqual(ckey, dkey)
-        self.assertRefEqual(cval, dval)
+        self.assert_ref(ckey, dkey)
+        self.assert_ref(cval, dval)
 
     def test_normal_get_item(self):
         cache = self.create_map()
@@ -122,14 +146,14 @@ class TestCacheMap(unittest.TestCase):
         dkey, dval = map_set_random(mp)
         a = cache[ckey]
         d = mp[dkey]
-        self.assertRefEqual(ckey, dkey)
-        self.assertRefEqual(cval, dval)
+        self.assert_ref(ckey, dkey)
+        self.assert_ref(cval, dval)
 
         with not_raise():
             _ = cache[1]
 
-        self.assertRefEqual(ckey, dkey)
-        self.assertRefEqual(cval, dval)
+        self.assert_ref(ckey, dkey)
+        self.assert_ref(cval, dval)
 
     def test_normal_del(self):
         cache = self.create_map()
@@ -139,8 +163,8 @@ class TestCacheMap(unittest.TestCase):
         dkey, dval = map_set_random(mp)
         del cache
         del mp
-        self.assertRefEqual(ckey, dkey)
-        self.assertRefEqual(cval, dval)
+        self.assert_ref(ckey, dkey)
+        self.assert_ref(cval, dval)
 
     def test_normal_replace(self):
         cache = self.create_map()
@@ -149,15 +173,15 @@ class TestCacheMap(unittest.TestCase):
         ckey, cval = map_set_random(cache)
         dkey, dval = map_set_random(mp)
 
-        self.assertRefEqual(ckey, dkey)
-        self.assertRefEqual(cval, dval)
+        self.assert_ref(ckey, dkey)
+        self.assert_ref(cval, dval)
 
         cache[ckey] = str(uuid.uuid1())
         mp[dkey] = str(uuid.uuid1())
 
-        self.assertRefEqual(ckey, dkey)
-        self.assertRefEqual(cval, dval)
-        self.assertRefEqual(cache[ckey], mp[dkey])
+        self.assert_ref(ckey, dkey)
+        self.assert_ref(cval, dval)
+        self.assert_ref(cache[ckey], mp[dkey])
 
     def test_normal_set_many(self):
         cache = self.create_map()
@@ -170,14 +194,14 @@ class TestCacheMap(unittest.TestCase):
 
         for ckey, dkey, cval, dval in store:
             if ckey in cache:
-                self.assertRefEqual(ckey, dkey)
-                self.assertRefEqual(cval, dval)
+                self.assert_ref(ckey, dkey)
+                self.assert_ref(cval, dval)
 
         del cache
         del mp
         for ckey, dkey, cval, dval in store:
-            self.assertRefEqual(ckey, dkey)
-            self.assertRefEqual(cval, dval)
+            self.assert_ref(ckey, dkey)
+            self.assert_ref(cval, dval)
 
     def test_normal_keys(self):
         cache = self.create_map()
@@ -193,15 +217,15 @@ class TestCacheMap(unittest.TestCase):
 
         for ckey, dkey, cval, dval in store:
             if ckey in cache:
-                self.assertRefEqual(ckey, dkey)
-                self.assertRefEqual(cval, dval)
+                self.assert_ref(ckey, dkey)
+                self.assert_ref(cval, dval)
 
         del cit
         del dit
         for ckey, dkey, cval, dval in store:
             if ckey in cache:
-                self.assertRefEqual(ckey, dkey)
-                self.assertRefEqual(cval, dval)
+                self.assert_ref(ckey, dkey)
+                self.assert_ref(cval, dval)
 
     def test_normal_values(self):
         cache = self.create_map()
@@ -217,15 +241,15 @@ class TestCacheMap(unittest.TestCase):
 
         for ckey, dkey, cval, dval in store:
             if ckey in cache:
-                self.assertRefEqual(ckey, dkey)
-                self.assertRefEqual(cval, dval)
+                self.assert_ref(ckey, dkey)
+                self.assert_ref(cval, dval)
 
         del cit
         del dit
         for ckey, dkey, cval, dval in store:
             if ckey in cache:
-                self.assertRefEqual(ckey, dkey)
-                self.assertRefEqual(cval, dval)
+                self.assert_ref(ckey, dkey)
+                self.assert_ref(cval, dval)
 
     def test_normal_items(self):
         cache = self.create_map()
@@ -241,15 +265,15 @@ class TestCacheMap(unittest.TestCase):
 
         for ckey, dkey, cval, dval in store:
             if ckey in cache:
-                self.assertRefEqual(ckey, dkey)
-                self.assertRefEqual(cval, dval)
+                self.assert_ref(ckey, dkey)
+                self.assert_ref(cval, dval)
 
         del cit
         del dit
         for ckey, dkey, cval, dval in store:
             if ckey in cache:
-                self.assertRefEqual(ckey, dkey)
-                self.assertRefEqual(cval, dval)
+                self.assert_ref(ckey, dkey)
+                self.assert_ref(cval, dval)
 
     def test_normal_iter(self):
         cache = self.create_map()
@@ -268,8 +292,8 @@ class TestCacheMap(unittest.TestCase):
 
         for ckey, dkey, cval, dval in store:
             if ckey in cache:
-                self.assertRefEqual(ckey, dkey)
-                self.assertRefEqual(cval, dval)
+                self.assert_ref(ckey, dkey)
+                self.assert_ref(cval, dval)
 
     def test_normal_update(self):
         d = {}
@@ -286,8 +310,8 @@ class TestCacheMap(unittest.TestCase):
         for k in c:
             self.assertEqual(c[k], cache[k])
             del k
-        self.assertRefEqual(dkey, ckey)
-        self.assertRefEqual(dval, cval)
+        self.assert_ref(dkey, ckey)
+        self.assert_ref(dval, cval)
         self.assertEqual(len(cache), len(mp))
         self.assertIn("a", cache)
 
@@ -300,8 +324,8 @@ class TestCacheMap(unittest.TestCase):
         val = cache.setdefault(ckey, 1)
         val1 = mp.setdefault(dkey, 1)
         self.assertEqual(cval, val)
-        self.assertRefEqual(ckey, dkey)
-        self.assertRefEqual(cval, dval)
+        self.assert_ref(ckey, dkey)
+        self.assert_ref(cval, dval)
 
         cnkey = str(uuid.uuid1())
         dnkey = str(uuid.uuid1())
@@ -310,8 +334,8 @@ class TestCacheMap(unittest.TestCase):
         val = cache.setdefault(cnkey, cnval)
         val1 = mp.setdefault(dnkey, dnval)
         self.assertEqual(val, cnval)
-        self.assertRefEqual(cnval, dnval)
-        self.assertRefEqual(cnkey, dnkey)
+        self.assert_ref(cnval, dnval)
+        self.assert_ref(cnkey, dnkey)
 
     def test_normal_setnx(self):
         fn = lambda k: str(uuid.uuid1()) + str(k)
@@ -323,17 +347,17 @@ class TestCacheMap(unittest.TestCase):
         cnval = cache.setnx(ckey, fn)
         dnval = mp.setnx(dkey, fn)
         self.assertEqual(cval, cnval)
-        self.assertRefEqual(ckey, dkey)
-        self.assertRefEqual(cval, dval)
-        self.assertRefEqual(cnval, dnval)
+        self.assert_ref(ckey, dkey)
+        self.assert_ref(cval, dval)
+        self.assert_ref(cnval, dnval)
 
         dnkey = str(uuid.uuid1())
         cnkey = str(uuid.uuid1())
         cnval = cache.setnx(cnkey, fn)
         dnval = mp.setnx(dnkey, fn)
         self.assertEqual(cnval, cache[cnkey])
-        self.assertRefEqual(cnkey, dnkey)
-        self.assertRefEqual(cnval, dnval)
+        self.assert_ref(cnkey, dnkey)
+        self.assert_ref(cnval, dnval)
 
     def test_normal_clear(self):
         cache = self.create_map()
@@ -343,8 +367,8 @@ class TestCacheMap(unittest.TestCase):
         cache.clear()
         mp.clear()
         self.assertEqual(len(cache), 0, msg="cache map is not empty after clear")
-        self.assertRefEqual(ckey, dkey)
-        self.assertRefEqual(cval, dval)
+        self.assert_ref(ckey, dkey)
+        self.assert_ref(cval, dval)
 
     def test_error_set(self):
         ckey = dict()
@@ -363,11 +387,11 @@ class TestCacheMap(unittest.TestCase):
         with not_raise():
             mp[dkey] = dval
 
-        self.assertRefEqual(ckey, dkey)
-        self.assertRefEqual(cval, dval)
+        self.assert_ref(ckey, dkey)
+        self.assert_ref(cval, dval)
 
     def test_get_set(self):
-        d = ctools.CacheMap(2)
+        d = self.create_map(2)
         d["a"] = 1
         d["c"] = 2
         # py35 dict is not ordered, add priority of key 'c' here
@@ -380,13 +404,33 @@ class TestCacheMap(unittest.TestCase):
 
     def test_len(self):
         for m in range(254, 1024):
-            d = ctools.CacheMap(m)
+            d = self.create_map(m)
             for i in range(m + 1):
                 d[str(i)] = str(i)
                 if i < m and len(d) != i + 1:
                     self.assertEqual(len(d), i)
 
             self.assertEqual(len(d), m)
+
+    def test_popitem(self):
+        cache = self.create_map()
+        mapping = {}
+        key1 = A(1)
+        key2 = A(1)
+        cache[key1] = key1
+        mapping[key2] = key2
+
+        self.assert_ref(key2, key1)
+
+        k1, v1 = cache.popitem()
+        k2, v2 = mapping.popitem()
+
+        self.assertEqual(k2, k1)
+        self.assertEqual(v2, v1)
+
+        self.assert_ref(key2, key1)
+        del cache, mapping
+        self.assert_ref(key2, key1)
 
 
 if __name__ == "__main__":

@@ -286,16 +286,7 @@ static PyObject *CacheMap_evict(CtsCacheMap *self) {
 }
 
 static int CacheMap_DelItem(CtsCacheMap *self, PyObject *key) {
-  CtsCacheMapEntry *entry = CacheMap_GetItemWithError(self, key);
-  if (!entry) {
-    ReturnKeyErrorIfErrorNotSet(entry, -1);
-    return -1;
-  }
-  if (PyDict_DelItem(self->dict, key) != 0) {
-    Py_XINCREF(entry->ma_value);
-    return -1;
-  }
-  return 0;
+  return PyDict_DelItem(self->dict, key);
 }
 
 static int CacheMap_SetItem(CtsCacheMap *self, PyObject *key, PyObject *value) {
@@ -527,6 +518,62 @@ static PyObject *CacheMap_pop(CtsCacheMap *self, PyObject *args, PyObject *kw) {
   return result->ma_value;
 }
 
+static PyObject *CacheMap_popitem(CtsCacheMap *self,
+                                  PyObject *Py_UNUSED(args)) {
+  PyObject *keys, *key, *value, *tuple;
+  CtsCacheMapEntry *value_entry;
+  Py_ssize_t size;
+  int err;
+  keys = CacheMap_keys(self);
+  ReturnIfNULL(keys, NULL);
+  size = PyList_Size(keys);
+  if (size < 0) {
+    Py_DECREF(keys);
+    return NULL;
+  }
+  if (size == 0) {
+    PyErr_SetString(PyExc_KeyError, "popitem(): cache map is empty");
+    return NULL;
+  }
+  key = PyList_GetItem(keys, 0);
+  Py_DECREF(keys);
+  /* keys is not usable start from here */
+  if (key == NULL) {
+    return NULL;
+  }
+  value_entry = CacheMap_GetItemWithError(self, key);
+  if (value_entry == NULL) {
+    if (!PyErr_Occurred()) {
+      PyErr_Format(PyExc_KeyError, "%S", key);
+    }
+    return NULL;
+  }
+  Py_INCREF(key);
+  value = CacheEntry_get_ma_value(value_entry);
+  tuple = PyTuple_New(2);
+  if (!tuple) {
+    Py_DECREF(key);
+    Py_DECREF(value);
+    return NULL;
+  }
+  err = PyTuple_SetItem(tuple, 0, key);
+  if (err) {
+    Py_DECREF(key);
+    Py_DECREF(value);
+    Py_DECREF(tuple);
+    return NULL;
+  }
+  err = PyTuple_SetItem(tuple, 1, value);
+  if (err) {
+    Py_DECREF(value);
+    Py_DECREF(tuple);
+    return NULL;
+  }
+  CacheMap_DelItem(self, key);
+  PyErr_Clear(); /* Don't care del error */
+  return tuple;
+}
+
 static PyObject *CacheMap_setdefault(CtsCacheMap *self, PyObject *args,
                                      PyObject *kw) {
   PyObject *key;
@@ -654,8 +701,10 @@ static PyMethodDef CacheMap_methods[] = {
      "set default to cache and return it."},
     {"pop", (PyCFunction)CacheMap_pop, METH_VARARGS | METH_KEYWORDS,
      "pop(key, default=None, /)\n--\n\nPop an item from cache, if key not "
-     "exists "
-     "return default."},
+     "exists return default."},
+    {"popitem", (PyCFunction)CacheMap_popitem, METH_NOARGS,
+     "popitem()\n--\n\nremove and return some (key, value) pair"
+     "as a 2-tuple; but raise KeyError if mapping is empty"},
     {"keys", (PyCFunction)CacheMap_keys, METH_NOARGS, "Iter keys."},
     {"values", (PyCFunction)CacheMap_values, METH_NOARGS, "Iter values."},
     {"items", (PyCFunction)CacheMap_items, METH_NOARGS,

@@ -153,15 +153,7 @@ typedef struct {
 
 /* KeyError would be set if key not in cache */
 static int TTLCache_DelItem(CtsTTLCache *self, PyObject *key) {
-  CtsTTLCacheEntry *entry = TTLCache_GetItemWithError(self, key);
-  if (!entry) {
-    ReturnKeyErrorIfErrorNotSet(key, -1);
-    return -1;
-  }
-  if (PyDict_DelItem(self->dict, key) != 0) {
-    return -1;
-  }
-  return 0;
+  return PyDict_DelItem(self->dict, key);
 }
 
 /* borrowed reference.*/
@@ -419,6 +411,62 @@ static PyObject *TTLCache_pop(CtsTTLCache *self, PyObject *args, PyObject *kw) {
   return result->ma_value;
 }
 
+static PyObject *TTLCache_popitem(CtsTTLCache *self,
+                                  PyObject *Py_UNUSED(args)) {
+  PyObject *keys, *key, *value, *tuple;
+  CtsTTLCacheEntry *value_entry;
+  Py_ssize_t size;
+  int err;
+  keys = PyDict_Keys(self->dict);
+  ReturnIfNULL(keys, NULL);
+  size = PyList_Size(keys);
+  if (size < 0) {
+    Py_DECREF(keys);
+    return NULL;
+  }
+  if (size == 0) {
+    PyErr_SetString(PyExc_KeyError, "popitem(): mapping is empty");
+    return NULL;
+  }
+  key = PyList_GetItem(keys, 0);
+  Py_DECREF(keys);
+  /* keys is not usable start from here */
+  if (key == NULL) {
+    return NULL;
+  }
+  value_entry = TTLCache_GetItemWithError(self, key);
+  if (value_entry == NULL) {
+    if (!PyErr_Occurred()) {
+      PyErr_Format(PyExc_KeyError, "%S", key);
+    }
+    return NULL;
+  }
+  Py_INCREF(key);
+  value = TTLCacheEntry_get_ma_value(value_entry);
+  tuple = PyTuple_New(2);
+  if (!tuple) {
+    Py_DECREF(key);
+    Py_DECREF(value);
+    return NULL;
+  }
+  err = PyTuple_SetItem(tuple, 0, key);
+  if (err) {
+    Py_DECREF(key);
+    Py_DECREF(value);
+    Py_DECREF(tuple);
+    return NULL;
+  }
+  err = PyTuple_SetItem(tuple, 1, value);
+  if (err) {
+    Py_DECREF(value);
+    Py_DECREF(tuple);
+    return NULL;
+  }
+  TTLCache_DelItem(self, key);
+  PyErr_Clear(); /* Don't care del error */
+  return tuple;
+}
+
 static PyObject *TTLCache_setdefault(CtsTTLCache *self, PyObject *args,
                                      PyObject *kw) {
   PyObject *key;
@@ -540,6 +588,9 @@ static PyMethodDef TTLCache_methods[] = {
      "it."},
     {"pop", (PyCFunction)TTLCache_pop, METH_VARARGS | METH_KEYWORDS,
      "pop(key, default=None)\n--\n\nPop item from cache"},
+    {"popitem", (PyCFunction)TTLCache_popitem, METH_NOARGS,
+     "popitem()\n--\n\nremove and return some (key, value) pair"
+     "as a 2-tuple; but raise KeyError if mapping is empty"},
     {"keys", (PyCFunction)TTLCache_keys, METH_NOARGS, "Iter keys"},
     {"values", (PyCFunction)TTLCache_values, METH_NOARGS, "Iter values"},
     {"items", (PyCFunction)TTLCache_items, METH_NOARGS, "iter items"},
