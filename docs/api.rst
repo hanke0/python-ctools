@@ -22,11 +22,14 @@ Classes
 -------
 ------------
 
-.. autoclass:: Channel
-    :members:
-
 .. autoclass:: CacheMap
     :members:
 
 .. autoclass:: TTLCache
+    :members:
+
+.. autoclass:: Channel
+    :members:
+
+.. autoclass:: SortedMap
     :members:
