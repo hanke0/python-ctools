@@ -46,7 +46,7 @@ test:  ## running test
 	@$(CURDIR)/tools/runtest.py -s ./tests -p .
 
 .PHONY: doc
-doc: build ## genetate api doc
+doc: build ## generate api doc
 	cd docs && make clean && make html
 
 .PHONY: check
