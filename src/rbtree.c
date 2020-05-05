@@ -87,7 +87,8 @@ static int RBTreeNode_tp_clear(CtsRBTreeNode *self) {
   Py_CLEAR(self->value);
   Py_CLEAR(self->left);
   Py_CLEAR(self->right);
-  Py_CLEAR(self->parent);
+  /* don't need to clear parent node */
+  self->parent = NULL;
   return 0;
 }
 
@@ -235,7 +236,7 @@ static int rbtree_node_compare(CtsRBTree *tree, CtsRBTreeNode *a,
  *
  *  Note: [a, b, c d] means any sub tree.
  */
-static void left_rotate(CtsRBTree *tree, CtsRBTreeNode *x) {
+static void rbtree_left_rotate(CtsRBTree *tree, CtsRBTreeNode *x) {
   CtsRBTreeNode *y = x->right;
   CtsRBTreeNode *sentinel = tree->sentinel;
   /* First step */
@@ -258,9 +259,10 @@ static void left_rotate(CtsRBTree *tree, CtsRBTreeNode *x) {
   x->parent = y;
 }
 
-static void right_rotate(CtsRBTree *tree, CtsRBTreeNode *x) {
+static void rbtree_right_rotate(CtsRBTree *tree, CtsRBTreeNode *x) {
   CtsRBTreeNode *y = x->left;
   CtsRBTreeNode *sentinel = tree->sentinel;
+  assert(x != sentinel);
 
   x->left = y->right;
   if (y->right != sentinel) {
@@ -278,11 +280,10 @@ static void right_rotate(CtsRBTree *tree, CtsRBTreeNode *x) {
   x->parent = y;
 }
 
-static int rbtree_insert_fix(CtsRBTree *tree, CtsRBTreeNode *z) {
+static void rbtree_insert_fix(CtsRBTree *tree, CtsRBTreeNode *z) {
   CtsRBTreeNode *y;
-  CtsRBTreeNode *root = tree->root;
   /* sentinel is always black */
-  while (z != root && RBTreeNode_IsRed(z->parent)) {
+  while (RBTreeNode_IsRed(z->parent)) {
     if (z->parent == z->parent->parent->left) {
       /* z is grandfather's left branch */
       y = z->parent->parent->right;
@@ -294,13 +295,12 @@ static int rbtree_insert_fix(CtsRBTree *tree, CtsRBTreeNode *z) {
       } else {
         if (z == z->parent->right) {
           z = z->parent;
-          left_rotate(tree, z);
+          rbtree_left_rotate(tree, z);
         }
         z->parent->color = RBTree_BLACK;
         z->parent->parent->color = RBTree_RED;
-        right_rotate(tree, z->parent->parent);
+        rbtree_right_rotate(tree, z->parent->parent);
       }
-
     } else {
       /* z is grandfather's right branch */
       y = z->parent->parent->left;
@@ -312,16 +312,15 @@ static int rbtree_insert_fix(CtsRBTree *tree, CtsRBTreeNode *z) {
       } else {
         if (z == z->parent->left) {
           z = z->parent;
-          right_rotate(tree, z);
+          rbtree_right_rotate(tree, z);
         }
         RBTreeNode_SetBlack(z->parent);
         RBTreeNode_SetRed(z->parent->parent);
-        left_rotate(tree, z->parent->parent);
+        rbtree_left_rotate(tree, z->parent->parent);
       }
     }
   }
   RBTreeNode_SetBlack(tree->root);
-  return 0;
 }
 
 /* steal the reference of z */
@@ -353,24 +352,23 @@ static int RBTree_PutNode(CtsRBTree *tree, CtsRBTreeNode *z) {
     Py_SETREF(tree->root, z);
     goto success;
   }
-  flag = rbtree_node_compare(tree, z, y);
-  if (flag < 0) {
-    goto fail;
-  } else if (flag == RBTree_LT) {
-    y->left = z;
+
+  /* insert in to sentinel node. */
+  if (flag == RBTree_LT) {
+    Py_SETREF(y->left, z);
   } else if (flag == RBTree_GT) {
-    y->right = z;
+    Py_SETREF(y->right, z);
   } else {
-    assert(0);
-    /* Can't be here. */
-    return 0;
+    abort();
   }
+
 success:
   RBTree_SetSentinel(tree, z->left);
   RBTree_SetSentinel(tree, z->right);
   RBTreeNode_SetRed(z);
   tree->length++;
-  return rbtree_insert_fix(tree, z);
+  rbtree_insert_fix(tree, z);
+  return 0;
 fail:
   Py_DECREF(z);
   return -1;
@@ -384,8 +382,8 @@ static int RBTree_Put(CtsRBTree *tree, PyObject *key, PyObject *value) {
   return RBTree_PutNode(tree, node);
 }
 
-/* Return new reference */
-static int RBTree_Get(CtsRBTree *tree, PyObject *key, PyObject **value) {
+/* borrowed reference */
+static int rbtree_find(CtsRBTree *tree, PyObject *key, CtsRBTreeNode **node) {
   CtsRBTreeNode *x = tree->root;
   CtsRBTreeNode *sentinel = tree->sentinel;
   int flag;
@@ -400,12 +398,212 @@ static int RBTree_Get(CtsRBTree *tree, PyObject *key, PyObject **value) {
     } else if (flag == RBTree_GT) {
       x = x->right;
     } else {
-      Py_INCREF(x->value);
-      *value = x->value;
+      *node = x;
       return 1;
     }
   }
+  *node = NULL;
   return 0;
+}
+
+/* Return new reference */
+static int RBTree_Get(CtsRBTree *tree, PyObject *key, PyObject **value) {
+  CtsRBTreeNode *node;
+  int flag;
+
+  flag = rbtree_find(tree, key, &node);
+  if (flag < 0) {
+    return -1;
+  } else if (flag > 0) {
+    Py_INCREF(node->value);
+    *value = node->value;
+    return 1;
+  }
+  return 0;
+}
+
+/* must make sure node != sentinel before call this */
+static CtsRBTreeNode *rbtree_min(CtsRBTreeNode *node, CtsRBTreeNode *sentinel) {
+  while (node->left != sentinel) {
+    node = node->left;
+  }
+  return node;
+}
+
+static CtsRBTreeNode *rbtree_next(CtsRBTree *tree, CtsRBTreeNode *node) {
+  CtsRBTreeNode *root, *sentinel, *parent;
+
+  sentinel = tree->sentinel;
+  if (node->right != sentinel) {
+    return rbtree_min(node->right, sentinel);
+  }
+
+  root = tree->root;
+
+  for (;;) {
+    parent = node->parent;
+
+    if (node == root) {
+      return NULL;
+    }
+
+    if (node == parent->left) {
+      return parent;
+    }
+
+    node = parent;
+  }
+}
+
+static void rbtree_transplant(CtsRBTree *tree, CtsRBTreeNode *u,
+                              CtsRBTreeNode *v) {
+  CtsRBTreeNode *sentinel = tree->sentinel;
+  if (u->parent == sentinel) {
+    tree->root = v;
+  } else if (u == u->parent->left) {
+    u->parent->left = v;
+  } else {
+    u->parent->right = v;
+  }
+  v->parent = u->parent;
+}
+
+static void rbtree_delete_fixup(CtsRBTree *tree, CtsRBTreeNode *x) {
+  CtsRBTreeNode *root = tree->root;
+  CtsRBTreeNode *w;
+  while (x != root && RBTreeNode_IsBlack(x)) {
+    if (x == x->parent->left) {
+      w = x->parent->right;
+      if (RBTreeNode_IsRed(w)) {
+        RBTreeNode_SetBlack(w);
+        RBTreeNode_SetRed(x->parent);
+        rbtree_left_rotate(tree, x->parent);
+        w = x->parent->right;
+      }
+      if (RBTreeNode_IsBlack(w->left) && RBTreeNode_IsBlack(w->right)) {
+        RBTreeNode_SetRed(w);
+        x = x->parent;
+      } else {
+        if (RBTreeNode_IsBlack(w->right)) {
+          RBTreeNode_SetBlack(w->left);
+          RBTreeNode_SetRed(w);
+          rbtree_right_rotate(tree, w);
+          w = x->parent->right;
+        }
+        w->color = x->parent->color;
+        RBTreeNode_SetBlack(x->parent);
+        RBTreeNode_SetBlack(w->right);
+        rbtree_left_rotate(tree, x->parent);
+        x = root;
+      }
+    } else {
+      w = x->parent->left;
+      if (RBTreeNode_IsRed(w)) {
+        RBTreeNode_SetBlack(w);
+        RBTreeNode_SetRed(x->parent);
+        rbtree_right_rotate(tree, x->parent);
+        w = x->parent->left;
+      }
+      if (RBTreeNode_IsBlack(w->left) && RBTreeNode_IsBlack(w->right)) {
+        RBTreeNode_SetRed(w);
+        x = x->parent;
+      } else {
+        if (RBTreeNode_IsBlack(w->left)) {
+          RBTreeNode_SetBlack(w->right);
+          RBTreeNode_SetRed(w);
+          rbtree_left_rotate(tree, w);
+          w = x->parent->left;
+        }
+        w->color = x->parent->color;
+        RBTreeNode_SetBlack(x->parent);
+        RBTreeNode_SetBlack(w->left);
+        rbtree_right_rotate(tree, x->parent);
+        x = root;
+      }
+    }
+  }
+  RBTreeNode_SetBlack(x);
+}
+
+static void rbtree_delete(CtsRBTree *tree, CtsRBTreeNode *z) {
+  CtsRBTreeNode *y, *x, *sentinel;
+  char y_origin_color;
+
+  sentinel = tree->sentinel;
+  y = z;
+  y_origin_color = y->color;
+
+  if (z->left == sentinel) {
+    x = z->right;
+    rbtree_transplant(tree, z, z->right);
+  } else if (z->right == sentinel) {
+    x = z->left;
+    rbtree_transplant(tree, z, z->left);
+  } else {
+    y = rbtree_min(z->right, sentinel);
+    y_origin_color = y->color;
+    x = y->right;
+    if (y->parent == z) {
+      x->parent = y;
+    } else {
+      rbtree_transplant(tree, y, y->right);
+      y->right = z->right;
+      y->right->parent = y;
+    }
+    rbtree_transplant(tree, z, y);
+    y->left = z->left;
+    y->left->parent = y;
+    y->color = z->color;
+  }
+  if (y_origin_color == RBTree_BLACK) {
+    rbtree_delete_fixup(tree, x);
+  }
+}
+
+static void RBTree_RemoveNode(CtsRBTree *tree, CtsRBTreeNode *node) {
+  rbtree_delete(tree, node);
+  Py_DECREF(node->key);
+  Py_DECREF(node->value);
+  if (node->left == tree->sentinel) {
+    Py_DECREF(tree->sentinel);
+  }
+  if (node->right == tree->sentinel) {
+    Py_DECREF(tree->sentinel);
+  }
+  node->left = NULL;
+  node->right = NULL;
+  node->key = NULL;
+  node->value = NULL;
+  node->parent = NULL;
+  Py_DECREF(node);
+  tree->length--;
+}
+
+/* return new reference of value
+ * if not in tree, do nothing, set value to NULL and return 0
+ * value could be NULL, if value is NULL, delete silently */
+static int RBTree_Remove(CtsRBTree *tree, PyObject *key, PyObject **value) {
+  CtsRBTreeNode *node;
+  int flag;
+  flag = rbtree_find(tree, key, &node);
+  if (flag < 0) {
+    if (value) {
+      *value = NULL;
+    }
+    return -1;
+  } else if (flag == 0) {
+    if (value) {
+      *value = NULL;
+    }
+    return 0;
+  } else {
+    if (value) {
+      Py_INCREF(node->value);
+      *value = node->value;
+    }
+    RBTree_RemoveNode(tree, node);
+    return 0;
+  }
 }
 
 static CtsRBTree *RBTree_New(PyObject *cmp) {
@@ -460,6 +658,7 @@ static Py_ssize_t RBTree_size(CtsRBTree *tree) { return tree->length; }
 static PyObject *RBTree_mp_subscript(CtsRBTree *tree, PyObject *key) {
   PyObject *value;
   int find;
+
   find = RBTree_Get(tree, key, &value);
   if (find < 0) {
     return NULL;
@@ -472,11 +671,20 @@ static PyObject *RBTree_mp_subscript(CtsRBTree *tree, PyObject *key) {
 
 /* __setitem__, __delitem__ */
 static int RBTree_mp_ass_sub(CtsRBTree *tree, PyObject *key, PyObject *value) {
+  PyObject *removed;
+
   if (!value) {
-    /* TODO */
-    PyErr_SetString(PyExc_NotImplementedError, "");
-    return -1;
+    if (RBTree_Remove(tree, key, &removed)) {
+      return -1;
+    }
+    if (!removed) {
+      PyErr_Format(PyExc_KeyError, "%S", key);
+      return -1;
+    }
+    Py_DECREF(removed);
+    return 0;
   }
+
   return RBTree_Put(tree, key, value);
 }
 
@@ -513,37 +721,6 @@ static PySequenceMethods RBTree_as_sequence = {
     0,                           /* sq_inplace_repeat */
 };
 
-static CtsRBTreeNode *RBTree_min(CtsRBTreeNode *node, CtsRBTreeNode *sentinel) {
-  while (node->left != sentinel) {
-    node = node->left;
-  }
-  return node;
-}
-
-static CtsRBTreeNode *RBTree_next(CtsRBTree *tree, CtsRBTreeNode *node) {
-  CtsRBTreeNode *root, *sentinel, *parent;
-
-  sentinel = tree->sentinel;
-  if (node->right != sentinel) {
-    return RBTree_min(node->right, sentinel);
-  }
-
-  root = tree->root;
-
-  for (;;) {
-    parent = node->parent;
-
-    if (node == root) {
-      return NULL;
-    }
-
-    if (node == parent->left) {
-      return parent;
-    }
-
-    node = parent;
-  }
-}
 #define RBTreeKeys 1
 #define RBTreeValues 2
 #define RBTreeItems 3
@@ -565,8 +742,8 @@ static PyObject *RBtree_iter(CtsRBTree *tree, int type) {
   root = tree->root;
   sentinel = tree->sentinel;
   top = -1;
-  node = RBTree_min(root, sentinel);
-  for (; node; node = RBTree_next(tree, node)) {
+  node = rbtree_min(root, sentinel);
+  for (; node; node = rbtree_next(tree, node)) {
     switch (type) {
     case RBTreeKeys:
       Py_INCREF(node->key);
@@ -754,12 +931,175 @@ static PyObject *RBTree_clear(CtsRBTree *tree, PyObject *Py_UNUSED(ignore)) {
   Py_RETURN_NONE;
 }
 
+static PyObject *RBTree_pop(CtsRBTree *tree, PyObject *args, PyObject *kwds) {
+  PyObject *key, *value;
+  PyObject *default_ = NULL;
+
+  static char *kwlist[] = {"key", "default", NULL};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O", kwlist, &key,
+                                   &default_)) {
+    return NULL;
+  }
+  if (RBTree_Remove(tree, key, &value)) {
+    return NULL;
+  }
+
+  if (!value) {
+    if (!default_) {
+      Py_RETURN_NONE;
+    }
+    Py_INCREF(default_);
+    return default_;
+  } else {
+    return value;
+  }
+}
+
+static PyObject *RBTree_popitem(CtsRBTree *tree, PyObject *Py_UNUSED(ignore)) {
+  PyObject *key, *value, *tuple;
+  CtsRBTreeNode *node;
+
+  if (tree->root == tree->sentinel) {
+    PyErr_SetString(PyExc_KeyError, "popitem(): mapping is empty");
+    return NULL;
+  }
+  node = rbtree_min(tree->root, tree->sentinel);
+  key = node->key;
+  value = node->value;
+  tuple = PyTuple_New(2);
+  ReturnIfNULL(tuple, NULL);
+  Py_INCREF(key);
+  if (PyTuple_SetItem(tuple, 0, key)) {
+    Py_DECREF(key);
+    Py_DECREF(tuple);
+    return NULL;
+  }
+  Py_INCREF(value);
+  if (PyTuple_SetItem(tuple, 1, value)) {
+    Py_DECREF(value);
+    Py_DECREF(tuple);
+    return NULL;
+  }
+  RBTree_RemoveNode(tree, node);
+  return tuple;
+}
+
+static void rbtree_print_help(CtsRBTreeNode *node, CtsRBTreeNode *sentinel,
+                              PyObject *list, int depth, int left) {
+  PyObject *level;
+  PyObject *tuple;
+
+  if (node == sentinel) {
+    return;
+  }
+
+  if (PyList_Size(list) == depth) {
+    level = PyList_New(0);
+    PyList_Append(list, level);
+    Py_DECREF(level);
+  } else {
+    level = PyList_GetItem(list, depth);
+  }
+  tuple = PyTuple_New(3);
+  PyTuple_SetItem(tuple, 0, PyUnicode_FromFormat("%S", node->parent->key));
+  PyTuple_SetItem(tuple, 1, PyUnicode_FromFormat("%S", node->key));
+
+  if (RBTreeNode_IsBlack(node)) {
+    if (left) {
+      PyTuple_SetItem(tuple, 2, PyUnicode_FromString("+*"));
+    } else {
+      PyTuple_SetItem(tuple, 2, PyUnicode_FromString("-*"));
+    }
+  } else {
+    if (left) {
+      PyTuple_SetItem(tuple, 2, PyUnicode_FromString("+o"));
+    } else {
+      PyTuple_SetItem(tuple, 2, PyUnicode_FromString("-o"));
+    }
+  }
+  PyList_Append(level, tuple);
+  Py_DECREF(tuple);
+  rbtree_print_help(node->left, sentinel, list, ++depth, 1);
+  rbtree_print_help(node->right, sentinel, list, depth, 0);
+}
+
+static PyObject *RBTree__print(CtsRBTree *tree, PyObject *Py_UNUSED(ignore)) {
+  PyObject *list, *level;
+  Py_ssize_t size;
+
+  list = PyList_New(0);
+  rbtree_print_help(tree->root, tree->sentinel, list, 0, 1);
+  size = PyList_Size(list);
+  for (int i = 0; i < size; i++) {
+    level = PyList_GetItem(list, i);
+    fprintf(stderr, "%d. ", i);
+    PyObject_Print(level, stderr, Py_PRINT_RAW);
+    fprintf(stderr, "\n");
+  }
+  fflush(stderr);
+  Py_DECREF(list);
+  Py_RETURN_NONE;
+}
+
+static PyObject *rbtree_build_tuple(CtsRBTreeNode *node) {
+  PyObject *tuple;
+  tuple = PyTuple_New(2);
+  if (!tuple) {
+    return NULL;
+  }
+  Py_INCREF(node->key);
+  if (PyTuple_SetItem(tuple, 0, node->key)) {
+    Py_DECREF(node->key);
+    Py_DECREF(tuple);
+    return NULL;
+  }
+  Py_INCREF(node->value);
+  if (PyTuple_SetItem(tuple, 1, node->value)) {
+    Py_DECREF(node->value);
+    Py_DECREF(tuple);
+    return NULL;
+  }
+  return tuple;
+}
+
+static PyObject *RBTree_max(CtsRBTree *tree, PyObject *Py_UNUSED(ignore)) {
+  CtsRBTreeNode *node, *sentinel;
+
+  sentinel = tree->sentinel;
+  if (tree->root == sentinel) {
+    PyErr_SetString(PyExc_KeyError, "max(): mapping is empty");
+    return NULL;
+  }
+  node = tree->root;
+  while (node->right != sentinel) {
+    node = node->right;
+  }
+  return rbtree_build_tuple(node);
+}
+
+static PyObject *RBTree_min(CtsRBTree *tree, PyObject *Py_UNUSED(ignore)) {
+  CtsRBTreeNode *node, *sentinel;
+
+  sentinel = tree->sentinel;
+  if (tree->root == sentinel) {
+    PyErr_SetString(PyExc_KeyError, "max(): mapping is empty");
+    return NULL;
+  }
+  node = tree->root;
+  while (node->left != sentinel) {
+    node = node->left;
+  }
+  return rbtree_build_tuple(node);
+}
+
 PyMethodDef RBTree_methods[] = {
-    {"keys", (PyCFunction)RBTree_keys, METH_NOARGS, "keys()\n--\n\nIter keys"},
+    {"_print", (PyCFunction)RBTree__print, METH_NOARGS, NULL},
+    {"keys", (PyCFunction)RBTree_keys, METH_NOARGS,
+     "keys()\n--\n\nIterate sorted keys"},
     {"values", (PyCFunction)RBTree_values, METH_NOARGS,
-     "values()\n--\n\nIter values"},
+     "values()\n--\n\nIterate over values in order of keys."},
     {"items", (PyCFunction)RBTree_items, METH_NOARGS,
-     "items()\n--\n\nIter items"},
+     "items()\n--\n\nIterate items in order of keys."},
     {
         "get",
         (PyCFunction)RBTree_get,
@@ -793,6 +1133,35 @@ PyMethodDef RBTree_methods[] = {
         METH_NOARGS,
         "clear()\n--\n\nclear mapping.",
     },
+    {
+        "pop",
+        (PyCFunction)RBTree_pop,
+        METH_VARARGS | METH_KEYWORDS,
+        "pop(key, default=None)\n--\n\nPop an item, if key not exists, return "
+        "default",
+    },
+    {
+        "popitem",
+        (PyCFunction)RBTree_popitem,
+        METH_NOARGS,
+        "popitem()\n--\n\nremove and return some (key, value) pair"
+        "as a 2-tuple; but raise KeyError if mapping is empty. Ensure key is "
+        "the smallest in the mapping.",
+    },
+    {
+        "max",
+        (PyCFunction)RBTree_max,
+        METH_NOARGS,
+        "max()\n--\n\nreturn maximum (key, value) pair"
+        "as a 2-tuple; but raise KeyError if mapping is empty.",
+    },
+    {
+        "min",
+        (PyCFunction)RBTree_min,
+        METH_NOARGS,
+        "min()\n--\n\nreturn minimum (key, value) pair"
+        "as a 2-tuple; but raise KeyError if mapping is empty.",
+    },
     {NULL, NULL, 0, NULL},
 };
 
@@ -821,6 +1190,33 @@ static PyObject *RBTree_tp_iter(CtsRBTree *tree) {
   return it;
 }
 
+PyDoc_STRVAR(RBTree__doc__,
+             "SortedMap(cmp=None, /)\n\n"
+             "A sorted map base on red-black tree.\n"
+             "`cmp` is a optional callable receive two keys, and "
+             "return negative integer if `k1 < k2`, "
+             "return positive integer if `k1 > k2`, "
+             "return 0 if `k1 == k2`.\n"
+             "It's every similar to standard C library qsort comparator.\n"
+             "\n.. versionadded:: 0.2.0\n"
+             "\n"
+             "Examples\n"
+             "--------\n"
+             ">>> import ctools\n"
+             ">>> foo = ctools.SortedMap()\n"
+             ">>> foo[1] = 1\n"
+             ">>> foo[2] = 2\n"
+             ">>> foo[1]\n"
+             "1\n"
+             ">>> foo.max()\n"
+             "(2, 2)\n"
+             ">>> foo.min()\n"
+             "(1, 1)\n"
+             ">>> foo.keys()\n"
+             "[1, 2]\n"
+             ">>> foo.popitem()\n"
+             "(1, 1)");
+
 static PyTypeObject RBTree_Type = {
     /* clang-format off */
     PyVarObject_HEAD_INIT(NULL, 0)
@@ -837,6 +1233,7 @@ static PyTypeObject RBTree_Type = {
     .tp_methods = RBTree_methods,
     .tp_richcompare = (richcmpfunc)RBTree_tp_richcompare,
     .tp_iter = (getiterfunc)RBTree_tp_iter,
+    .tp_doc = RBTree__doc__,
 };
 
 EXTERN_C_START
