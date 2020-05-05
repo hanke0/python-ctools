@@ -17,6 +17,38 @@ import re
 import io
 import os
 from setuptools import setup, Extension, find_packages
+from distutils.command.build_ext import build_ext
+from distutils.command.build_clib import build_clib
+from distutils import sysconfig
+
+
+def _is_using_gcc(obj):
+    is_gcc = False
+    if obj.compiler.compiler_type == "unix":
+        cc = sysconfig.get_config_var("CC")
+        if not cc:
+            cc = ""
+        compiler_name = os.path.basename(cc)
+        is_gcc = "gcc" in compiler_name
+    return is_gcc
+
+
+class new_build_clib(build_clib):
+    def build_a_library(self, build_info, lib_name, libraries):
+        if _is_using_gcc(self):
+            args = build_info.get("extra_compiler_args") or []
+            args.append("-std=c99")
+            build_info["extra_compiler_args"] = args
+        build_clib.build_a_library(self, build_info, lib_name, libraries)
+
+
+class new_build_ext(build_ext):
+    def build_extension(self, ext):
+        if _is_using_gcc(self):
+            if "-std=c99" not in ext.extra_compile_args:
+                ext.extra_compile_args.append("-std=c99")
+        build_ext.build_extension(self, ext)
+
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -27,13 +59,17 @@ def source(*args):
 
 DEBUG = os.getenv("CTOOLS_DEBUG", "").upper() == "TRUE"
 
+
+extra_extension_args = {}
+
+
 if DEBUG:
-    extra_extension_args = dict(undef_macros=["NDEBUG"])
+    extra_extension_args.update(undef_macros=["NDEBUG"])
     print("-" * 80)
     print("Ctools enable DEBUG")
     print("-" * 80)
 else:
-    extra_extension_args = dict(define_macros=[("NDEBUG", "1")])
+    extra_extension_args.update(define_macros=[("NDEBUG", "1")])
 
 
 def find_version():
@@ -50,7 +86,15 @@ def find_version():
 extensions = [
     Extension(
         "ctools._ctools",
-        source("cachemap.c", "channel.c", "ttlcache.c", "functions.c", "module.c", "rbtree.c"),
+        source(
+            "cachemap.c",
+            "channel.c",
+            "ttlcache.c",
+            "functions.c",
+            "module.c",
+            "rbtree.c",
+        ),
+        language="c",
         **extra_extension_args
     ),
 ]
@@ -98,4 +142,5 @@ setup(
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
     ],
+    cmdclass={"build_ext": new_build_ext, "build_clib": new_build_clib},
 )
