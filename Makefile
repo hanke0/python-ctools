@@ -24,6 +24,7 @@ clean:  ## Clean cache, include dist
 format fmt:  ## Format code
 	@clang-format --verbose -i src/*
 	@black **/*.py
+	@black *.py
 
 .PHONY: benchmark
 benchmark:  ## Run benchmark
