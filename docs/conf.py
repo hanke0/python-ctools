@@ -48,6 +48,7 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.intersphinx",
     "numpydoc",
+    "sphinx_copybutton",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -87,3 +88,5 @@ intersphinx_cache_limit = 6
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3/", None),
 }
+
+copybutton_prompt_text = ">>> "
