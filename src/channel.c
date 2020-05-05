@@ -90,7 +90,7 @@ static void Channel_tp_dealloc(CtsChannel *ob) {
       }
       PyMem_FREE(ob->ob_item);
       PyObject_GC_Del(ob);
-      Py_TRASHCAN_SAFE_END(ob)
+  Py_TRASHCAN_SAFE_END(ob)
   /* clang-format on */
 }
 
@@ -264,7 +264,7 @@ static PyObject *Channel_recv(PyObject *self, PyObject *Py_UNUSED(u)) {
 
   recvx = Channel_recv_idx(ch);
   if (recvx == -2) {
-    PyErr_SetString(PyExc_RuntimeError, "channel is closed for receiving.");
+    PyErr_SetString(PyExc_IndexError, "channel is closed for receiving.");
     return NULL;
   }
 
@@ -296,7 +296,7 @@ static PyObject *Channel_send(PyObject *self, PyObject *obj) {
 
   sendx = Channel_send_idx(ch);
   if (sendx == -2) {
-    PyErr_SetString(PyExc_RuntimeError, "channel is closed for sending.");
+    PyErr_SetString(PyExc_IndexError, "channel is closed for sending.");
     return NULL;
   }
 
@@ -355,7 +355,7 @@ static PyObject *Channel_safe_consume(PyObject *self, PyObject *callback) {
   item = ch->ob_item[recvx];
   assert(item);
   Py_INCREF(item);
-  callback_rv = PyObject_CallFunction(callback, "O", item);
+  callback_rv = PyObject_CallFunctionObjArgs(callback, item, NULL);
   if (callback_rv == NULL) {
     Py_DECREF(item);
     return NULL;
@@ -398,25 +398,70 @@ static PyObject *Channel_size(PyObject *self, PyObject *Py_UNUSED(unused)) {
   return PyLong_FromLong(Py_SIZE(self));
 }
 
+PyDoc_STRVAR(
+    Channel_send__doc__,
+    "send(obj, /)\n--\n\nSend an object to channel. Return False if channel "
+    "is full.\n"
+    "\nReturns\n"
+    "-------\n"
+    "bool\n"
+    "  Return True if send success else False\n"
+    "\nRaises\n"
+    "------\n"
+    "IndexError\n"
+    "  If the channel is closing for sending");
+
+PyDoc_STRVAR(
+    Channel_recv__doc__,
+    "recv()\n--\n\nReceive an object from channel. If nothing in channel, "
+    "return None and False, else return received and True\n"
+    "\nReturns\n"
+    "-------\n"
+    "Tuple[Any, bool]\n"
+    "  Object that received and a boolean represent if recv success. Will "
+    "return `(None, False)` if no items in channel.\n"
+    "\nRaises\n"
+    "------\n"
+    "IndexError\n"
+    "  If the channel is closing for receive");
+
+PyDoc_STRVAR(Channel_safe_consume__doc__,
+             "safe_consume(fn, /)\n--\n\nsafe consume with a callable.\n\n"
+             "Parameters\n"
+             "----------\n"
+             "fn : Callable[[Any], bool]\n"
+             "  The `fn` receive an item as only one argument and must return "
+             "True on success, False on fail.\n"
+             "\n"
+             "Returns\n"
+             "-------\n"
+             "bool\n"
+             "  Return True if consume success, and False on fail.Return False "
+             "if no item in the channel.\n");
+
 static PyMethodDef Channel_methods[] = {
-    {"send", (PyCFunction)Channel_send, METH_O,
-     "send(obj, /)\n--\n\nSend an object to channel. Return False if channel "
-     "is full."},
-    {"recv", (PyCFunction)Channel_recv, METH_NOARGS,
-     "recv()\n--\n\nReceive an object from channel. If nothing in channel, "
-     "return None and False, else return received and True"},
-    {"clear", (PyCFunction)Channel_clear, METH_NOARGS,
-     "clear()\n--\n\nClear channel"},
+    {"send", (PyCFunction)Channel_send, METH_O, Channel_send__doc__},
+    {"recv", (PyCFunction)Channel_recv, METH_NOARGS, Channel_recv__doc__},
+    {
+        "clear",
+        (PyCFunction)Channel_clear,
+        METH_NOARGS,
+        "clear()\n--\n\nClear channel",
+    },
     {"close", (PyCFunction)Channel_close, METH_VARARGS | METH_KEYWORDS,
-     "close()\n--\n\nclose channel."},
-    {"safe_consume", (PyCFunction)Channel_safe_consume, METH_O,
-     "safe_consume(callback)\n--\n\nsafe consume with callback"},
+     "close(send=True, recv=True)\n--\n\nclose channel."},
+    {
+        "safe_consume",
+        (PyCFunction)Channel_safe_consume,
+        METH_O,
+        Channel_safe_consume__doc__,
+    },
     {"sendable", (PyCFunction)Channel_sendable, METH_NOARGS,
      "sendable()\n--\n\nchannel is available to send?"},
     {"recvable", (PyCFunction)Channel_recvable, METH_NOARGS,
      "recvable()\n--\n\nchannel is available to receive?"},
     {"size", (PyCFunction)Channel_size, METH_NOARGS,
-     "size()\n--\n\nreturn how many items in channel."},
+     "size()\n--\n\nreturn the size of channel."},
     {NULL, NULL, 0, NULL} /* Sentinel */
 };
 

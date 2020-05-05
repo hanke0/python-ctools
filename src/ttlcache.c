@@ -584,8 +584,7 @@ static PyMethodDef TTLCache_methods[] = {
     {"setdefault", (PyCFunction)TTLCache_setdefault,
      METH_VARARGS | METH_KEYWORDS,
      "setdefault(key, default=None, /)\n--\n\nGet item in cache, if key not "
-     "exists, set default to cache and return "
-     "it."},
+     "exists, set default to cache and return it."},
     {"pop", (PyCFunction)TTLCache_pop, METH_VARARGS | METH_KEYWORDS,
      "pop(key, default=None)\n--\n\nPop item from cache"},
     {"popitem", (PyCFunction)TTLCache_popitem, METH_NOARGS,
@@ -631,7 +630,9 @@ static PyObject *TTLCache_tp_richcompare(PyObject *self, PyObject *other,
 }
 
 PyDoc_STRVAR(TTLCache__doc__, "TTLCache(ttl=None)\n\n"
-                              "A fast TTLCache behaving much like dict.\n"
+                              "A fast TTLCache behaving much like dict. All "
+                              "key will expire after `ttl` seconds.\n"
+                              "\n"
                               "Default ttl is 1 minute.\n\n"
                               "Examples\n"
                               "--------\n"

@@ -1,9 +1,14 @@
 .. _api:
 
 API
----
+===
 
 .. currentmodule:: ctools
+
+Functions
+---------
+------------
+
 .. autofunction:: strhash
 
 
@@ -13,10 +18,15 @@ API
 .. autofunction:: int8_to_datetime
 
 
-.. autoclass:: Channel
+Classes
+-------
+------------
 
+.. autoclass:: Channel
+    :members:
 
 .. autoclass:: CacheMap
-
+    :members:
 
 .. autoclass:: TTLCache
+    :members:

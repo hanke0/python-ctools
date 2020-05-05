@@ -16,10 +16,11 @@ import sys
 try:
     import ctools
 
-    del ctools
 except ImportError:
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     sys.path.insert(0, project_root)
+
+    import ctools
 
 
 def get_version():
@@ -45,9 +46,7 @@ master_doc = "index"
 # ones.
 extensions = [
     "sphinx.ext.autodoc",
-    "sphinx.ext.autosummary",
     "sphinx.ext.intersphinx",
-    "sphinx.ext.napoleon",
     "numpydoc",
 ]
 
@@ -77,12 +76,12 @@ html_title = "%s v%s Manual" % (project, version)
 
 # -- sphinx.ext.autodoc -----------------------------------------------------
 autodoc_docstring_signature = True
-autoclass_content = "both"
+autodoc_default_flags = ["members"]
+autoclass_content = "class"
+
 numpydoc_show_class_members = True
 numpydoc_class_members_toctree = True
-
-autodoc_default_flags = ["members"]
-autosummary_generate = True
+numpydoc_xref_param_type = True
 
 intersphinx_cache_limit = 6
 intersphinx_mapping = {
