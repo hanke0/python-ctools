@@ -42,9 +42,11 @@ How To Test:
 
     Simple, type ``make test`` and take a sip of coffee.
 
-More
-====
-What's important is free.
+
+More:
+
+    What's important is free.
+
 
 .. _pip: https://pip.pypa.io/en/stable/quickstart/
 .. _jump_consistent_hash: https://arxiv.org/abs/1406.2294
