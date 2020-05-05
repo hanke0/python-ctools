@@ -11,7 +11,7 @@
 * :class:`CacheMap` and :class:`TTLCache` now support all of MutableMapping methods.
 * :meth:`CacheMap.setnx` and :meth:`TTLCache.setnx` must accept key as their only one argument.
 * :class:`CacheMap` default size is setting to MAX_INT32.
-* :class:`TTLCache` default ttl is setting to MAX_INT32.
+* :class:`TTLCache` default ttl is setting to 1 minute.
 
 
 0.1.0
