@@ -499,8 +499,9 @@ static PyObject *CacheMap_pop(CtsCacheMap *self, PyObject *args, PyObject *kw) {
   CtsCacheMapEntry *result;
 
   static char *kwlist[] = {"key", "default", NULL};
-  if (!PyArg_ParseTupleAndKeywords(args, kw, "O|O", kwlist, &key, &_default))
+  if (!PyArg_ParseTupleAndKeywords(args, kw, "O|O", kwlist, &key, &_default)) {
     return NULL;
+  }
   result = CacheMap_GetItemWithError(self, key);
   if (!result) {
     ReturnIfErrorSet(NULL);
@@ -697,8 +698,7 @@ static PyMethodDef CacheMap_methods[] = {
     {"setdefault", (PyCFunction)CacheMap_setdefault,
      METH_VARARGS | METH_KEYWORDS,
      "setdefault(key, default=None, /)\n--\n\nGet item in cache, if key not "
-     "exists, "
-     "set default to cache and return it."},
+     "exists, set default to cache and return it."},
     {"pop", (PyCFunction)CacheMap_pop, METH_VARARGS | METH_KEYWORDS,
      "pop(key, default=None, /)\n--\n\nPop an item from cache, if key not "
      "exists return default."},
