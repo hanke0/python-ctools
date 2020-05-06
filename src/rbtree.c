@@ -643,6 +643,7 @@ static int RBTree_tp_traverse(CtsRBTree *self, visitproc visit, void *arg) {
 
 static int RBTree_tp_clear(CtsRBTree *self) {
   Py_CLEAR(self->root);
+  Py_CLEAR(self->sentinel);
   return 0;
 }
 
@@ -1244,6 +1245,10 @@ int ctools_init_rbtree(PyObject *module) {
   if (PyType_Ready(&RBTreeSentinel_Type)) {
     return -1;
   }
+  if (PyType_Ready(&RBTree_Type) < 0) {
+    return -1;
+  }
+
   Py_INCREF(&RBTreeNode_Type);
   if (PyModule_AddObject(module, "SortedMapNode",
                          (PyObject *)&RBTreeNode_Type) < 0) {
@@ -1254,14 +1259,14 @@ int ctools_init_rbtree(PyObject *module) {
   if (PyModule_AddObject(module, "SortedMapSentinel",
                          PyObjectCast(RBTree_Sentinel))) {
     Py_DECREF(RBTree_Sentinel);
+    Py_DECREF(&RBTreeNode_Type);
     return -1;
   }
 
-  if (PyType_Ready(&RBTree_Type) < 0) {
-    return -1;
-  }
   Py_INCREF(&RBTree_Type);
   if (PyModule_AddObject(module, "SortedMap", (PyObject *)&RBTree_Type) < 0) {
+    Py_DECREF(RBTree_Sentinel);
+    Py_DECREF(&RBTreeNode_Type);
     Py_DECREF(&RBTree_Type);
     return -1;
   }
