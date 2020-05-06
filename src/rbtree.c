@@ -561,7 +561,19 @@ static void rbtree_delete(CtsRBTree *tree, CtsRBTreeNode *z) {
 }
 
 static void RBTree_RemoveNode(CtsRBTree *tree, CtsRBTreeNode *node) {
-  rbtree_delete(tree, node);
+  CtsRBTreeNode *root, *sentinel;
+
+  root = tree->root;
+  sentinel = tree->sentinel;
+  assert(root != sentinel);
+  assert(node != sentinel);
+  if (root == node && tree->length == 1) {
+    Py_INCREF(sentinel);
+    tree->root = sentinel;
+  } else {
+    rbtree_delete(tree, node);
+  }
+
   Py_DECREF(node->key);
   Py_DECREF(node->value);
   if (node->left == tree->sentinel) {
@@ -628,22 +640,33 @@ static CtsRBTree *RBTree_New(PyObject *cmp) {
 
 static PyObject *RBTree_tp_new(PyTypeObject *Py_UNUSED(type), PyObject *args,
                                PyObject *Py_UNUSED(kwds)) {
+  PyObject *o;
   PyObject *cmp = NULL;
   if (!PyArg_ParseTuple(args, "|O", &cmp)) {
     return NULL;
   }
-  return PyObjectCast(RBTree_New(cmp));
+  if (cmp == Py_None) {
+    Py_DECREF(cmp);
+    cmp = NULL;
+  }
+  o = PyObjectCast(RBTree_New(cmp));
+  if (cmp) {
+    Py_DECREF(cmp);
+  }
+  return o;
 }
 
 static int RBTree_tp_traverse(CtsRBTree *self, visitproc visit, void *arg) {
   Py_VISIT(self->root);
   Py_VISIT(self->sentinel);
+  Py_VISIT(self->cmpfunc);
   return 0;
 }
 
 static int RBTree_tp_clear(CtsRBTree *self) {
   Py_CLEAR(self->root);
   Py_CLEAR(self->sentinel);
+  Py_CLEAR(self->cmpfunc);
   return 0;
 }
 
