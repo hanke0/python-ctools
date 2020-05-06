@@ -568,20 +568,14 @@ static void RBTree_RemoveNode(CtsRBTree *tree, CtsRBTreeNode *node) {
   assert(root != sentinel);
   assert(node != sentinel);
   if (root == node && tree->length == 1) {
-    Py_INCREF(sentinel);
     tree->root = sentinel;
   } else {
     rbtree_delete(tree, node);
   }
 
+  Py_DECREF(sentinel);
   Py_DECREF(node->key);
   Py_DECREF(node->value);
-  if (node->left == tree->sentinel) {
-    Py_DECREF(tree->sentinel);
-  }
-  if (node->right == tree->sentinel) {
-    Py_DECREF(tree->sentinel);
-  }
   node->left = NULL;
   node->right = NULL;
   node->key = NULL;

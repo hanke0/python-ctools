@@ -34,6 +34,9 @@ class TestSortedMap(unittest.TestCase):
     def assert_ref(self, o1, o2, msg=None):
         self.assertEqual(sys.getrefcount(o1), sys.getrefcount(o2), msg=msg)
 
+    def _create_sorted_map(self, cmp=None):
+        return ctools.SortedMap(cmp)
+
     def _build_v(self, seq):
         sorted_map = ctools.SortedMap()
         mapping = dict()
@@ -132,11 +135,6 @@ class TestSortedMap(unittest.TestCase):
             self.assertTrue(key1 in sorted_map)
             self.assertTrue(key2 in mapping)
             self.assert_ref(key2, key1)
-
-    def test_len(self):
-        seq = list(range(1024))
-        keys1, keys2, sorted_map, mapping = self._build_v(seq)
-        self.assertEqual(len(keys1), len(sorted_map))
 
     def _test_iter(self, name):
         seq = list(range(1024))
@@ -438,6 +436,29 @@ class TestSortedMap(unittest.TestCase):
             k1 = keys1[i]
             k2 = keys2[i]
             self.assert_ref(k2, k1)
+
+    def test_len(self):
+        seq = list(range(1024))
+        s = self._create_sorted_map()
+        for i, v in enumerate(seq):
+            s[v] = v
+            self.assertEqual(i + 1, len(s))
+
+        total = len(seq)
+        for i, v in enumerate(seq):
+            del s[v]
+            self.assertEqual(total - i - 1, len(s))
+
+    def test_sentinel(self):
+        seq = list(range(1024))
+        s = self._create_sorted_map()
+        sentinel = _ctools.SortedMapSentinel
+        ref_count = sys.getrefcount(sentinel)
+        for i, v in enumerate(seq):
+            s[v] = v
+        for i, v in enumerate(seq):
+            del s[v]
+        self.assertEqual(ref_count, sys.getrefcount(sentinel))
 
 
 if __name__ == "__main__":
