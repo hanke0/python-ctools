@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+"""
+A auto unit tests runner for CTools.
+
+Use standard unittest library, so we can run in any python environment (no need install pytest).
+
+"""
 import sys
 import os
 import shutil
@@ -37,25 +43,27 @@ def _show_info():
     sys.stderr.flush()
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument(
-    "-k", dest="pattern", help="Only run tests which match the given substring"
+parser = argparse.ArgumentParser(
+    prog=os.path.basename(sys.argv[0]), description=__doc__.lstrip().splitlines()[0]
 )
-parser.add_argument("-v", "--verbose", dest="verbose", help="Verbose output")
-parser.add_argument("-q", "--quiet", dest="quiet", help="Quiet output")
+parser.add_argument(
+    "-k", dest="pattern", help="only run tests which match the given substring"
+)
+parser.add_argument("-v", "--verbose", dest="verbose", help="verbose output")
+parser.add_argument("-q", "--quiet", dest="quiet", help="quiet output")
 parser.add_argument(
     "-s",
     "--start-directory",
     default=".",
     dest="start_directory",
-    help="Directory to start discovery ('.' default)",
+    help="directory to start discovery ('.' default)",
 )
 parser.add_argument(
     "-p",
     "--python-path",
     dest="python_path",
     action="append",
-    help="Include python path",
+    help="python path inserted into sys.path",
 )
 
 

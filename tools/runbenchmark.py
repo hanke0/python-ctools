@@ -1,4 +1,21 @@
 #!/usr/bin/env python
+"""
+A benchmark runner.
+
+Files and functions that match pattern 'benchmark_*' is executed as a benchmark.
+
+Use decorator `benchmark_setup` to run setup before run benchmark.
+
+A typical benchmark example:
+```
+@benchmark_setup(hack_into=int)
+def benchmark_print_int(hack_into):
+    for i in range(100):
+        print(hack_info)
+```
+
+
+"""
 import glob
 import os
 import argparse
@@ -153,15 +170,23 @@ class Benchmark:
 
 
 def main():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        prog=os.path.basename(sys.argv[0]), description=__doc__.lstrip().splitlines()[0]
+    )
     parser.add_argument("path", default=["."], nargs="+")
-    parser.add_argument("-p", "--python-path", default=["."], nargs="*")
+    parser.add_argument(
+        "-p",
+        "--python-path",
+        default=["."],
+        nargs="*",
+        help="paths inserted to sys.path",
+    )
     parser.add_argument(
         "-e",
         "--error-exit",
         default=False,
         action="store_true",
-        help="Exit if error occurred",
+        help="exit if error occurred",
     )
 
     args = parser.parse_args()
