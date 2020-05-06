@@ -6,17 +6,20 @@ help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 .PHONY: dist
-dist:  ## Build dists
-	@$(CURDIR)/tools/clean-cache.sh
+dist: clean  ## Build dists
 	@$(CURDIR)/tools/dist.sh
-	@$(CURDIR)/tools/clean-cache.sh soft
+	@$(MAKE) clean-cache
 
-.PHONY: clean
-clean:  ## Clean cache, include dist
+.PHONY: clean-cache
+clean-cache:
 	find -name *.egg-info -exec rm -rf {} +
 	find -name *.pyc -exec rm -rf {} +
 	find -name *.pyo -exec rm -rf {} +
 	find -name *.so -exec rm -rf {} +
+	find -name *.pyd -exec rm -rf {} +
+
+.PHONY: clean
+clean: clean-cache ## Clean cache, include dist
 	rm -rf dist
 	rm -rf build
 
