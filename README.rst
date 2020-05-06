@@ -41,6 +41,7 @@ It provides:
 How To Test:
 
     Simple, type ``make test`` and take a sip of coffee.
+    Also can use ``make benchmark`` to run the benchmark test.
 
 
 More:
