@@ -1,0 +1,6 @@
+@import url("https://fonts.googleapis.com/css?family=Inconsolata");
+
+body, pre, tt, code {
+    font-family: "Inconsolata", monospace, monospace;
+    font-variant-ligatures: discretionary-ligatures;
+}

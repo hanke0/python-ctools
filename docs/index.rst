@@ -1,10 +1,7 @@
-.. ctools documentation master file, created by
-   sphinx-quickstart on Mon Sep 23 00:12:18 2019.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+CTools Documentation
+====================
 
-Welcome to ctools's documentation!
-==================================
+Welcome! This is the documentation for |ProjectName| |ProjectVersion|, last updated |BuildAt|.
 
 
 Install

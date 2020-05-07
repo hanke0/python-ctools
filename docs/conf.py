@@ -10,6 +10,7 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
+import datetime
 import os
 import sys
 
@@ -30,8 +31,9 @@ def get_version():
 
 
 # -- Project information -----------------------------------------------------
-project = "ctools"
-copyright = "2019, ko-han"
+build_at = datetime.date.today().strftime("%a %b %d %Y")
+project = "CTools"
+copyright = "2019, ko-han.    Last updated on " + build_at
 author = "ko-han"
 
 # The full version, including alpha/beta/rc tags
@@ -61,6 +63,14 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 pygments_style = "sphinx"
 
+rst_epilog = """\n
+.. |ProjectVersion| replace:: {version}
+.. |ProjectName| replace:: {project}
+.. |BuildAt| replace:: {build_at}
+""".format(
+    project=project, version=version, build_at=build_at,
+)
+
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -75,12 +85,30 @@ html_static_path = ["_static"]
 
 html_title = "%s v%s Manual" % (project, version)
 
-# -- sphinx.ext.autodoc -----------------------------------------------------
+font_family = '"Inconsolata", monospace, monospace'
+description = (
+    "A collection of useful data structures and functions written in C for Python."
+)
+html_theme_options = {
+    "github_user": "ko-han",
+    "github_repo": "python-ctools",
+    "github_banner": "false",
+    "github_button": "true",
+    "description": description,
+    "fixed_sidebar": "true",
+    "show_relbars": "true",
+    "code_font_family": font_family,
+    "font_family": font_family,
+    "head_font_family": font_family,
+}
+
+# -- sphinx.ext.autodoc ------------------------------------------------------
 autodoc_docstring_signature = True
 autodoc_default_flags = ["members"]
 autoclass_content = "class"
+autosummary_generate = True
 
-numpydoc_show_class_members = True
+numpydoc_show_class_members = False
 numpydoc_class_members_toctree = True
 numpydoc_xref_param_type = True
 

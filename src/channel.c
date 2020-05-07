@@ -467,7 +467,7 @@ static PyMethodDef Channel_methods[] = {
 };
 
 PyDoc_STRVAR(Channel_Doc, "Channel(size=None, /)\n\n"
-                          "A channel support send and safe resume.\n"
+                          "A channel support sending and safe consuming.\n"
                           "Default size is C ``MAX_INT32``\n\n"
                           "Examples\n"
                           "--------\n"

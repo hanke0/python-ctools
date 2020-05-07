@@ -7,7 +7,6 @@ API
 
 Functions
 ---------
-------------
 
 .. autofunction:: strhash
 
@@ -20,7 +19,6 @@ Functions
 
 Classes
 -------
-------------
 
 .. autoclass:: CacheMap
     :members:

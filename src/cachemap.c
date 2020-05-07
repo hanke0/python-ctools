@@ -744,7 +744,7 @@ static PyObject *CacheMap_tp_richcompare(PyObject *self, PyObject *other,
 }
 
 PyDoc_STRVAR(CacheMap__doc__, "CacheMap(maxsize=None, /)\n\n"
-                              "A fast CacheMap behaving much like dict.\n\n"
+                              "A fast LFU (least frequently used) mapping.\n\n"
                               "Default max size is C ``INT32_MAX``.\n\n"
                               "Examples\n"
                               "--------\n"

@@ -629,22 +629,23 @@ static PyObject *TTLCache_tp_richcompare(PyObject *self, PyObject *other,
   }
 }
 
-PyDoc_STRVAR(TTLCache__doc__, "TTLCache(ttl=None)\n\n"
-                              "A fast TTLCache behaving much like dict. All "
-                              "key will expire after `ttl` seconds.\n"
-                              "\n"
-                              "Default ttl is 1 minute.\n\n"
-                              "Examples\n"
-                              "--------\n"
-                              ">>> import ctools\n"
-                              ">>> import time\n"
-                              ">>> cache = ctools.TTLCache(5)\n"
-                              ">>> cache['foo'] = 'bar'\n"
-                              ">>> cache['foo']\n"
-                              "'bar'\n"
-                              ">>> time.sleep(5)\n"
-                              ">>> 'foo' in cache\n"
-                              "False\n");
+PyDoc_STRVAR(
+    TTLCache__doc__,
+    "TTLCache(ttl=None)\n\n"
+    "A mapping that keys expire and unreachable after ``ttl`` seconds.\n"
+    "\n"
+    "Default ``ttl`` is 1 minute.\n\n"
+    "Examples\n"
+    "--------\n"
+    ">>> import ctools\n"
+    ">>> import time\n"
+    ">>> cache = ctools.TTLCache(5)\n"
+    ">>> cache['foo'] = 'bar'\n"
+    ">>> cache['foo']\n"
+    "'bar'\n"
+    ">>> time.sleep(5)\n"
+    ">>> 'foo' in cache\n"
+    "False\n");
 
 static PyTypeObject TTLCache_Type = {
     /* clang-format off */
