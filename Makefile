@@ -49,9 +49,13 @@ build: clean  ## build package
 test:  ## running test
 	@$(CURDIR)/tools/runtest.py -s ./tests -p .
 
+.PHONY: check-doc
+check-doc:  ## check documentation
+	python $(CURDIR)/tools/checkdoc.py
+
 .PHONY: doc
-doc: build ## generate api doc
-	cd docs && make clean && make html
+doc: ## generate api doc
+	cd $(CURDIR)/docs && make clean && make html
 
 .PHONY: check
 check:
