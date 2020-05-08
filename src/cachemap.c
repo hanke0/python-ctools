@@ -259,7 +259,7 @@ static PyObject *CacheMap_NextEvictKey(CtsCacheMap *self) {
     if ((dict_len % CacheMap_BUCKET_NUM)) {
       pos = CacheMap_BUCKET_NUM * b_size +
             (dict_len - CacheMap_BUCKET_NUM * b_size) / 2;
-      wrapper = PyDict_GetItem(self->dict, PyList_GetItem(keylist, pos));
+      wrapper = PyDict_GetItem(self->dict, PyList_GET_ITEM(keylist, pos));
       weight = CacheEntry_GetWeight((CtsCacheMapEntry *)wrapper, now);
       if (min == 0 || weight < min) {
         rv = key;
