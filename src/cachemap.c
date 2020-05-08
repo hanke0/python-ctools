@@ -15,6 +15,7 @@ limitations under the License.
 */
 
 #include "core.h"
+#include "pydoc.h"
 
 #include <Python.h>
 #include <time.h>
@@ -690,11 +691,11 @@ static PyMethodDef CacheMap_methods[] = {
     {"set_capacity", (PyCFunction)CacheMap_set_capacity, METH_O,
      "set_capacity(capacity, /)\n--\n\n Reset capacity of cache."},
     {"hit_info", (PyCFunction)CacheMap_hit_info, METH_NOARGS,
-     "Return capacity, hits, and misses count"},
+     "hit_info()\n--\n\nReturn capacity, hits, and misses count."},
     {"next_evict_key", (PyCFunction)CacheMap_NextEvictKey, METH_NOARGS,
-     "Return the most unused key."},
+     "next_evict_key()\n--\n\nReturn the most unused key."},
     {"get", (PyCFunction)CacheMap_get, METH_VARARGS | METH_KEYWORDS,
-     "get(key, default=None)\n--\n\nGet item from cache"},
+     "get(key, default=None)\n--\n\nGet item from cache."},
     {"setdefault", (PyCFunction)CacheMap_setdefault,
      METH_VARARGS | METH_KEYWORDS,
      "setdefault(key, default=None, /)\n--\n\nGet item in cache, if key not "
@@ -703,19 +704,29 @@ static PyMethodDef CacheMap_methods[] = {
      "pop(key, default=None, /)\n--\n\nPop an item from cache, if key not "
      "exists return default."},
     {"popitem", (PyCFunction)CacheMap_popitem, METH_NOARGS,
-     "popitem()\n--\n\nremove and return some (key, value) pair"
-     "as a 2-tuple; but raise KeyError if mapping is empty"},
-    {"keys", (PyCFunction)CacheMap_keys, METH_NOARGS, "Iter keys."},
-    {"values", (PyCFunction)CacheMap_values, METH_NOARGS, "Iter values."},
+     "popitem()\n--\n\nRemove and return some (key, value) pair"
+     "as a 2-tuple; but raise KeyError if mapping is empty."},
+    {"keys", (PyCFunction)CacheMap_keys, METH_NOARGS,
+     "keys()\n--\n\nIter keys."},
+    {"values", (PyCFunction)CacheMap_values, METH_NOARGS,
+     "values()\n--\n\nIter values."},
     {"items", (PyCFunction)CacheMap_items, METH_NOARGS,
-     "Iter keys and values."},
+     "items()\n--\n\nIter keys and values."},
     {"update", (PyCFunction)CacheMap_update, METH_VARARGS | METH_KEYWORDS,
      "update(map, /)\n--\n\nUpdate item to cache. Unlike dict.update, only "
      "accept a dict object."},
-    {"clear", (PyCFunction)CacheMap_clear, METH_NOARGS, "clean cache"},
-    {"setnx", (PyCFunction)CacheMap_setnx, METH_VARARGS | METH_KEYWORDS,
-     "setnx(key, fn, /)\n--\n\nLike setdefault but accept a callable "
-     "object which takes key as only one argument"},
+    {
+        "clear",
+        (PyCFunction)CacheMap_clear,
+        METH_NOARGS,
+        "clear()\n--\n\nClean cache.",
+    },
+    {
+        "setnx",
+        (PyCFunction)CacheMap_setnx,
+        METH_VARARGS | METH_KEYWORDS,
+        USUAL_SETNX_METHOD_DOC,
+    },
     {"_storage", (PyCFunction)CacheMap__storage, METH_NOARGS, NULL},
     {NULL, NULL, 0, NULL} /* Sentinel */
 };
@@ -743,19 +754,25 @@ static PyObject *CacheMap_tp_richcompare(PyObject *self, PyObject *other,
   }
 }
 
-PyDoc_STRVAR(CacheMap__doc__, "CacheMap(maxsize=None, /)\n\n"
-                              "A fast LFU (least frequently used) mapping.\n\n"
-                              "Default max size is C ``INT32_MAX``.\n\n"
-                              "Examples\n"
-                              "--------\n"
-                              ">>> import ctools\n"
-                              ">>> cache = ctools.CacheMap(1)\n"
-                              ">>> cache['foo'] = 'bar'\n"
-                              ">>> cache['foo']\n"
-                              "'bar'\n"
-                              ">>> cache['bar'] = 'foo'\n"
-                              ">>> 'foo' in cache\n"
-                              "False\n");
+PyDoc_STRVAR(CacheMap__doc__,
+             "CacheMap(maxsize=None, )\n--\n\n"
+             "A fast LFU (least frequently used) mapping.\n"
+             "\n"
+             "Parameters\n"
+             "----------\n"
+             "maxsize : int\n"
+             "  Max size of cache, default is  C ``INT32_MAX``.\n"
+             "\n"
+             "Examples\n"
+             "--------\n"
+             ">>> import ctools\n"
+             ">>> cache = ctools.CacheMap(1)\n"
+             ">>> cache['foo'] = 'bar'\n"
+             ">>> cache['foo']\n"
+             "'bar'\n"
+             ">>> cache['bar'] = 'foo'\n"
+             ">>> 'foo' in cache\n"
+             "False\n");
 
 static PyTypeObject CacheMap_Type = {
     /* clang-format off */

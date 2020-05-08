@@ -15,6 +15,7 @@ limitations under the License.
 */
 
 #include "core.h"
+#include "pydoc.h"
 
 #include <Python.h>
 
@@ -1111,58 +1112,69 @@ static PyObject *RBTree_min(CtsRBTree *tree, PyObject *Py_UNUSED(ignore)) {
 }
 
 PyMethodDef RBTree_methods[] = {
-    {"_print", (PyCFunction)RBTree__print, METH_NOARGS, NULL},
-    {"keys", (PyCFunction)RBTree_keys, METH_NOARGS,
-     "keys()\n--\n\nIterate sorted keys"},
-    {"values", (PyCFunction)RBTree_values, METH_NOARGS,
-     "values()\n--\n\nIterate over values in order of keys."},
-    {"items", (PyCFunction)RBTree_items, METH_NOARGS,
-     "items()\n--\n\nIterate items in order of keys."},
+    {"_print", (PyCFunction)RBTree__print, METH_NOARGS,
+     "Print tree, for debug."},
+    {
+        "keys",
+        (PyCFunction)RBTree_keys,
+        METH_NOARGS,
+        "keys()\n--\n\nIterate sorted keys.",
+    },
+    {
+        "values",
+        (PyCFunction)RBTree_values,
+        METH_NOARGS,
+        "values()\n--\n\nIterate over values in order of keys.",
+    },
+    {
+        "items",
+        (PyCFunction)RBTree_items,
+        METH_NOARGS,
+        "items()\n--\n\nIterate items in order of keys.",
+    },
     {
         "get",
         (PyCFunction)RBTree_get,
         METH_VARARGS | METH_KEYWORDS,
-        "get(key, default=None)\n--\n\nReturn value if find else default",
+        "get(key, default=None)\n--\n\nReturn value if find else default.",
     },
     {
         "setdefault",
         (PyCFunction)RBTree_setdefault,
         METH_VARARGS | METH_KEYWORDS,
         "setdefault(key, default=None)\n--\n\nReturn value if find else "
-        "default and put default to mapping",
+        "default and put default to mapping.",
     },
     {
         "setnx",
         (PyCFunction)RBTree_setnx,
         METH_VARARGS | METH_KEYWORDS,
-        "setnx(key, fn=None)\n--\n\nMuch like setdefault. Except if not find, "
-        "call fn.\n"
-        "fn is a callable that accept key as only one argument.",
+        USUAL_SETNX_METHOD_DOC,
     },
     {
         "update",
         (PyCFunction)RBTree_update,
         METH_VARARGS | METH_KEYWORDS,
-        "update(mp, **kwargs)\n--\n\nLiking dict.update, but only accept dict.",
+        "update(mp, **kwargs)\n--\n\nLike dict.update, but only accept dict.",
     },
     {
         "clear",
         (PyCFunction)RBTree_clear,
         METH_NOARGS,
-        "clear()\n--\n\nclear mapping.",
+        "clear()\n--\n\nClear mapping.",
     },
     {
         "pop",
         (PyCFunction)RBTree_pop,
         METH_VARARGS | METH_KEYWORDS,
         "pop(key, default=None)\n--\n\nPop an item, if key not exists, return "
-        "default",
+        "default.",
     },
     {
         "popitem",
         (PyCFunction)RBTree_popitem,
         METH_NOARGS,
-        "popitem()\n--\n\nremove and return some (key, value) pair"
+        "popitem()\n--\n\nRemove and return some (key, value) pair"
         "as a 2-tuple; but raise KeyError if mapping is empty. Ensure key is "
         "the smallest in the mapping.",
     },
@@ -1170,14 +1182,14 @@ PyMethodDef RBTree_methods[] = {
         "max",
         (PyCFunction)RBTree_max,
         METH_NOARGS,
-        "max()\n--\n\nreturn maximum (key, value) pair"
+        "max()\n--\n\nReturn maximum (key, value) pair"
         "as a 2-tuple; but raise KeyError if mapping is empty.",
     },
     {
         "min",
         (PyCFunction)RBTree_min,
         METH_NOARGS,
-        "min()\n--\n\nreturn minimum (key, value) pair"
+        "min()\n--\n\nReturn minimum (key, value) pair"
         "as a 2-tuple; but raise KeyError if mapping is empty.",
     },
     {NULL, NULL, 0, NULL},
@@ -1209,9 +1221,10 @@ static PyObject *RBTree_tp_iter(CtsRBTree *tree) {
 }
 
 PyDoc_STRVAR(RBTree__doc__,
-             "SortedMap(cmp=None, /)\n\n"
+             "SortedMap(cmp=None, /)\n--\n\n"
              "A sorted map base on red-black tree.\n\n"
              ".. versionadded:: 0.2.0\n"
+             "\n"
              "Parameters\n"
              "----------\n"
              "cmp : typing.Callable[[typing.Any], int]\n"
@@ -1236,7 +1249,7 @@ PyDoc_STRVAR(RBTree__doc__,
              ">>> foo.keys()\n"
              "[1, 2]\n"
              ">>> foo.popitem()\n"
-             "(1, 1)");
+             "(1, 1)\n");
 
 static PyTypeObject RBTree_Type = {
     /* clang-format off */

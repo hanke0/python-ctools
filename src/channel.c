@@ -398,36 +398,38 @@ static PyObject *Channel_size(PyObject *self, PyObject *Py_UNUSED(unused)) {
   return PyLong_FromLong(Py_SIZE(self));
 }
 
-PyDoc_STRVAR(
-    Channel_send__doc__,
-    "send(obj, /)\n--\n\nSend an object to channel. Return False if channel "
-    "is full.\n"
-    "\nReturns\n"
-    "-------\n"
-    "bool\n"
-    "  Return True if send success else False\n"
-    "\nRaises\n"
-    "------\n"
-    "IndexError\n"
-    "  If the channel is closing for sending");
+PyDoc_STRVAR(Channel_send__doc__, "send(obj, /)\n--\n\n"
+                                  "Send an object to channel.\n"
+                                  "\n"
+                                  "Returns\n"
+                                  "-------\n"
+                                  "bool\n"
+                                  "  Return True if send success else False\n"
+                                  "\n"
+                                  "Raises\n"
+                                  "------\n"
+                                  "IndexError\n"
+                                  "  If the channel is closing for sending.\n");
 
-PyDoc_STRVAR(
-    Channel_recv__doc__,
-    "recv()\n--\n\nReceive an object from channel. If nothing in channel, "
-    "return None and False, else return received and True\n"
-    "\nReturns\n"
-    "-------\n"
-    "o\n"
-    "  Object that received. Return None if no items in channel.\n"
-    "ok : bool\n"
-    "  Return False if no items in channel else True.\n"
-    "\nRaises\n"
-    "------\n"
-    "IndexError\n"
-    "  If the channel is closing for receive");
+PyDoc_STRVAR(Channel_recv__doc__,
+             "recv()\n--\n\n"
+             "Receive an object from channel.\n"
+             "\n"
+             "Returns\n"
+             "-------\n"
+             "o\n"
+             "  Object that received. Return None if no items in channel.\n"
+             "ok : bool\n"
+             "  Return False if no items in channel else True.\n"
+             "\n"
+             "Raises\n"
+             "------\n"
+             "IndexError\n"
+             "  If the channel is closing for receive.\n");
 
 PyDoc_STRVAR(Channel_safe_consume__doc__,
-             "safe_consume(fn, /)\n--\n\nsafe consume with a callable.\n\n"
+             "safe_consume(fn, /)\n--\n\n"
+             "Safe consume with a callable.\n\n"
              "Parameters\n"
              "----------\n"
              "fn : Callable[[Any], bool]\n"
@@ -447,10 +449,10 @@ static PyMethodDef Channel_methods[] = {
         "clear",
         (PyCFunction)Channel_clear,
         METH_NOARGS,
-        "clear()\n--\n\nClear channel",
+        "clear()\n--\n\nClear channel.",
     },
     {"close", (PyCFunction)Channel_close, METH_VARARGS | METH_KEYWORDS,
-     "close(send=True, recv=True)\n--\n\nclose channel."},
+     "close(send=True, recv=True)\n--\n\nClose channel."},
     {
         "safe_consume",
         (PyCFunction)Channel_safe_consume,
@@ -458,29 +460,35 @@ static PyMethodDef Channel_methods[] = {
         Channel_safe_consume__doc__,
     },
     {"sendable", (PyCFunction)Channel_sendable, METH_NOARGS,
-     "sendable()\n--\n\nchannel is available to send?"},
+     "sendable()\n--\n\nReturn channel is available to send."},
     {"recvable", (PyCFunction)Channel_recvable, METH_NOARGS,
-     "recvable()\n--\n\nchannel is available to receive?"},
+     "recvable()\n--\n\nReturn channel is available to receive."},
     {"size", (PyCFunction)Channel_size, METH_NOARGS,
-     "size()\n--\n\nreturn the size of channel."},
+     "size()\n--\n\nReturn the size of channel."},
     {NULL, NULL, 0, NULL} /* Sentinel */
 };
 
-PyDoc_STRVAR(Channel_Doc, "Channel(size=None, /)\n\n"
-                          "A channel support sending and safe consuming.\n"
-                          "Default size is C ``MAX_INT32``\n\n"
-                          "Examples\n"
-                          "--------\n"
-                          ">>> import ctools\n"
-                          ">>> ch = ctools.Channel(1)\n"
-                          ">>> ch.send('foo')\n"
-                          "True\n"
-                          ">>> ch.send('bar')\n"
-                          "False\n"
-                          ">>> ch.recv()\n"
-                          "('foo', True)\n"
-                          ">>> ch.recv()\n"
-                          "(None, False)");
+PyDoc_STRVAR(Channel_Doc,
+             "Channel(size=None, /)\n--\n\n"
+             "A channel support sending and safe consuming.\n"
+             "\n"
+             "Parameters\n"
+             "----------\n"
+             "size : int, optional\n"
+             "  The max size of channel, default to C ``MAX_INT32``.\n"
+             "\n"
+             "Examples\n"
+             "--------\n"
+             ">>> import ctools\n"
+             ">>> ch = ctools.Channel(1)\n"
+             ">>> ch.send('foo')\n"
+             "True\n"
+             ">>> ch.send('bar')\n"
+             "False\n"
+             ">>> ch.recv()\n"
+             "('foo', True)\n"
+             ">>> ch.recv()\n"
+             "(None, False)\n");
 
 static PyTypeObject Channel_Type = {
     /* clang-format off */

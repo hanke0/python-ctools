@@ -55,25 +55,26 @@ static PyObject *Ctools__jump_hash(PyObject *Py_UNUSED(module),
 #define PyDateTime_FromDate(year, month, day)                                  \
   PyDateTime_FromDateAndTime(year, month, day, 0, 0, 0, 0)
 
-PyDoc_STRVAR(int8_to_datetime__doc__,
-             "int8_to_datetime(date_integer, /)\n"
-             "--\n\n"
-             "Convert int like 20180101 to datetime.datetime(2018, 1, 1)).\n\n"
-             "Parameters\n"
-             "----------\n"
-             "date_integer : int\n"
-             "  The string to hash.\n"
-             "\n"
-             "Returns\n"
-             "-------\n"
-             "datetime.datetime\n"
-             "  parsed datetime\n"
-             "\n"
-             "Examples\n"
-             "--------\n"
-             ">>> import ctools\n"
-             ">>> ctools.int8_to_datetime(20010101)\n"
-             "datetime.datetime(2001, 1, 1, 0, 0)\n");
+PyDoc_STRVAR(
+    int8_to_datetime__doc__,
+    "int8_to_datetime(date_integer, /)\n"
+    "--\n\n"
+    "Convert integer like 20180101 to datetime.datetime(2018, 1, 1)).\n\n"
+    "Parameters\n"
+    "----------\n"
+    "date_integer : int\n"
+    "  The string to hash.\n"
+    "\n"
+    "Returns\n"
+    "-------\n"
+    "datetime.datetime\n"
+    "  parsed datetime\n"
+    "\n"
+    "Examples\n"
+    "--------\n"
+    ">>> import ctools\n"
+    ">>> ctools.int8_to_datetime(20010101)\n"
+    "datetime.datetime(2001, 1, 1, 0, 0)\n");
 
 static PyObject *Ctools__int8_to_datetime(PyObject *Py_UNUSED(module),
                                           PyObject *date_integer) {
@@ -158,21 +159,27 @@ static unsigned int djb2(const char *str, unsigned long len) {
   return hash;
 }
 
-PyDoc_STRVAR(strhash__doc__, "strhash(s, method='fnv1a', /)\n"
-                             "--\n\n"
-                             "hash str with consistent value.\n"
-                             "This function uses C bindings for speed.\n\n"
-                             "Parameters\n"
-                             "----------\n"
-                             "s : str\n"
-                             "  The string to hash.\n"
-                             "method : str\n"
-                             "  fnv1a | fnv1 | djb2 | murmur\n"
-                             "\n"
-                             "Returns\n"
-                             "-------\n"
-                             "int\n"
-                             "  hash number");
+PyDoc_STRVAR(strhash__doc__,
+             "strhash(s, method='fnv1a', /)\n"
+             "--\n\n"
+             "Hash str with consistent value.\n"
+             "\n"
+             "Parameters\n"
+             "----------\n"
+             "s : str\n"
+             "  The string to hash.\n"
+             "method : {'fnv1a', 'fnv1', 'djb2', 'murmur'}, optional\n"
+             "  Choice in method, default first when optional.\n"
+             "\n"
+             "Returns\n"
+             "-------\n"
+             "int\n"
+             "  hash number\n"
+             "\n"
+             "Raises\n"
+             "------\n"
+             "ValueError"
+             "  If method not supported.\n");
 
 static PyObject *Ctools__strhash(PyObject *Py_UNUSED(module), PyObject *args) {
   const char *s, *method = NULL;
@@ -213,7 +220,8 @@ static PyMethodDef methods[] = {
     {"strhash", Ctools__strhash, METH_VARARGS, strhash__doc__},
     {"int8_to_datetime", Ctools__int8_to_datetime, METH_O,
      int8_to_datetime__doc__},
-    {"build_with_debug", (PyCFunction)build_with_debug, METH_NOARGS, NULL},
+    {"build_with_debug", (PyCFunction)build_with_debug, METH_NOARGS,
+     "build_with_debug()\n--\n\nReturn if build in debug."},
     {NULL, NULL, 0, NULL},
 };
 

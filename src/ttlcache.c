@@ -15,6 +15,7 @@ limitations under the License.
 */
 
 #include "core.h"
+#include "pydoc.h"
 
 #include <Python.h>
 #include <time.h>
@@ -577,32 +578,87 @@ static PyObject *TTLCache_clear(CtsTTLCache *self) {
 
 /* tp_methods */
 static PyMethodDef TTLCache_methods[] = {
-    {"set_default_ttl", (PyCFunction)TTLCache_set_default_ttl, METH_O,
-     "set_default_ttl(ttl, /)\n--\n\nReset default ttl"},
-    {"get", (PyCFunction)TTLCache_get, METH_VARARGS | METH_KEYWORDS,
-     "get(key, default=None, /)\n--\n\nGet item from cache"},
-    {"setdefault", (PyCFunction)TTLCache_setdefault,
-     METH_VARARGS | METH_KEYWORDS,
-     "setdefault(key, default=None, /)\n--\n\nGet item in cache, if key not "
-     "exists, set default to cache and return it."},
-    {"pop", (PyCFunction)TTLCache_pop, METH_VARARGS | METH_KEYWORDS,
-     "pop(key, default=None)\n--\n\nPop item from cache"},
-    {"popitem", (PyCFunction)TTLCache_popitem, METH_NOARGS,
-     "popitem()\n--\n\nremove and return some (key, value) pair"
-     "as a 2-tuple; but raise KeyError if mapping is empty"},
-    {"keys", (PyCFunction)TTLCache_keys, METH_NOARGS, "Iter keys"},
-    {"values", (PyCFunction)TTLCache_values, METH_NOARGS, "Iter values"},
-    {"items", (PyCFunction)TTLCache_items, METH_NOARGS, "iter items"},
-    {"update", (PyCFunction)TTLCache_update, METH_VARARGS | METH_KEYWORDS,
-     "update(mp, **kwargs)\n--\n\nUpdate item to cache. Unlike dict.update, "
-     "only accept a dict object."},
-    {"clear", (PyCFunction)TTLCache_clear, METH_NOARGS, "Clear cache"},
-    {"setnx", (PyCFunction)TTLCache_setnx, METH_VARARGS | METH_KEYWORDS,
-     "setnx(key, fn, /)\n--\n\nlike setdefault but accept a callable "
-     "object which take key as only one argument."},
+    {
+        "set_default_ttl",
+        (PyCFunction)TTLCache_set_default_ttl,
+        METH_O,
+        "set_default_ttl(ttl, /)\n--\n\n"
+        "Reset default ttl.\n\n"
+        "Parameters\n"
+        "----------\n"
+        "ttl : int\n"
+        "  Expire seconds.\n\n"
+        "Notes\n"
+        "-----\n"
+        "Exist keys won't change their expire.\n",
+    },
+    {
+        "get_default_ttl",
+        (PyCFunction)TTLCache_get_default_ttl,
+        METH_NOARGS,
+        "get_default_ttl()\n--\n\nReturn default ttl.",
+    },
+    {
+        "get",
+        (PyCFunction)TTLCache_get,
+        METH_VARARGS | METH_KEYWORDS,
+        "get(key, default=None, /)\n--\n\nGet item from cache.",
+    },
+    {
+        "setdefault",
+        (PyCFunction)TTLCache_setdefault,
+        METH_VARARGS | METH_KEYWORDS,
+        "setdefault(key, default=None, /)\n--\n\n"
+        "Get item in cache, if key not "
+        "exists, set default to cache and return it.",
+    },
+    {
+        "pop",
+        (PyCFunction)TTLCache_pop,
+        METH_VARARGS | METH_KEYWORDS,
+        "pop(key, default=None)\n--\n\nPop item from cache.",
+    },
+    {
+        "popitem",
+        (PyCFunction)TTLCache_popitem,
+        METH_NOARGS,
+        "popitem()\n--\n\nRemove and return some (key, value) pair"
+        "as a 2-tuple; but raise KeyError if mapping is empty.",
+    },
+    {
+        "keys",
+        (PyCFunction)TTLCache_keys,
+        METH_NOARGS,
+        "keys()\n--\n\nIter keys.",
+    },
+    {
+        "values",
+        (PyCFunction)TTLCache_values,
+        METH_NOARGS,
+        "values()\n--\n\nIter values.",
+    },
+    {
+        "items",
+        (PyCFunction)TTLCache_items,
+        METH_NOARGS,
+        "items()\n--\n\nIter items.",
+    },
+    {
+        "update",
+        (PyCFunction)TTLCache_update,
+        METH_VARARGS | METH_KEYWORDS,
+        "update(mp, **kwargs)\n--\n\n"
+        "Update item to cache. Unlike dict.update, only accept a dict object.",
+    },
+    {"clear", (PyCFunction)TTLCache_clear, METH_NOARGS,
+     "clear()\n--\n\nClear cache."},
+    {
+        "setnx",
+        (PyCFunction)TTLCache_setnx,
+        METH_VARARGS | METH_KEYWORDS,
+        USUAL_SETNX_METHOD_DOC,
+    },
     {"_storage", (PyCFunction)TTLCache__storage, METH_NOARGS, NULL},
-    {"get_default_ttl", (PyCFunction)TTLCache_get_default_ttl, METH_NOARGS,
-     "get_default_ttl()\n--\n\nReturn default ttl"},
     {NULL, NULL, 0, NULL} /* Sentinel */
 };
 
@@ -631,10 +687,14 @@ static PyObject *TTLCache_tp_richcompare(PyObject *self, PyObject *other,
 
 PyDoc_STRVAR(
     TTLCache__doc__,
-    "TTLCache(ttl=None)\n\n"
+    "TTLCache(ttl=None)\n--\n\n"
     "A mapping that keys expire and unreachable after ``ttl`` seconds.\n"
     "\n"
-    "Default ``ttl`` is 1 minute.\n\n"
+    "Parameters\n"
+    "----------\n"
+    "ttl : int\n"
+    "  Key will expire after this many seconds, default is 60 (1 minute).\n"
+    "\n"
     "Examples\n"
     "--------\n"
     ">>> import ctools\n"
