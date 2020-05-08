@@ -8,7 +8,7 @@
   "----------\n"                                                               \
   "key : object\n"                                                             \
   "  Hash key.\n"                                                              \
-  "fn : Typing.Callable[[typing.Any], typing.Any]\n"                           \
+  "fn : typing.Callable[[typing.Any], typing.Any], optional\n"                 \
   "  It's a callable that accept key as only one argument, called when key "   \
   "not exists.\n"                                                              \
   "\n"                                                                         \

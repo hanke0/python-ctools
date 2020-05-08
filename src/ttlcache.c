@@ -692,7 +692,7 @@ PyDoc_STRVAR(
     "\n"
     "Parameters\n"
     "----------\n"
-    "ttl : int\n"
+    "ttl : int, optional\n"
     "  Key will expire after this many seconds, default is 60 (1 minute).\n"
     "\n"
     "Examples\n"

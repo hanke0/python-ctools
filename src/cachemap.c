@@ -686,10 +686,13 @@ static PyObject *CacheMap_clear(CtsCacheMap *self) {
 /* tp_methods */
 static PyMethodDef CacheMap_methods[] = {
     {"evict", (PyCFunction)CacheMap_evict, METH_NOARGS,
-     "evict()\n--\n\nEvict a item. raise error if no item in cache."
-     "no item in cache."},
-    {"set_capacity", (PyCFunction)CacheMap_set_capacity, METH_O,
-     "set_capacity(capacity, /)\n--\n\n Reset capacity of cache."},
+     "evict()\n--\n\nEvict a item. raise error if no item in cache."},
+    {
+        "set_capacity",
+        (PyCFunction)CacheMap_set_capacity,
+        METH_O,
+        "set_capacity(capacity, /)\n--\n\n Reset capacity of cache.",
+    },
     {"hit_info", (PyCFunction)CacheMap_hit_info, METH_NOARGS,
      "hit_info()\n--\n\nReturn capacity, hits, and misses count."},
     {"next_evict_key", (PyCFunction)CacheMap_NextEvictKey, METH_NOARGS,
@@ -703,9 +706,13 @@ static PyMethodDef CacheMap_methods[] = {
     {"pop", (PyCFunction)CacheMap_pop, METH_VARARGS | METH_KEYWORDS,
      "pop(key, default=None, /)\n--\n\nPop an item from cache, if key not "
      "exists return default."},
-    {"popitem", (PyCFunction)CacheMap_popitem, METH_NOARGS,
-     "popitem()\n--\n\nRemove and return some (key, value) pair"
-     "as a 2-tuple; but raise KeyError if mapping is empty."},
+    {
+        "popitem",
+        (PyCFunction)CacheMap_popitem,
+        METH_NOARGS,
+        "popitem()\n--\n\nRemove and return some (key, value) pair"
+        "as a 2-tuple; but raise KeyError if mapping is empty.",
+    },
     {"keys", (PyCFunction)CacheMap_keys, METH_NOARGS,
      "keys()\n--\n\nIter keys."},
     {"values", (PyCFunction)CacheMap_values, METH_NOARGS,
@@ -755,12 +762,12 @@ static PyObject *CacheMap_tp_richcompare(PyObject *self, PyObject *other,
 }
 
 PyDoc_STRVAR(CacheMap__doc__,
-             "CacheMap(maxsize=None, )\n--\n\n"
+             "CacheMap(capacity=None, )\n--\n\n"
              "A fast LFU (least frequently used) mapping.\n"
              "\n"
              "Parameters\n"
              "----------\n"
-             "maxsize : int\n"
+             "capacity : int, optional\n"
              "  Max size of cache, default is  C ``INT32_MAX``.\n"
              "\n"
              "Examples\n"

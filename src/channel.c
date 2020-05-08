@@ -432,7 +432,7 @@ PyDoc_STRVAR(Channel_safe_consume__doc__,
              "Safe consume with a callable.\n\n"
              "Parameters\n"
              "----------\n"
-             "fn : Callable[[Any], bool]\n"
+             "fn : typing.Callable[[typing.Any], bool]\n"
              "  The `fn` receive an item as only one argument and must return "
              "True on success, False on fail.\n"
              "\n"
