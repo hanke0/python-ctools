@@ -21,11 +21,11 @@ dist: clean  ## Build dists
 
 .PHONY: clean-cache
 clean-cache:
-	@find -name *.egg-info -exec rm -rf {} +
-	@find -name *.pyc -exec rm -rf {} +
-	@find -name *.pyo -exec rm -rf {} +
-	@find -name *.so -exec rm -rf {} +
-	@find -name *.pyd -exec rm -rf {} +
+	@find . -name *.egg-info -exec rm -rf {} +
+	@find . -name *.pyc -exec rm -rf {} +
+	@find . -name *.pyo -exec rm -rf {} +
+	@find . -name *.so -exec rm -rf {} +
+	@find . -name *.pyd -exec rm -rf {} +
 
 .PHONY: clean
 clean: clean-cache ## Clean cache, include dist
