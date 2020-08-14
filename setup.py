@@ -28,8 +28,7 @@ def _is_using_gcc(obj):
         cc = sysconfig.get_config_var("CC")
         if not cc:
             cc = ""
-        compiler_name = os.path.basename(cc)
-        is_gcc = "gcc" in compiler_name
+        is_gcc = "gcc" in cc
     return is_gcc
 
 

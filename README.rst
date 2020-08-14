@@ -26,7 +26,17 @@
 
 Install:
 
-    Install and update using `pip`_:  ``pip install -U ctools``
+    Install and update using `pip`_:  ``pip install -U ctools``.
+
+    If you can't build, and the error contains message of
+    ``error: 'for' loop initial declarations are only allowed in C99 mode``,
+    please use the following command:
+
+    .. code-block:: shell
+
+        export CFLAGS="--std=c99"
+        pip install -U ctools
+
 
 It provides:
 
